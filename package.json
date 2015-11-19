@@ -1,0 +1,37 @@
+{
+  "name": "gulp-mocha-chai-coffee-babel",
+  "version": "1.0.0",
+  "description": "Project setup for writing backend code using es7. Tests be written using coffee or es7",
+  "license": "MIT",
+  "repository": "https://github.com/open-medicine-initiative/cherry.git",
+  "devDependencies": {
+    "babel-core": "^6.1.19",
+    "babel-preset-es2015": "^6.1.18",
+    "babel-preset-stage-0": "^6.1.18",
+    "chai": "^3.4.1",
+    "chalk": "^1.1.1",
+    "coffee-script": "^1.10.0",
+    "esdoc": "^0.4.3",
+    "esdoc-es7-plugin": "0.0.3",
+    "gulp": "gulpjs/gulp#4.0",
+    "gulp-apidoc": "^0.2.0",
+    "gulp-jscs": "^3.0.2",
+    "gulp-memory-cache": "^0.3.0",
+    "gulp-mocha": "^2.1.3",
+    "gulp-run": "^1.6.11",
+    "gulp-util": "^3.0.7",
+    "mocha": "^2.3.3"
+  },
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "koa": "^1.1.2",
+    "koa-static": "^1.5.2",
+    "lodash": "^3.10.1",
+    "lokijs": "^1.3.10",
+    "mitm": "^1.2.0",
+    "simplecrawler": "^0.5.4"
+  },
+  "scripts": {
+    "test": "gulp test:run"
+  }
+}

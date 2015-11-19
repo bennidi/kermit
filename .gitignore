@@ -1,0 +1,19 @@
+# Exclude IntelliJ IDEA files
+*.iml
+*.ipr
+*.iws
+**/.idea/*
+**/.idea
+
+# Exclude Eclipse IDE files
+**/.classpath
+**/.project
+**/.settings/org.eclipse.core.resources.prefs
+**/.settings/org.eclipse.jdt.core.prefs
+**/.settings/org.eclipse.m2e.core.prefs
+
+# Exclude logs, dependencies, temporary files
+*.log
+fixtures
+tmp
+node_modules

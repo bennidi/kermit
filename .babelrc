@@ -1,0 +1,6 @@
+{
+    "moduleIds": false,
+    "comments": false,
+    "compact": false,
+    "presets": ["es2015", "stage-0"]
+}
