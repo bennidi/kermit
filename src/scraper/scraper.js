@@ -3,6 +3,23 @@ import cheerio from "cheerio";
 import {lokijs} from "lokijs";
 import {_} from 'lodash';
 
+
+
+class ExecutionTrace{
+
+  info(msg){
+    console.info(msg);
+  }
+
+  debug(msg){
+    console.debug(msg);
+  }
+  error(msg){
+    console.error(msg);
+  }
+
+}
+
 /**
  * A CherryTree can be used to conveniently crawl websites with composed handlers.
  */
@@ -14,33 +31,38 @@ export class CherryTree {
    */
   constructor( collectors ) {
     this.dispatcher = new Dispatcher(collectors);
-    this.trace = new Map();
+    this.urlToContext = new Map();
     this.crawler = new Crawler()
       .on("crawlstart", ( ) => {
         console.log("Started crawling");
       })
       .on("fetchcomplete", ( item, data, response ) => {
-        console.log(`Fetching of ${item.path}`);
-        this.dispatcher.dispatch(item.context.withData(cheerio.load(data)))
+        console.log(`Fetching of ${item.url} complete`);
+        let context = item.context;
+        context.data(data);
+        context.request = item;
+        this.dispatcher.dispatch(context);
       })
       .on("queueadd", ( newQueueItem, parsedURL ) => {
-        console.log(`Queueing ${parsedURL}`);
-        newQueueItem['context'] = this.trace.get(parsedURL);
+        console.log(`Queueing ${newQueueItem.url}`);
+        // Attach context to created queueitem
+        let context = this.urlToContext.get(parsedURL);
+        newQueueItem.context = context;
       })
       .on("queueerror", ( error, parsedURL ) => {
-        console.log(error);
+        console.error(error);
       })
       .on("fetcherror", ( error, parsedURL ) => {
-        console.log(error);
+        console.error(error);
       })
       .on("fetchstart", ( queueitem, requestOptions ) => {
-        console.log("Started fetching" + queueitem.path);
+        console.log("Started fetching" + queueitem.url);
       })
       .on("fetchclienterror", ( queueitem, requestOptions ) => {
         console.log(queueitem);
       })
       .on("fetchredirect", ( original, redirectedUrl, response ) => {
-        this.trace.set(redirectedUrl, original.context);
+        this.urlToContext.set(redirectedUrl, original.context);
       })
       .on("fetchdataerror", ( queueitem, requestOptions ) => {
         console.log(queueitem);
@@ -54,6 +76,8 @@ export class CherryTree {
 
     this.crawler.filterByDomain = false;
     this.crawler.discoverResources = false;
+    this.crawler.userAgent = "Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.4.0"
+    this.crawler.interval = 2000;
   }
 
   /**
@@ -81,9 +105,8 @@ export class CherryTree {
   enqueue(context, url) {
     let crawlRequest = this.crawler.processURL(url);
     if(crawlRequest){
-      this.trace.set(crawlRequest, context);
-      let successful = this.crawler.queueURL(crawlRequest);
-      console.log(`Queueing of ${JSON.stringify(url)} successful: ${successful}`);
+      this.urlToContext.set(crawlRequest, context);
+      this.crawler.queueURL(crawlRequest);
     }
     else{
       // TODO: Notify of error
@@ -95,18 +118,25 @@ export class CherryTree {
 
 class DataWrapper{
 
-  constructor(data){
-    this.src = data;
-    this.current = data;
+  constructor(data, context){
+    this._raw = data;
+    this.current = cheerio.load(data);
+    this.context = context;
   }
 
   each(fnct){
-    this.current.each((i, item) => fnct(cheerio(item)))
+    this.current.each((i, item) => {
+      fnct.call(this.context, cheerio(item))
+    });
   }
 
   select(selector){
     this.current = cheerio(this.current(selector));
     return this;
+  }
+
+  raw(){
+    return this._raw;
   }
 }
 
@@ -119,11 +149,11 @@ class Context {
   }
 
   select(selector) {
-    return this.data.select(selector);
+    return this.content.select(selector);
   }
 
-  withData( data ) {
-    this.data = new DataWrapper(data);
+  data( data ) {
+    this.content = new DataWrapper(data, this);
     return this;
   }
 

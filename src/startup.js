@@ -1,2 +1,3 @@
-require("babel/register");  //https://babeljs.io/docs/usage/require/
-require('./server');
+require('coffee-script/register');
+require('babel-core/register');
+require('./diseasedb');

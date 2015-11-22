@@ -6,7 +6,7 @@ run = require 'gulp-run'
 # Generation of REST-API documentation
 genapidoc = ->
 	apidoc.exec
-		src: "./src/rest/"
+		raw: "./src/rest/"
 		dest: "./target/api-doc"
 		includeFilters: [ ".*\\.js$" ]
 genapidoc.description = "Generate API documentation for REST resources"

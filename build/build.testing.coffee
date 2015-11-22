@@ -8,8 +8,7 @@ util = require 'gulp-util'
 cache = require 'gulp-memory-cache'
 
 # Expose assertion libs globally such that tests do not need to require()
-global.expect = require('chai').expect
-global.assert = require('chai').assert
+global.expect = require('must')
 
 # This task will run all tests (*.spec.(coffee|es6))
 runSpecs = ->
