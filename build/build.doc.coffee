@@ -1,6 +1,7 @@
 gulp = require 'gulp'
 apidoc = require 'gulp-apidoc'
 run = require 'gulp-run'
+codo = require 'gulp-codo'
 
 
 # Generation of REST-API documentation
@@ -18,6 +19,17 @@ genesdoc = ->
 genesdoc.description = 'Generate esdoc-based documentation'
 
 
+gencodo = () ->
+	gulp.src ['./src/**/*.coffee'], read: false
+		.pipe codo
+			dir: 'target/coffeedoc'
+			name: 'Greeter'
+			title: 'Greeter documentation'
+			readme: 'README.md'
+			extra: 'LICENSE.md'
+gencodo.description = 'Generate coffee documentation'
+
 # Register tasks with gulp
 gulp.task 'doc:api', genapidoc
 gulp.task 'doc:esdoc', genesdoc
+gulp.task 'doc:coffee', gencodo

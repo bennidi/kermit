@@ -9,7 +9,7 @@ the scraping environment such that it is easy to build site traversals with deco
 
 Run these commands for initial setup and test run
 
-	$ npm install gulpjs/gulp-cli#4.0 codo -g
+	$ npm install gulpjs/gulp-cli#4.0 -g
 	$ npm install
 	$ npm test
 

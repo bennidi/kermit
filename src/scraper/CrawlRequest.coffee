@@ -2,8 +2,13 @@ urijs = require 'urijs'
 
 class CrawlRequest
 
-  constructor: (url) ->
-    @state = { uri: urijs(url), tsLastModified: new Date, status: Status.CREATED }
+  uniqueId = (length=8) ->
+    id = ""
+    id += Math.random().toString(36).substr(2) while id.length < length
+    id.substr 0, length
+
+  constructor: (url, id = uniqueId(20)) ->
+    @state = { uri: urijs(url), tsLastModified: new Date, status: Status.CREATED, id }
     @changeListeners = {}
 
   onChange: (property, handler) ->

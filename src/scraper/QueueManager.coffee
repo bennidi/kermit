@@ -21,21 +21,15 @@ class QueueManager
       request.status is States.SPOOLED
     #spooled.applySimpleSort('tsLastModified', true);
 
-
-
   created: () ->
     @requests.getDynamicView('created').data()
 
   spooled: () ->
     @requests.getDynamicView('spooled').data()
 
-
   trace: (request) ->
     @requests.insert request.state
-    console.log request.state['$loki']
-    console.log request.state.status
     request.onChange 'status', (state) =>
-      console.log "updating state of #{state['$loki']}"
       @requests.update(state)
 
 module.exports = {
