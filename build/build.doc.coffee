@@ -20,7 +20,7 @@ genesdoc.description = 'Generate esdoc-based documentation'
 
 
 gencodo = () ->
-	gulp.src ['./src/**/*.coffee'], read: false
+	gulp.src ['./src/**/!(*.spec).coffee'], read: false
 		.pipe codo
 			dir: 'target/coffeedoc'
 			name: 'Greeter'

@@ -1,5 +1,4 @@
-requests = require('./CrawlRequest')
-Request = requests.CrawlRequest
+Request = require('./CrawlRequest')
 Queue = require('./QueueManager').QueueManager
 
 describe  'QueueManager',  ->

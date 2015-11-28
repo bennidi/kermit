@@ -46,7 +46,7 @@ class ProcessingException
     REJECTED : "RequestRejected"
 
   constructor: (@type = ProcessingException.types.REJECTED,
-                @reason = "The request was reject for processing",
+                @message = "The request was reject for processing",
                 @request) ->
 
 module.exports = {

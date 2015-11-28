@@ -12,7 +12,7 @@ class QueueManager
     # Requests that have just been created
     created = @requests.addDynamicView('created')
     created.applyWhere (request) ->
-      request.status is States.CREATED
+      request.status is States.INITIAL
     #created.applySimpleSort('tsLastModified', true);
 
     # Requests that have been spooled, aka ready to be processed
@@ -20,6 +20,15 @@ class QueueManager
     spooled.applyWhere (request) ->
       request.status is States.SPOOLED
     #spooled.applySimpleSort('tsLastModified', true);
+
+
+# check for any request with the given url
+  contains: (url) -> false
+
+  # Determines whether there are unfetched requests remaining
+  requestsRemaining: ->
+    remaining = @created().length + @spooled().length
+    remaining > 0
 
   created: () ->
     @requests.getDynamicView('created').data()
