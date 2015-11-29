@@ -1,21 +1,23 @@
-Status = require('../CrawlRequest').Status
+{Status} = require '../CrawlRequest'
 extensions = require '../Extension'
 
-# State transition CREATED -> SPOOLED
+# Filter requests newly created requests (state INITIAL) based on a variety of criteria.
+# Requests can be filtered by
+#  + their uri (whitelisting and blacklisting using regular expressions)
+#  + the level of nesting (depth)
 class RequestFilter extends extensions.Extension
 
   @opts =
     preventDuplicates : true
     whitelist : [] # regex for allowed requests, all pass if empty
     blacklist : [] # regex for disallowed requests, all pass if empty
-    maxDepth : 2
+    maxDepth : 4
 
   isBlacklisted = (url, blacklist) ->
-    false
+    false # TODO: add real implementation
 
   isWhitelisted = (url, whitelist) ->
-    true
-
+    true # TODO: add real implementation
 
   constructor: (@opts = RequestFilter.opts) ->
     super new extensions.ExtensionDescriptor "RequestFilter", [Status.INITIAL]

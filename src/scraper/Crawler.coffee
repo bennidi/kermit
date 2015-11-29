@@ -1,9 +1,10 @@
 ProcessingException = require('./Extension').ProcessingException
-core = require('./extensions/core')
-Request = require './CrawlRequest'
-Status = Request.Status
-Points = require('./Crawler.Extpoints').Points
-ExtensionPoint = require('./Crawler.Extpoints').ExtensionPoint
+{ExtensionPointConnector, RequestLookup, Spooler, Completer} = require('./extensions/core')
+{QueueConnector, QueueWorker} = require('./extensions/core.queues.coffee')
+{RequestStreamer} = require('./extensions/core.streaming.coffee')
+{Status, CrawlRequest} = require './CrawlRequest'
+{Points} = require('./Crawler.Extpoints')
+{ExtensionPoint} = require('./Crawler.Extpoints')
 
 class CrawlerContext
 
@@ -59,15 +60,15 @@ class Crawler
     @context = new CrawlerContext this
     initializeExtensionPoints(this)
     # Extensions that need to run BEFORE user extensions
-    addExtension this, new core.RequestExtensionPointConnector
-    addExtension this, new core.RequestLookup
-    addExtension this, new core.QueueConnector
-    addExtension this, new core.QueueWorker
-    addExtension this, new core.RequestStreamer
+    addExtension this, new ExtensionPointConnector
+    addExtension this, new RequestLookup
+    addExtension this, new QueueConnector
+    addExtension this, new QueueWorker
+    addExtension this, new RequestStreamer
     addExtensions this, opts.extensions
-    # The spooler needs to be last in its phase
-    addExtension this, new core.Spooler
-    addExtension this, new core.Completer
+    # The Spooler and Completer need to be last in their phase
+    addExtension this, new Spooler
+    addExtension this, new Completer
 
   extpoint: (phase) ->
     if !@extpoints[phase]?
@@ -79,7 +80,7 @@ class Crawler
 
   enqueue: (url) ->
     console.info "Enqueuing #{url}"
-    request = new Request url, @context
+    request = new CrawlRequest url, @context
     @execute(Points.INITIAL.phase, request)
 
 module.exports = {

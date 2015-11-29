@@ -8,7 +8,7 @@ class Extension
 
 
   # @param [CrawlRequest] request The request to be processed
-  # @throws StopRequest if the request processing should be stopped
+  # @throws ProcessingException if the request processing should be stopped
   apply: (request) ->
 
   # This method is called before the extension is registered at the crawler.

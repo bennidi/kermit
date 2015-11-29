@@ -1,40 +1,59 @@
-#
-# Credits go to Christopher Giffard
-# https://github.com/cgiffard/node-simplecrawler
-#
-# Copyright (c) 2011-2015, Christopher Giffard
-
-Status = require('../CrawlRequest').Status
-extensions = require '../Extension'
+{Status} = require('../CrawlRequest')
+{Extension, ExtensionDescriptor} = require '../Extension'
 URI = require 'urijs'
 validUrl = require 'valid-url'
+url = require 'url'
 _ = require 'lodash'
+htmlToJson = require 'html-to-json'
 
-# State transition CREATED -> SPOOLED
-class ResourceDiscovery extends extensions.Extension
+# Scan result data for links to other resources (css, img, js, html) and schedule
+# a request to retrieve those resources.
+class ResourceDiscovery extends Extension
 
   # http://elijahmanor.com/regular-expressions-in-coffeescript-are-awesome/
   # https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings
   # http://stackoverflow.com/questions/1500260/detect-urls-in-text-with-javascript
   @opts =
     regex: [
-      /\s?(?:href|src)\s?=\s?(["']).*?\1/ig,
-      /\s?(?:href|src)\s?=\s?[^"'][^\s>]+/ig,
-      #/\s?url\((["']).*?\1\)/ig,
-      #/\s?url\([^"'].*?\)/ig,
-      /http(s)?\:\/\/[^?\s><\'\"]+/ig]
+      # TODO: implement regex based filtering of discovered resources
+      # Or maybe filtering is only done in filter?!
+    ]
 
 
   constructor: (@opts = ResourceDiscovery.opts) ->
-    super new extensions.ExtensionDescriptor "ResourceDiscovery", [Status.FETCHED]
+    super new ExtensionDescriptor "ResourceDiscovery", [Status.FETCHED]
 
   apply: (request) ->
-    #console.log request.body.match /r?or?/g
-    # matches = (request.body.match regex)
-    matches = (request.body.match regex for regex in @opts.regex)
-    cleaned = _.flatten (_.reject(matches, _.isNull))
-    #console.log cleaned
-    links = (match.replace /(src|href)\s*=/, "" for match in cleaned)
-    request.enqueue link for link in links
+    extractLinks request.body, (results) ->
+      resources = _.reject (cleanUrl(request.uri(), url.href) for url in results.filter.resources), _.isEmpty
+      links = _.reject (cleanUrl(request.uri(), url.href) for url in results.filter.links), _.isEmpty
+      request.enqueue url for url in resources
+      request.enqueue url for url in links
+
+
+  # Run a htmlToJson extractor
+  extractLinks = (html, handler) ->
+    htmlToJson.batch(html,
+      htmlToJson.createParser
+        resources: ['link',
+          'href':  ($section) -> $section.attr 'href'
+        ]
+        links: ['a',
+          'href':  ($link) -> $link.attr 'href'
+        ]).done handler
+
+  cleanUrl = (base, url)  ->
+    cleaned = url
+    if cleaned
+      # Handle //de.wikinews.org/wiki/Hauptseite
+      cleaned = url.replace /\/\//g, base.scheme() + "://" if url.startsWith "//"
+      # Handle relative urls with leading slash, i.e. /wiki/Hauptseite
+      cleaned = URI(url).absoluteTo(base).toString() if url.startsWith "/"
+      # Drop in-page anchors, i.e. #info
+      cleaned = "" if url.startsWith "#"
+    else
+      console.log "URL was null"
+      cleaned = ""
+    cleaned
 
 module.exports = ResourceDiscovery

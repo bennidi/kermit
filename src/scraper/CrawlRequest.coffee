@@ -2,17 +2,19 @@ URI = require 'urijs'
 extensions = require './Extension'
 Exceptions = extensions.ProcessingException
 
+status =
+  INITIAL:'INITIAL'
+  SPOOLED:'SPOOLED'
+  READY:'READY'
+  FETCHING:'FETCHING'
+  FETCHED:'FETCHED'
+  COMPLETE:'COMPLETE'
+  ERROR:'ERROR'
+  CANCELED:'CANCELED'
+
 class CrawlRequest
 
-  @Status =
-    INITIAL:'INITIAL'
-    SPOOLED:'SPOOLED'
-    READY:'READY'
-    FETCHING:'FETCHING'
-    FETCHED:'FETCHED'
-    COMPLETE:'COMPLETE'
-    ERROR:'ERROR'
-    CANCELED:'CANCELED'
+  @Status = status
 
   notify = (request, property) ->
     listener(request.state) for listener in listeners(request, property)
@@ -98,8 +100,11 @@ class CrawlRequest
     @context.crawler.execute CrawlRequest.Status.INITIAL, @subrequest url
 
   subrequest: (url) ->
-    new CrawlRequest URI(url).absoluteTo(@url()).toString(), @context, @state.depth + 1
+    new CrawlRequest url, @context, @state.depth + 1
 
   depth: () -> @state.depth
 
-module.exports = CrawlRequest
+module.exports = {
+  CrawlRequest
+  Status : status
+}

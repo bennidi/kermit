@@ -1,4 +1,4 @@
-Request = require('./CrawlRequest')
+{CrawlRequest} = require('./CrawlRequest')
 Queue = require('./QueueManager').QueueManager
 
 describe  'QueueManager',  ->
@@ -14,7 +14,7 @@ describe  'QueueManager',  ->
 
     it '# can enrich requests for state tracing', ->
       QueueManager = new Queue
-      TestRequest = new Request 'www.npmjs.com'
+      TestRequest = new CrawlRequest 'www.npmjs.com'
       QueueManager.trace TestRequest
       expect(QueueManager.created().length).to.equal(1)
       expect(QueueManager.spooled().length).to.equal(0)

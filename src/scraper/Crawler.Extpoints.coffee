@@ -6,10 +6,10 @@ callExtensions = (extensions, request)->
   for extension in extensions
     try
       # An extension may modify the request
-      console.info "Executing #{extension.descriptor.name}"
+      #console.info "Executing #{extension.descriptor.name}"
       extension.apply(request)
     catch error
-      console.log error.message
+      console.log "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
       # or stop its processing by throwing the right exception
       if (error.type is ProcessingException.types.REJECTED)
         return false

@@ -1,4 +1,4 @@
-States = require('./CrawlRequest').Status
+{Status} = require('./CrawlRequest')
 lokijs = require 'lokijs'
 
 class QueueManager
@@ -12,13 +12,13 @@ class QueueManager
     # Requests that have just been created
     created = @requests.addDynamicView('created')
     created.applyWhere (request) ->
-      request.status is States.INITIAL
+      request.status is Status.INITIAL
     #created.applySimpleSort('tsLastModified', true);
 
     # Requests that have been spooled, aka ready to be processed
     spooled = @requests.addDynamicView('spooled')
     spooled.applyWhere (request) ->
-      request.status is States.SPOOLED
+      request.status is Status.SPOOLED
     #spooled.applySimpleSort('tsLastModified', true);
 
 
