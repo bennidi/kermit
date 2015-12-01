@@ -33,19 +33,23 @@ class CrawlRequest
     @state =
       uri:  URI(url)
       tsLastModified: new Date
-      status: CrawlRequest.Status.INITIAL
+      status: status.INITIAL
       id : uniqueId(20)
       depth : depth
     @changeListeners = {}
     @context = context
 
   onChange: (property, handler) ->
-    listeners(this, property).push handler
-    this
+    listeners(this, property).push handler; this
 
-  uri: () -> @state.uri
-  url: () -> @uri().toString()  
+  uri: (uri) ->
+    if uri
+      @state.uri = URI(uri)
+    @state.uri
 
+  url: () -> @uri().toString()
+
+  
   # Change the status and call subscribed listeners
   status: (status) ->
     if status?
@@ -55,49 +59,51 @@ class CrawlRequest
     else @state.status
 
   spool: ->
-    if @state.status is CrawlRequest.Status.INITIAL
-      @state.status = CrawlRequest.Status.SPOOLED
+    if @state.status is status.INITIAL
+      @state.status = status.SPOOLED
       notify this, "status"
     else throw new Error "Transition from #{@state} to SPOOLED not allowed"
 
   ready: ->
-    if @state.status is CrawlRequest.Status.SPOOLED
-      @state.status = CrawlRequest.Status.READY
+    if @state.status is status.SPOOLED
+      @state.status = status.READY
       notify this, "status"
     else throw new Error "Transition from #{@state} to READY not allowed"
 
   fetching: ->
-    if @state.status is CrawlRequest.Status.READY
-      @state.status = CrawlRequest.Status.FETCHING
+    if @state.status is status.READY
+      @state.status = status.FETCHING
       notify this, "status"
     else throw new Error "Transition from #{@state} to FETCHING not allowed"
 
   fetched: (body, response) ->
-    if @state.status is CrawlRequest.Status.FETCHING
+    if @state.status is status.FETCHING
       @body = body
       @respone = response
-      @state.status = CrawlRequest.Status.FETCHED
+      @state.status = status.FETCHED
       notify this, "status"
     else throw new Error "Transition from #{@state} to FETCHED not allowed"
 
   complete: ->
-    if @state.status is CrawlRequest.Status.FETCHED
-      @state.status = CrawlRequest.Status.COMPLETE
+    if @state.status is status.FETCHED
+      @state.status = status.COMPLETE
       notify this, "status"
     else throw new Error "Transition from #{@state} to COMPLETE not allowed"
 
   error: (error) ->
-    @state.status = CrawlRequest.Status.ERROR
+    @state.status = status.ERROR
     notify this, "status"
 
   cancel: (reason) ->
-    @state.status = CrawlRequest.Status.CANCELED
+    @state.status = status.CANCELED
     notify this, "status"
-    throw new Exceptions Exceptions.REJECTED, reason, this
 
+  isCanceled: () ->
+    @state.status is status.CANCELED
+    
   enqueue: (url) ->
     console.log "Subrequest to #{url}"
-    @context.crawler.execute CrawlRequest.Status.INITIAL, @subrequest url
+    @context.execute status.INITIAL, @subrequest url
 
   subrequest: (url) ->
     new CrawlRequest url, @context, @state.depth + 1

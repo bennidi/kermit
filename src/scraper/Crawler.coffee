@@ -1,21 +1,23 @@
-ProcessingException = require('./Extension').ProcessingException
+{ProcessingException, Extension} = require './Extension'
 {ExtensionPointConnector, RequestLookup, Spooler, Completer} = require('./extensions/core')
 {QueueConnector, QueueWorker} = require('./extensions/core.queues.coffee')
 {RequestStreamer} = require('./extensions/core.streaming.coffee')
+RequestFilter = require('./extensions/core.filter.coffee')
 {Status, CrawlRequest} = require './CrawlRequest'
 {Points} = require('./Crawler.Extpoints')
 {ExtensionPoint} = require('./Crawler.Extpoints')
 
 class CrawlerContext
 
-  constructor: (@crawler) ->
+  constructor: (@crawler, @execute) ->
 
 class Crawler
 
-  # The set of extension points provided by any crawler instance.
-  # Each extension point is represented by its own class and comes
-  # with its own documentation
-  #
+  # The set of all provided extension points. One for each distinct state
+  # in the CrawlRequest state diagram.
+  # Extensions are added to extension points while initialization (constructor).
+  # Core extensions are added automatically, user extensions are specified in the
+  # options of the contructor.
   @extensionPoints = [
     Points.INITIAL,
     Points.FETCHING,
@@ -38,50 +40,62 @@ class Crawler
   addExtensions = (crawler, extensions = []) ->
     addExtension crawler, extension for extension in extensions
 
-  addExtensionPoint = (crawler, extpoint) ->
-    crawler.extpoints[extpoint.phase] = extpoint
-
   addPlugins = (crawler, context, plugins...) ->
     (addExtension crawler, extension, context for extension in plugin.extensions) for plugin in plugins
 
   addExtension =    (crawler, extension) ->
-    console.info "Adding extension #{extension.descriptor.name}"
-    extension.initialize? crawler.context
-    crawler.extpoint(point).addExtension(extension) for point in extension.targets()
+    extpoint(crawler, point).addExtension(extension) for point in extension.targets()
 
-  initializeExtensionPoints = (crawler) ->
-    crawler.extpoints = {}
-    addExtensionPoint crawler, new ExtensionPoint for ExtensionPoint in Crawler.extensionPoints
 
-  defaultOpts =
-    extensions: []
-
-  constructor: (opts = defaultOpts) ->
-    @context = new CrawlerContext this
-    initializeExtensionPoints(this)
-    # Extensions that need to run BEFORE user extensions
-    addExtension this, new ExtensionPointConnector
-    addExtension this, new RequestLookup
-    addExtension this, new QueueConnector
-    addExtension this, new QueueWorker
-    addExtension this, new RequestStreamer
-    addExtensions this, opts.extensions
-    # The Spooler and Completer need to be last in their phase
-    addExtension this, new Spooler
-    addExtension this, new Completer
-
-  extpoint: (phase) ->
-    if !@extpoints[phase]?
+  extpoint = (crawler, phase) ->
+    if !crawler.extpoints[phase]?
       throw new Error "Extension point #{phase} does not exists"
-    @extpoints[phase]
+    crawler.extpoints[phase]
 
-  execute: (phase, request) ->
-    @extpoint(phase).apply request
+  @defaultOpts =
+    extensions: []
+    # each core extension has its place for default opts
+    core:
+      ExtensionPointConnector : ExtensionPointConnector.defaultOpts
+      RequestLookup : RequestLookup.defaultOpts
+      QueueConnector : QueueConnector.defaultOpts
+      QueueWorker : QueueWorker.defaultOpts
+      RequestStreamer : RequestStreamer.defaultOpts
+      RequestFilter : RequestFilter.defaultOpts
+      Spooler : Spooler.defaultOpts
+      Completer : Completer.defaultOpts
+
+  constructor: (@opts = {}) ->
+    # Use default options where no user defined options are given
+    @opts = Extension.mergeOptions Crawler.defaultOpts, @opts
+    @extpoints = {}
+    @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in Crawler.extensionPoints
+    @context = new CrawlerContext this, (phase, request) =>
+      extpoint(this, phase).apply request
+    # Core extensions that need to run BEFORE user extensions
+    addExtension this, new ExtensionPointConnector @opts.core.ExtensionPointConnector
+    addExtension this, new RequestLookup @opts.core.RequestLookup
+    addExtension this, new QueueConnector @opts.core.QueueConnector
+    addExtension this, new QueueWorker @opts.core.QueueWorker
+    addExtension this, new RequestStreamer @opts.core.RequestStreamer
+    addExtension this, new RequestFilter @opts.core.RequestFilter
+    # Add user extensions
+    addExtensions this, @opts.extensions
+    # Core extensions that need to run AFTER user extensions
+    addExtension this, new Spooler @opts.core.Spooler
+    addExtension this, new Completer @opts.core.Completer
+    @extpoints[phase].initialize @context for phase of @extpoints
+
+
+  shutdown: () ->
+    extpoint(this, phase).shutdown() for phase of @extpoints
 
   enqueue: (url) ->
-    console.info "Enqueuing #{url}"
     request = new CrawlRequest url, @context
-    @execute(Points.INITIAL.phase, request)
+    extpoint(this, Points.INITIAL.phase).apply request
+
+  toString: () ->
+    "Crawler: " # TODO: List extension points and content
 
 module.exports = {
   Crawler

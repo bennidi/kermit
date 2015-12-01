@@ -9,12 +9,9 @@ class ExtensionPointConnector extends Extension
     super new ExtensionDescriptor "Request Extension Point Connector", [Status.INITIAL]
 
   apply: (request) ->
-    request.onChange 'status', (state) =>
-      @crawler.execute state.status, request
-
-  initialize: (context) ->
-    super context
-    @crawler = context.crawler
+    request.context = @context
+    request.onChange 'status', (state) ->
+      request.context.execute state.status, request
 
 # State transition CREATED -> SPOOLED
 class Spooler extends Extension
@@ -43,6 +40,7 @@ class RequestLookup extends Extension
     super(new ExtensionDescriptor "RequestLookup", [Status.INITIAL])
 
   initialize: (context) ->
+    super context
     @requests = {}
     context.requests = @requests
 

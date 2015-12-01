@@ -1,33 +1,38 @@
 {Status} = require '../CrawlRequest'
-extensions = require '../Extension'
+{Extension, ExtensionDescriptor} = require '../Extension'
 
 # Filter requests newly created requests (state INITIAL) based on a variety of criteria.
 # Requests can be filtered by
 #  + their uri (whitelisting and blacklisting using regular expressions)
 #  + the level of nesting (depth)
-class RequestFilter extends extensions.Extension
+class RequestFilter extends Extension
 
-  @opts =
+  @defaultOpts =
     preventDuplicates : true
-    whitelist : [] # regex for allowed requests, all pass if empty
+    whitelist : [/.*/g] # regex for allowed requests, none pass if empty
     blacklist : [] # regex for disallowed requests, all pass if empty
-    maxDepth : 4
+    maxDepth : 0 # no follow up requests allowed by default
 
   isBlacklisted = (url, blacklist) ->
-    false # TODO: add real implementation
+    blacklist.length > 0 and matches url, blacklist
 
   isWhitelisted = (url, whitelist) ->
+    whitelist.length > 0 and matches url, whitelist
+
+  matches = (url, patterns) ->
     true # TODO: add real implementation
 
-  constructor: (@opts = RequestFilter.opts) ->
-    super new extensions.ExtensionDescriptor "RequestFilter", [Status.INITIAL]
+  constructor: (@opts = {} ) ->
+    super new ExtensionDescriptor "RequestFilter", [Status.INITIAL]
+    @opts = @constructor.mergeOptions RequestFilter.defaultOpts, @opts
 
   initialize: (context) ->
+    super context
     @queue = context.queue
 
   apply: (request) ->
     url = request.url()
-    if request.depth() >= @opts.maxDepth
+    if request.depth() > @opts.maxDepth
       request.cancel("Maximum depth reached")
     if not @isWhitelisted(url)
       request.cancel("Not on whitelist")

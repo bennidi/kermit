@@ -6,14 +6,11 @@ httpRequest = require 'request'
 # This extension actually issues http(s) requests and receives the resulting data.
 class RequestStreamer extends Extension
 
-  @opts =
+  @defaultOpts =
     userAgent : "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
 
-  constructor: () ->
+  constructor: (@opts = RequestStreamer.defaultOpts) ->
     super new ExtensionDescriptor "Request Streamer", [Status.READY]
-
-  initialize: (context) ->
-    super context
 
   apply: (crawlRequest) ->
     url = crawlRequest.uri().toString()

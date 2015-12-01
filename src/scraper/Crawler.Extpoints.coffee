@@ -1,5 +1,4 @@
-Status = require('./CrawlRequest').Status
-ProcessingException = require('./Extension').ProcessingException
+{Status} = require './CrawlRequest'
 
 # Helper method to invoke all extensions for processing of a given request
 callExtensions = (extensions, request)->
@@ -7,12 +6,14 @@ callExtensions = (extensions, request)->
     try
       # An extension may modify the request
       #console.info "Executing #{extension.descriptor.name}"
-      extension.apply(request)
+      if request.isCanceled()
+        return false
+      else
+        extension.apply(request)
     catch error
       console.log "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
-      # or stop its processing by throwing the right exception
-      if (error.type is ProcessingException.types.REJECTED)
-        return false
+      request.error(error)
+      return false
   true
 
 class ExtensionPoint
@@ -23,6 +24,17 @@ class ExtensionPoint
   addExtension: (extension) ->
     @extensions.push extension
     this
+
+  initialize: (context) ->
+    @context = context
+    extension.initialize(context) for extension in @extensions
+
+  shutdown: () ->
+    for extension in @extensions
+      try
+        extension.shutdown?()
+      catch error
+        console.log "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
 
   apply: (request) ->
     @beforeApply?(request) # Hook for sub-classes to add pre-processing

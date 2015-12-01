@@ -9,9 +9,7 @@ cherry.extensions.Plugin = require('./Extension').Plugin
 cherry.extensions.Extension = require('./Extension').Extension
 cherry.extensions.ExtensionDescriptor = require('./Extension').ExtensionDescriptor
 cherry.extensions.ProcessingException = require('./Extension').ProcessingException
-cherry.extensions.Filter = require('./extensions/requestfilter.coffee')
-cherry.extensions.ResourceDiscovery = require('./extensions/discover.resources.coffee')
-cherry.extensions.OfflineStorage = require('./extensions/OfflineStorage.coffee')
+cherry.extensions.OfflineStorage = require('./extensions/plugin.offline.coffee').OfflineStorage
 cherry.Crawler = require('./Crawler').Crawler
 
 module.exports = cherry

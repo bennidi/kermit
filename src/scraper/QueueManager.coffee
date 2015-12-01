@@ -1,11 +1,11 @@
-{Status} = require('./CrawlRequest')
+{Status} = require './CrawlRequest'
 lokijs = require 'lokijs'
 
 class QueueManager
   constructor: (@store = new lokijs 'crawlrequests.json') ->
     @initialize()
 
-  initialize:() ->
+  initialize: () ->
     # One collection for all requests and dynamic views for various request states
     @requests = @store.addCollection 'requests'
 
@@ -22,7 +22,7 @@ class QueueManager
     #spooled.applySimpleSort('tsLastModified', true);
 
 
-# check for any request with the given url
+  # check for any request with the given url
   contains: (url) -> false
 
   # Determines whether there are unfetched requests remaining

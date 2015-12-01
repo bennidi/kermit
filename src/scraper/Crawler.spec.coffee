@@ -13,7 +13,6 @@ describe  'Crawler',  ->
       RequestCounter = new Counter
       expect(RequestCounter).not.to.be.null()
       SimpleCrawler = new cherry.Crawler extensions : [RequestCounter]
-      expect(SimpleCrawler.extpoint("INITIAL").extensions).to.contain(RequestCounter)
       npmRequest = SimpleCrawler.enqueue("http://www.npmjs.com")
       githubRequest = SimpleCrawler.enqueue("http://www.github.com")
       expect(RequestCounter.invocations).to.equal(2)
@@ -29,16 +28,18 @@ describe  'Crawler',  ->
       SimpleCrawler = new cherry.Crawler extensions : [new RejectingExtension]
       npmRequest = SimpleCrawler.enqueue("http://www.npm.com")
       githubRequest = SimpleCrawler.enqueue("http://www.github.com")
-      expect(npmRequest.status()).to.equal(Status.INITIAL)
-      expect(githubRequest.status()).to.equal(Status.INITIAL)
+      # Requests are canceled immediately
+      expect(npmRequest.status()).to.equal(Status.CANCELED)
+      expect(githubRequest.status()).to.equal(Status.CANCELED)
+      # And will not be further processed
       process.nextTick () ->
-        expect(npmRequest.status()).to.equal(Status.INITIAL)
-        expect(githubRequest.status()).to.equal(Status.INITIAL)
+        expect(npmRequest.status()).to.equal(Status.CANCELED)
+        expect(githubRequest.status()).to.equal(Status.CANCELED)
         done()
 
 
     it '# allows to schedule follow-up requests', (done) ->
-      SimpleCrawler = new cherry.Crawler
+      SimpleCrawler = new cherry.Crawler core : RequestFilter : maxDepth : 1
       npmRequest = SimpleCrawler.enqueue("http://www.npm.com")
       browserify = npmRequest.enqueue("package/browserify")
       expect(npmRequest.status()).to.equal(Status.SPOOLED)
@@ -64,4 +65,4 @@ class RejectingExtension extends cherry.extensions.Extension
     @invocations = 0
 
   apply: (request) ->
-    throw new cherry.extensions.ProcessingException
+    request.cancel()

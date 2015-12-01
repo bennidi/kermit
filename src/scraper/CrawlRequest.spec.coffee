@@ -32,4 +32,9 @@ describe  'Requests',  ->
       expect(someFile).not.to.be.null()
       expect(someFile.status()).to.equal(Status.INITIAL)
       expect(someFile.depth()).to.equal(1)
-    # TODO assertions
+
+    it '# can change its uri', ->
+      request = new CrawlRequest('localhost')
+      expect(request.url()).to.equal('localhost')
+      request.uri('wikipedia.org')
+      expect(request.url()).to.equal('wikipedia.org')
