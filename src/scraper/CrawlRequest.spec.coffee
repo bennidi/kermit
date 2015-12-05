@@ -13,8 +13,8 @@ describe  'Requests',  ->
 
     it '# should notify state listeners when changes occurr', ->
       receivedStatusChanges = []
-      TestRequest = new CrawlRequest('localhost').onChange 'status', (state) ->
-        receivedStatusChanges.push state.status
+      TestRequest = new CrawlRequest('localhost').onChange 'status', (request) ->
+        receivedStatusChanges.push request.status()
       TestRequest.status('STATE1')
       TestRequest.status('STATE2')
       TestRequest.status('STATE3')

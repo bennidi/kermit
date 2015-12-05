@@ -8,16 +8,18 @@ status =
   READY:'READY'
   FETCHING:'FETCHING'
   FETCHED:'FETCHED'
-  COMPLETE:'COMPLETE'
+  COMPLETE:'COMPLETED'
   ERROR:'ERROR'
   CANCELED:'CANCELED'
+  ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETED','ERROR','CANCELED']
 
 class CrawlRequest
 
   @Status = status
 
   notify = (request, property) ->
-    listener(request.state) for listener in listeners(request, property)
+    listener(request) for listener in listeners(request, property)
+    request
 
   listeners = (request, property) ->
     if !request.changeListeners[property]?
@@ -49,47 +51,56 @@ class CrawlRequest
 
   url: () -> @uri().toString()
 
-  
+  id: () -> @state.id
+
   # Change the status and call subscribed listeners
   status: (status) ->
     if status?
-      console.log "Changing status to #{status}"
+      console.log "#{@state.status}->#{status} [#{@id()}]"
       @state.status = status
       notify this, "status"
     else @state.status
 
+  onStatus: (state, callback) ->
+    @onChange 'status', (request) ->
+      callback(request) if request.status() is state
+
   spool: ->
-    if @state.status is status.INITIAL
-      @state.status = status.SPOOLED
-      notify this, "status"
+    if @isInitial()
+      @status(status.SPOOLED)
     else throw new Error "Transition from #{@state} to SPOOLED not allowed"
 
   ready: ->
-    if @state.status is status.SPOOLED
-      @state.status = status.READY
-      notify this, "status"
+    if @isSpooled()
+      @status(status.READY)
     else throw new Error "Transition from #{@state} to READY not allowed"
 
   fetching: ->
-    if @state.status is status.READY
-      @state.status = status.FETCHING
-      notify this, "status"
+    if @isReady()
+      @status(status.FETCHING)
     else throw new Error "Transition from #{@state} to FETCHING not allowed"
 
   fetched: (body, response) ->
-    if @state.status is status.FETCHING
+    if @isFetching()
       @body = body
       @respone = response
-      @state.status = status.FETCHED
-      notify this, "status"
+      @status(status.FETCHED)
     else throw new Error "Transition from #{@state} to FETCHED not allowed"
 
   complete: ->
-    if @state.status is status.FETCHED
-      @state.status = status.COMPLETE
-      notify this, "status"
+    if @isFetched()
+      @status(status.COMPLETE)
     else throw new Error "Transition from #{@state} to COMPLETE not allowed"
 
+  isInitial: () -> @state.status is status.INITIAL    
+  isSpooled: () -> @state.status is status.SPOOLED    
+  isReady: () -> @state.status is status.READY    
+  isFetching: () -> @state.status is status.FETCHING    
+  isFetched: () -> @state.status is status.FETCHED    
+  isCompleted: () -> @state.status is status.COMPLETE    
+  isCanceled: () -> @state.status is status.CANCELED    
+  isError: () -> @state.status is status.ERROR    
+      
   error: (error) ->
     @state.status = status.ERROR
     notify this, "status"

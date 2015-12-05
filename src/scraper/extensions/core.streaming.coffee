@@ -15,8 +15,8 @@ class RequestStreamer extends Extension
   apply: (crawlRequest) ->
     url = crawlRequest.uri().toString()
     console.log "Scheduled: #{url}"
-    crawlRequest.fetching()
     process.nextTick ->
+      crawlRequest.fetching()
       console.log "Fetching: #{url}"
       httpRequest url, (error, response, body) ->
         if not error and response.statusCode is 200

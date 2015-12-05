@@ -1,26 +1,33 @@
 {Status} = require '../CrawlRequest'
 {Extension, ExtensionDescriptor} = require '../Extension'
 
-# Filter requests newly created requests (state INITIAL) based on a variety of criteria.
-# Requests can be filtered by
-#  + their uri (whitelisting and blacklisting using regular expressions)
-#  + the level of nesting (depth)
+
+ByUrl = (pattern) ->
+  (request) ->
+    request.url().match pattern
+
+WithinDomain = (domain) ->
+  ByUrl new RegExp(".*#{domain}\..*", "g")
+
+MimeTypes =
+  CSS : ByUrl /.*\.css/g
+  JS : ByUrl /.*\.js/g
+  PDF : ByUrl /.*\.pdf/g
+AllUrls = ByUrl /.*/g
+Texts = {}
+
+# Filter newly created (=INITIAL) requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
   @defaultOpts =
-    preventDuplicates : true
-    whitelist : [/.*/g] # regex for allowed requests, none pass if empty
-    blacklist : [] # regex for disallowed requests, all pass if empty
-    maxDepth : 0 # no follow up requests allowed by default
+    allowDuplicates: false
+    allow : [ByUrl /.*/g] # allow all by default
+    deny : []
 
-  isBlacklisted = (url, blacklist) ->
-    blacklist.length > 0 and matches url, blacklist
-
-  isWhitelisted = (url, whitelist) ->
-    whitelist.length > 0 and matches url, whitelist
-
-  matches = (url, patterns) ->
-    true # TODO: add real implementation
+  match = (request, filters) ->
+    for filter in filters
+      return true if filter(request)
+    false
 
   constructor: (@opts = {} ) ->
     super new ExtensionDescriptor "RequestFilter", [Status.INITIAL]
@@ -31,20 +38,18 @@ class RequestFilter extends Extension
     @queue = context.queue
 
   apply: (request) ->
-    url = request.url()
-    if request.depth() > @opts.maxDepth
-      request.cancel("Maximum depth reached")
-    if not @isWhitelisted(url)
-      request.cancel("Not on whitelist")
-    if @isBlacklisted(url)
-      request.cancel("Blacklisted")
-    if @queue.contains(url)
+    if not match(request, @opts.allow) or match(request, @opts.deny)
+      request.cancel("Request filtered")
+    if @queue.contains(request.url()) and not @opts.allowDuplicates
       request.cancel("Duplicate")
 
-  isBlacklisted : (url) ->
-    isBlacklisted(url, @opts.blacklist)
 
-  isWhitelisted : (url) ->
-    isWhitelisted(url, @opts.whitelist)
 
-module.exports = RequestFilter
+module.exports = {
+  RequestFilter
+  ByUrl
+  MimeTypes
+  AllUrls
+  Texts
+  WithinDomain
+}

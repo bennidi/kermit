@@ -27,6 +27,7 @@ class Extension
   #
   initialize: (context) ->
     @context = context
+    #TODO: Initialize log from context
     if !context
       throw new Error "Initialization of an extension requires a context object"
 
@@ -35,6 +36,13 @@ class Extension
 
   targets: () ->
     @descriptor.extpoints
+
+  verify: () ->
+    if !@context
+      throw new Error "An extension requires a context object"
+
+  log: (msg) ->
+    console.log msg
 
 class ExtensionDescriptor
 

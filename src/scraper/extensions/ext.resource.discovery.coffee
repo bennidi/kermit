@@ -13,11 +13,8 @@ class ResourceDiscovery extends Extension
   # http://elijahmanor.com/regular-expressions-in-coffeescript-are-awesome/
   # https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings
   # http://stackoverflow.com/questions/1500260/detect-urls-in-text-with-javascript
-  @defaultOpts =
-    regex: [
-      # TODO: implement regex based filtering of discovered resources
-      # Or maybe filtering is only done in filter?!
-    ]
+  @defaultOpts = {}
+
 
 
   constructor: (@opts = ResourceDiscovery.defaultOpts) ->

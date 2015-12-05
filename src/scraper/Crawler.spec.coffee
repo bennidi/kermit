@@ -4,59 +4,58 @@ Status = cherry.requests.Status
 describe  'Crawler',  ->
   describe 'package', ->
 
-    it '# exports basic classes for construction of crawlers', ->
-      expect(cherry.Crawler).not.to.be.null()
-      expect(cherry.Extension).not.to.be.null()
-      expect(cherry.ExtensionInfo).not.to.be.null()
-
     it '# extensions are called for specific phases', (done)->
-      RequestCounter = new Counter
-      expect(RequestCounter).not.to.be.null()
-      SimpleCrawler = new cherry.Crawler extensions : [RequestCounter]
+      Recorder = new TransitionRecorder done
+      SimpleCrawler = new cherry.Crawler extensions : [Recorder]
       npmRequest = SimpleCrawler.enqueue("http://www.npmjs.com")
-      githubRequest = SimpleCrawler.enqueue("http://www.github.com")
-      expect(RequestCounter.invocations).to.equal(2)
-      expect(npmRequest.status()).to.equal(Status.SPOOLED)
-      expect(githubRequest.status()).to.equal(Status.SPOOLED)
-      process.nextTick () ->
-        expect(npmRequest.status()).to.equal(Status.FETCHING)
-        expect(githubRequest.status()).to.equal(Status.FETCHING)
-        done()
+      Recorder.validate(npmRequest, [Status.INITIAL,Status.SPOOLED, Status.READY, Status.FETCHING])
+
 
 
     it '# extensions can prevent a request from being processed', (done)->
+      Recorder = new TransitionRecorder done
       SimpleCrawler = new cherry.Crawler extensions : [new RejectingExtension]
       npmRequest = SimpleCrawler.enqueue("http://www.npm.com")
       githubRequest = SimpleCrawler.enqueue("http://www.github.com")
-      # Requests are canceled immediately
-      expect(npmRequest.status()).to.equal(Status.CANCELED)
-      expect(githubRequest.status()).to.equal(Status.CANCELED)
-      # And will not be further processed
-      process.nextTick () ->
-        expect(npmRequest.status()).to.equal(Status.CANCELED)
-        expect(githubRequest.status()).to.equal(Status.CANCELED)
-        done()
+      Recorder.validate(npmRequest, [Status.INITIAL,Status.CANCELED])
+      Recorder.validate(githubRequest, [Status.INITIAL,Status.CANCELED])
+
 
 
     it '# allows to schedule follow-up requests', (done) ->
+      Recorder = new TransitionRecorder done
       SimpleCrawler = new cherry.Crawler core : RequestFilter : maxDepth : 1
       npmRequest = SimpleCrawler.enqueue("http://www.npm.com")
       browserify = npmRequest.enqueue("package/browserify")
-      expect(npmRequest.status()).to.equal(Status.SPOOLED)
-      expect(browserify.status()).to.equal(Status.SPOOLED)
-      process.nextTick () ->
-        expect(npmRequest.status()).to.equal(Status.FETCHING)
-        expect(browserify.status()).to.equal(Status.FETCHING)
-        done()
+      Recorder.validate(npmRequest, [Status.INITIAL,Status.SPOOLED, Status.READY,
+                                     Status.FETCHING, Status.FETCHED, Status.COMPLETE])
+      Recorder.validate(browserify, [Status.INITIAL,Status.SPOOLED, Status.READY,
+                                        Status.FETCHING, Status.FETCHED, Status.COMPLETE])
 
-class Counter extends cherry.extensions.Extension
+class TransitionRecorder extends cherry.extensions.Extension
 
-  constructor: ->
-    super new cherry.extensions.ExtensionDescriptor "CallCounter", ["INITIAL"]
-    @invocations = 0
+  constructor: (@done)->
+    super new cherry.extensions.ExtensionDescriptor "TransitionRecorder", [Status.INITIAL]
+    @transitions = {}
+    @count = 0
+
+  getTransitions: (request) ->
+    if !@transitions[request.id()]
+      @transitions[request.id()] = [Status.INITIAL]
+    @transitions[request.id()]
+
+  propagateChange: (request) ->
+    @getTransitions(request).push request.status()
 
   apply: (request) ->
-    @invocations++
+    request.onStatus( status, (request) => @propagateChange(request)) for status in Status.ALL
+
+  validate: (request, expected) ->
+    @count++
+    lastState = expected[-1 + expected.length]
+    request.onStatus lastState, (request) =>
+      @done() if --@count is 0
+      expect(@getTransitions(request)).to.contain(expectedState) for expectedState in expected
 
 class RejectingExtension extends cherry.extensions.Extension
 

@@ -10,8 +10,8 @@ class ExtensionPointConnector extends Extension
 
   apply: (request) ->
     request.context = @context
-    request.onChange 'status', (state) ->
-      request.context.execute state.status, request
+    request.onChange 'status', (request) ->
+      request.context.execute request.status(), request
 
 # State transition CREATED -> SPOOLED
 class Spooler extends Extension
@@ -45,12 +45,22 @@ class RequestLookup extends Extension
     context.requests = @requests
 
   apply: (request) ->
-    @requests[request.state.id] = request
+    @requests[request.id()] = request
 
+
+# Run cleanup on all terminal states
+class Cleanup extends Extension
+
+  constructor: () ->
+    super(new ExtensionDescriptor "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR])
+
+  apply: (request) ->
+    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
 
 module.exports = {
   ExtensionPointConnector
   RequestLookup
   Spooler
   Completer
+  Cleanup
 }

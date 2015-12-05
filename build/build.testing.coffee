@@ -15,7 +15,7 @@ runSpecs = ->
   gulp.src ['./src/**/*.spec.coffee','./src/**/*.spec.es7' ], since: cache.lastMtime('code')
     .pipe cache 'code'
     .pipe mocha reporter:'spec'
-    .on('error', util.log)   
+    .on('error', util.log)
 runSpecs.description = "Run tests"
 gulp.task 'test:run', runSpecs 
 

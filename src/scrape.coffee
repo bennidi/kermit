@@ -3,6 +3,8 @@ Status = cherry.requests.Status
 {OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
 ResourceDiscovery = require './scraper/extensions/ext.resource.discovery.coffee'
 {Extension, ExtensionDescriptor} = require './scraper/Extension.coffee'
+{ByDomain, MimeTypes} = require './scraper/extensions/core.filter.coffee'
+
 
 class ResponseLogger extends Extension
 
@@ -15,9 +17,16 @@ class ResponseLogger extends Extension
 # opts: rateLimit, request depth
 Crawler = new cherry.Crawler
   extensions : [ new OfflineServer, new  ResourceDiscovery ]
-  core:
-    RequestFilter:
-      maxDepth : 4
+  options:
+    Filter:
+      allow : [
+        WithinDomain ""
+      ]
+      deny : [
+        (request) -> request.depth() > 1 and not WithinDomain("jimmycuadra")(request)
+      ]
+
+
 Crawler.enqueue("http://www.jimmycuadra.com/")
 
 setTimeout Crawler.shutdown, 60000

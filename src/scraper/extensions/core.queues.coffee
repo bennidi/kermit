@@ -9,7 +9,10 @@ RateLimiter = require('limiter').RateLimiter
 # are propagated to the queuing system automatically.
 class QueueConnector extends Extension
 
-  constructor: () ->
+  @defaultOpts =
+    dbfile : "crawler.json"
+
+  constructor: (@opts = {}) ->
     super new ExtensionDescriptor "Queue Connector", [Status.INITIAL]
 
   # Create a queue system and re-expose in context

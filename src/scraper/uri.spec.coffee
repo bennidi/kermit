@@ -9,8 +9,7 @@ extractLinks = (html) ->
       ]
       links: ['a',
         'href':  ($link) -> $link.attr 'href'
-      ]).done (results) ->
-          console.log JSON.stringify results
+      ])
 
 describe  'Handling of URIs',  ->
   describe 'with library urijs', ->

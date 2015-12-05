@@ -38,8 +38,8 @@ class QueueManager
 
   trace: (request) ->
     @requests.insert request.state
-    request.onChange 'status', (state) =>
-      @requests.update(state)
+    request.onChange 'status', (request) =>
+      @requests.update(request.state)
 
 module.exports = {
   QueueManager
