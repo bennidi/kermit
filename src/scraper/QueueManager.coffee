@@ -21,20 +21,27 @@ class QueueManager
       request.status is Status.SPOOLED
     #spooled.applySimpleSort('tsLastModified', true);
 
+  update: (request) ->
+    @requests.update(request.state)
 
   # check for any request with the given url
-  contains: (url) -> false
+  contains: (url) ->
+    byUrl = @requests.find('$and': [
+      {'url' : url},
+      {'status' : {"$in": ["SPOOLED", "FETCHING", "FETCHED", "COMPLETED"]}}
+    ])
+    byUrl.length > 0
 
   # Determines whether there are unfetched requests remaining
   requestsRemaining: ->
-    remaining = @created().length + @spooled().length
+    remaining = @created().length + @requests.getDynamicView('spooled').data().length
     remaining > 0
 
   created: () ->
     @requests.getDynamicView('created').data()
 
   spooled: () ->
-    @requests.getDynamicView('spooled').data()
+    @requests.getDynamicView('spooled').branchResultset().simplesort('tsSpooled', true).limit(20).data()
 
   trace: (request) ->
     @requests.insert request.state

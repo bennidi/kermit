@@ -46,3 +46,4 @@ Resources
   + https://www.npmjs.com/package/raml-mocker
   + https://www.npmjs.com/package/apidoc-swagger
   + https://www.npmjs.com/package/hapi-swagger
+  http://jrhicks.github.io/replicate_architecture_ideas_for_react_flux_apps/index.html

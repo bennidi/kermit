@@ -13,17 +13,22 @@ class ResourceDiscovery extends Extension
   # http://elijahmanor.com/regular-expressions-in-coffeescript-are-awesome/
   # https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings
   # http://stackoverflow.com/questions/1500260/detect-urls-in-text-with-javascript
-  @defaultOpts = {}
+  @defaultOpts =
+    links : true
+    anchors: true
+    scripts: true # TODO: implement discovery
+    images : true # TODO: implement discovery
 
 
 
   constructor: (@opts = ResourceDiscovery.defaultOpts) ->
     super new ExtensionDescriptor "ResourceDiscovery", [Status.FETCHED]
+    @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
 
   apply: (request) ->
     extractLinks request.body, (results) ->
-      resources = _.reject (cleanUrl(request.uri(), url.href) for url in results.filter.resources), _.isEmpty
-      links = _.reject (cleanUrl(request.uri(), url.href) for url in results.filter.links), _.isEmpty
+      resources = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.resources), _.isEmpty
+      links = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.links), _.isEmpty
       request.enqueue url for url in resources
       request.enqueue url for url in links
 
@@ -49,8 +54,8 @@ class ResourceDiscovery extends Extension
       # Drop in-page anchors, i.e. #info
       cleaned = "" if url.startsWith "#"
     else
-      console.log "URL was null"
+      @log "error", "URL was null"
       cleaned = ""
     cleaned
 
-module.exports = ResourceDiscovery
+module.exports = {ResourceDiscovery}

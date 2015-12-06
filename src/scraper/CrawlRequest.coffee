@@ -32,38 +32,41 @@ class CrawlRequest
     id.substr 0, length
 
   constructor: (url, context, depth = 0) ->
+    @_uri = URI(url)
     @state =
-      uri:  URI(url)
-      tsLastModified: new Date
+      url:  @_uri.toString()
+      tsLastModified: new Date().getTime()
       status: status.INITIAL
       id : uniqueId(20)
       depth : depth
     @changeListeners = {}
     @context = context
 
+
   onChange: (property, handler) ->
     listeners(this, property).push handler; this
 
   uri: (uri) ->
     if uri
-      @state.uri = URI(uri)
-    @state.uri
+      @_uri = URI(uri)
+      @state.url = @_uri.toString()
+    @_uri
 
-  url: () -> @uri().toString()
+  url: () -> @state.url
 
   id: () -> @state.id
 
   # Change the status and call subscribed listeners
   status: (status) ->
     if status?
-      console.log "#{@state.status}->#{status} [#{@id()}]"
+      @context.logger.debug "#{@state.status}->#{status} [#{@url()}]"
       @state.status = status
       notify this, "status"
     else @state.status
 
-  onStatus: (state, callback) ->
+  onStatus: (status, callback) ->
     @onChange 'status', (request) ->
-      callback(request) if request.status() is state
+      callback(request) if request.status() is status
 
   spool: ->
     if @isInitial()
@@ -106,6 +109,7 @@ class CrawlRequest
     notify this, "status"
 
   cancel: (reason) ->
+    @context.logger.info "CANCELED: #{reason}"
     @state.status = status.CANCELED
     notify this, "status"
 
@@ -113,7 +117,7 @@ class CrawlRequest
     @state.status is status.CANCELED
     
   enqueue: (url) ->
-    console.log "Subrequest to #{url}"
+    @context.logger.info "Subrequest to #{url}"
     @context.execute status.INITIAL, @subrequest url
 
   subrequest: (url) ->

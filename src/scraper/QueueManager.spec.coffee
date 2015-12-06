@@ -1,5 +1,6 @@
 {CrawlRequest} = require('./CrawlRequest')
 Queue = require('./QueueManager').QueueManager
+{MockContext} = require './util/testutils.coffee'
 
 describe  'QueueManager',  ->
   describe 'manages requests in different states', ->
@@ -14,7 +15,7 @@ describe  'QueueManager',  ->
 
     it '# can enrich requests for state tracing', ->
       QueueManager = new Queue
-      TestRequest = new CrawlRequest 'www.npmjs.com'
+      TestRequest = new CrawlRequest 'www.npmjs.com', new MockContext
       QueueManager.trace TestRequest
       expect(QueueManager.created().length).to.equal(1)
       expect(QueueManager.spooled().length).to.equal(0)

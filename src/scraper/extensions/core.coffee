@@ -20,6 +20,7 @@ class Spooler extends Extension
     super new ExtensionDescriptor "Spooler", [Status.INITIAL]
 
   apply: (request) ->
+    request["tsLastSpool"] = new Date().getTime()
     request.spool()
 
 # State transition FETCHED -> COMPLETED
@@ -31,7 +32,7 @@ class Completer extends Extension
   apply: (request) ->
     request.complete()
 
-# Add capability to lookup a request object by id.
+# Add capability to lookup a request object by its id.
 # This is necessary to find the living request object for a given persistent state
 # because lokijs does not store the entire JavaScript object
 class RequestLookup extends Extension
@@ -42,7 +43,7 @@ class RequestLookup extends Extension
   initialize: (context) ->
     super context
     @requests = {}
-    context.requests = @requests
+    context.share "requests", @requests
 
   apply: (request) ->
     @requests[request.id()] = request
@@ -50,6 +51,9 @@ class RequestLookup extends Extension
 
 # Run cleanup on all terminal states
 class Cleanup extends Extension
+
+  @defaultOpts =
+    queue: true #TODO: implement removal from storage
 
   constructor: () ->
     super(new ExtensionDescriptor "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR])

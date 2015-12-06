@@ -38,7 +38,8 @@
     "simplecrawler": "^0.5.4",
     "tough-cookie": "^2.2.1",
     "urijs": "^1.17.0",
-    "valid-url": "^1.0.9"
+    "valid-url": "^1.0.9",
+    "winston": "^2.1.1"
   },
   "scripts": {
     "test": "gulp test:run"

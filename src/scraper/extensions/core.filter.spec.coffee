@@ -1,13 +1,6 @@
 {RequestFilter, ByUrl, WithinDomain, MimeTypes} = require './core.filter.coffee'
 {CrawlRequest} = require '../CrawlRequest.coffee'
-
-dummyContext = {
-  execute: (state, request) -> request
-  queue: contains: () -> false
-  crawler : {
-    enqueue: (request) -> request
-  }
-}
+{MockContext} =  require '../util/testutils.coffee'
 
 describe  'Request filter',  ->
   describe 'is used for flexible filtering of requests', ->
@@ -20,16 +13,16 @@ describe  'Request filter',  ->
           MimeTypes.CSS,
           (request) -> request.depth() >= 1 and not WithinDomain("shouldBeAllowed")(request)
         ]
-      filter.initialize(dummyContext)
+      filter.initialize(new MockContext)
 
-      shouldBeAllowed = new CrawlRequest "www.shouldBeAllowed.org/some/path/with?query=true", dummyContext
+      shouldBeAllowed = new CrawlRequest "www.shouldBeAllowed.org/some/path/with?query=true", new MockContext
       allowed = [
         shouldBeAllowed,
         shouldBeAllowed.enqueue "www.shouldBeAllowed.org/some/other/path/with?query=true"
       ]
       denied = [
-        new CrawlRequest "www.shouldBeDenied.org/some/path/with?query=true",
-        new CrawlRequest "www.shouldBeDenied.org/some/path/denied.css",
+        new CrawlRequest "www.shouldBeDenied.org/some/path/with?query=true", new MockContext
+        new CrawlRequest "www.shouldBeDenied.org/some/path/denied.css", new MockContext
         shouldBeAllowed.enqueue "www.oneLevel.org/some/path/with?query=true"
       ]
 

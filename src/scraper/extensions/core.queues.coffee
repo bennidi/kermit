@@ -19,7 +19,7 @@ class QueueConnector extends Extension
   initialize: (context) ->
     super context
     @queue = new storage.QueueManager
-    context.queue = @queue
+    context.share "queue", @queue
 
   # Enrich each request with methods that propagate its
   # state transitions to the queue system
@@ -30,11 +30,18 @@ class QueueConnector extends Extension
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
+  @defaultOpts =
+    limits : [
+        domain : ".*"
+        to : 5
+        per : 'second'
+    ]
+
   # https://www.npmjs.com/package/simple-rate-limiter
-  constructor: () ->
+  constructor: (@opts = QueueWorker.defaultOpts) ->
     super new ExtensionDescriptor "Queue Worker", [Status.SPOOLED]
     # 'second', 'minute', 'day', or a number of milliseconds
-    @limiter = new RateLimiter  10 , 'second' # TODO: implement limit per domain
+    @limits = new RateLimits @opts.limits
 
   initialize: (context) ->
     super context
@@ -45,9 +52,11 @@ class QueueWorker extends Extension
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
     for request in @queue.spooled()
-      if @limitReached()
-        break
-      else @requests[request.id].ready()
+      if @limits.isAllowed request.url
+        @requests[request.id].ready()
+      else
+        request["tsLastSpool"] = new Date().getTime()
+        @queue.update request
     # Schedule next processing to keep QueueWorker running
     # Otherwise last requests might hang in queue forever
     setTimeout @processRequests, 500 if @queue.requestsRemaining()
@@ -59,6 +68,17 @@ class QueueWorker extends Extension
   limitReached: () ->
     !@limiter.tryRemoveTokens(1)
 
+
+class RateLimits
+
+  constructor: (limits =[]) ->
+    @limits = ({ pattern : new RegExp(limit.domain,"g"), limiter: new RateLimiter  limit.to , limit.per} for limit in limits)
+
+  isAllowed : (url) ->
+    for limit in @limits
+      if url.match limit.pattern and not limit.limiter.tryRemoveTokens 1
+        return false
+    true
 
 # Export a function to create the core plugin with default extensions
 module.exports = {

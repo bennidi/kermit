@@ -1,19 +1,21 @@
 {CrawlRequest, Status} = require('./CrawlRequest')
+{MockContext} = require('./util/testutils.coffee')
 Queue = require('./QueueManager')
 
 describe  'Requests',  ->
   describe 'have a lifecycle reflected as a transitions of states', ->
 
+
     it '# is in state INITIAL when newly instantiated', ->
       expect(CrawlRequest).not.to.be.null()
-      TestRequest = new CrawlRequest 'localhost'
+      TestRequest = new CrawlRequest 'localhost', new MockContext
       expect(TestRequest).not.to.be.null()
       expect(TestRequest.status()).to.equal(Status.INITIAL)
       expect(TestRequest.depth()).to.equal(0)
 
     it '# should notify state listeners when changes occurr', ->
       receivedStatusChanges = []
-      TestRequest = new CrawlRequest('localhost').onChange 'status', (request) ->
+      TestRequest = new CrawlRequest('localhost', new MockContext).onChange 'status', (request) ->
         receivedStatusChanges.push request.status()
       TestRequest.status('STATE1')
       TestRequest.status('STATE2')
@@ -27,14 +29,14 @@ describe  'Requests',  ->
 
 
     it '# can create follow up requests', ->
-      request = new CrawlRequest('localhost')
+      request = new CrawlRequest('localhost', new MockContext)
       someFile = request.subrequest('some/file.txt')
       expect(someFile).not.to.be.null()
       expect(someFile.status()).to.equal(Status.INITIAL)
       expect(someFile.depth()).to.equal(1)
 
     it '# can change its uri', ->
-      request = new CrawlRequest('localhost')
+      request = new CrawlRequest('localhost', new MockContext)
       expect(request.url()).to.equal('localhost')
       request.uri('wikipedia.org')
       expect(request.url()).to.equal('wikipedia.org')

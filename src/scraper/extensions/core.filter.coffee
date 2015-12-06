@@ -20,7 +20,6 @@ Texts = {}
 class RequestFilter extends Extension
 
   @defaultOpts =
-    allowDuplicates: false
     allow : [ByUrl /.*/g] # allow all by default
     deny : []
 
@@ -33,19 +32,34 @@ class RequestFilter extends Extension
     super new ExtensionDescriptor "RequestFilter", [Status.INITIAL]
     @opts = @constructor.mergeOptions RequestFilter.defaultOpts, @opts
 
+  apply: (request) ->
+    if not match(request, @opts.allow)
+      return request.cancel("#{request.url()} not on whitelist")
+    if match(request, @opts.deny)
+      return request.cancel("#{request.url()} on blacklist")
+
+
+# Filter newly created (=INITIAL) requests based on a flexible set of filter functions.
+class DuplicatesFilter extends Extension
+
+  @defaultOpts =
+    allowDuplicates: false
+
+  constructor: (@opts = {} ) ->
+    super new ExtensionDescriptor "DuplicatesFilter", [Status.INITIAL]
+    @opts = @constructor.mergeOptions DuplicatesFilter.defaultOpts, @opts
+
   initialize: (context) ->
     super context
     @queue = context.queue
 
   apply: (request) ->
-    if not match(request, @opts.allow) or match(request, @opts.deny)
-      request.cancel("Request filtered")
-    if @queue.contains(request.url()) and not @opts.allowDuplicates
+    @log "info", "Duplicate request #{request.url()}"
+    if @queue.contains(request.url())
       request.cancel("Duplicate")
 
-
-
 module.exports = {
+  DuplicatesFilter
   RequestFilter
   ByUrl
   MimeTypes

@@ -37,12 +37,16 @@ class Extension
   targets: () ->
     @descriptor.extpoints
 
+  name : () -> @descriptor.name
+
   verify: () ->
     if !@context
       throw new Error "An extension requires a context object"
 
-  log: (msg) ->
-    console.log msg
+  log: (level, msg) ->
+    @context.logger.log level, msg, {extension:@name()}
+
+  logger : () -> @context.logger
 
 class ExtensionDescriptor
 
