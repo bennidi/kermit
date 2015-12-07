@@ -168,9 +168,9 @@ class Crawler
     extensions: []
     # Options of each core extension can be customized
     options:
-      Queue : Extension.mergeOptions QueueWorker.defaultOpts, QueueConnector.defaultOpts
-      Streamer : RequestStreamer.defaultOpts
-      Filter : RequestFilter.defaultOpts
+      Queue : {}
+      Streamer : {}
+      Filter : {}
       Logging :
         transports: [
           new (winston.transports.Console)(
@@ -178,22 +178,23 @@ class Crawler
           ),
           new (winston.transports.File)(
             name: 'info-log'
-            filename: 'info.log'
+            filename: '/tmp/sloth/logs/info.log'
             level: 'info'
             json : true
           ),
           new (winston.transports.File)(
             name: 'error-log'
-            filename: 'error.log'
-            handleExceptions: true
+            filename: '/tmp/sloth/logs/error.log'
+            #handleExceptions: true
             humanReadableUnhandledException: true
             level: 'error'
             json : true
           )]
 
-  constructor: (@config = {}) ->
+  constructor: (config = {}) ->
     # Use default options where no user defined options are given
-    @config = Extension.mergeOptions Crawler.defaultOpts, @config
+    @config = Extension.mergeOptions Crawler.defaultOpts, config
+    #console.log JSON.stringify @config
     @extpoints = {}
     @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in Crawler.extensionPoints
     @context = new CrawlerContext
@@ -210,6 +211,7 @@ class Crawler
     addExtension this, new DuplicatesFilter
     addExtension this, new RequestStreamer @config.options.Streamer
     # Add client extensions
+    @context.logger.info "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
     addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     addExtension this, new Spooler

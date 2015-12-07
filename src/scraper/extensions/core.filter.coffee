@@ -28,9 +28,9 @@ class RequestFilter extends Extension
       return true if filter(request)
     false
 
-  constructor: (@opts = {} ) ->
+  constructor: (opts = {} ) ->
     super new ExtensionDescriptor "RequestFilter", [Status.INITIAL]
-    @opts = @constructor.mergeOptions RequestFilter.defaultOpts, @opts
+    @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
 
   apply: (request) ->
     if not match(request, @opts.allow)
@@ -45,16 +45,15 @@ class DuplicatesFilter extends Extension
   @defaultOpts =
     allowDuplicates: false
 
-  constructor: (@opts = {} ) ->
+  constructor: (opts = {} ) ->
     super new ExtensionDescriptor "DuplicatesFilter", [Status.INITIAL]
-    @opts = @constructor.mergeOptions DuplicatesFilter.defaultOpts, @opts
+    @opts = Extension.mergeOptions DuplicatesFilter.defaultOpts, opts
 
   initialize: (context) ->
     super context
     @queue = context.queue
 
   apply: (request) ->
-    @log "info", "Duplicate request #{request.url()}"
     if @queue.contains(request.url())
       request.cancel("Duplicate")
 

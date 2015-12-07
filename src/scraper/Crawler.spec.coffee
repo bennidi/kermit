@@ -5,6 +5,17 @@ cherry = require './cherry.modules'
 describe  'Crawler',  ->
   describe 'package', ->
 
+    it '# can be instantiated without any options', ()->
+      SimpleCrawler = new cherry.Crawler
+      expect(SimpleCrawler).to.be.a(cherry.Crawler)
+
+    it '# can be instantiated with options for specific extensions', ()->
+      SimpleCrawler = new cherry.Crawler
+        options :
+          Streamer:
+            userAgent : "Custom user agent"
+      expect(SimpleCrawler).to.be.a(cherry.Crawler)
+
     it '# extensions are called for specific phases', (done)->
       Recorder = new TransitionRecorder done
       Recorder.validate("http://www.google.com/", [Status.INITIAL,Status.SPOOLED, Status.READY,
@@ -28,7 +39,8 @@ describe  'Crawler',  ->
         Status.FETCHING, Status.FETCHED, Status.COMPLETE])
       Recorder.validate("http://www.wikipedia.org/", [Status.INITIAL,Status.SPOOLED, Status.READY,
         Status.FETCHING, Status.FETCHED, Status.COMPLETE])
-      SimpleCrawler = new cherry.Crawler  extensions : [Recorder]
+      SimpleCrawler = new cherry.Crawler
+          extensions : [Recorder]
       SimpleCrawler.enqueue("http://www.google.com/").enqueue("http://www.wikipedia.org/")
 
 

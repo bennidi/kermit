@@ -1,27 +1,43 @@
-cherry = require './cherry.modules'
+{Extension, ExtensionDescriptor} = require './Extension.coffee'
 
 describe  'Extension',  ->
   describe 'Extending an extension', ->
 
     it '# requires a valid descriptor', ->
-      class SimpleExtension extends cherry.extensions.Extension
+      class SimpleExtension extends Extension
 
         constructor: () ->
-          super new cherry.extensions.ExtensionDescriptor "Phase", "This is a simple extension that does nothing"
+          super new ExtensionDescriptor "Phase", "This is a simple extension that does nothing"
 
       simpleExt = new SimpleExtension
       expect(simpleExt).not.to.be.null()
       expect(simpleExt).to.be.a(SimpleExtension)
-      expect(simpleExt).to.be.a(cherry.extensions.Extension)
+      expect(simpleExt).to.be.a(Extension)
       expect(simpleExt).not.to.be.a(Function)
 
     it '# fails when no descriptor is provided', ->
-      class ExtensionWithoutDescriptor extends cherry.extensions.Extension
+      class ExtensionWithoutDescriptor extends Extension
 
       try
         brokenExt = new ExtensionWithoutDescriptor
         expect(false).to.be.true() # this code should not be reached
       catch error
 
+    it '# can merge options', ->
+      baseOpts = # Clients can add extensions
+        extensions: []
+        # Options of each core extension can be customized
+        options:
+          Filter :
+            duplicates : "allow"
+          Logging :
+            transports: [
+                "transport one", "transport two"
+              ]
+
+      merged = Extension.mergeOptions baseOpts, {}
+      expect(merged.extensions).to.be.empty()
+      expect(merged.options.Filter.duplicates).to.equal("allow")
+      expect(merged.options.Logging.transports[0]).to.equal("transport one")
 
 

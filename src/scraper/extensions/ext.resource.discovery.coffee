@@ -26,7 +26,7 @@ class ResourceDiscovery extends Extension
     @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
 
   apply: (request) ->
-    extractLinks request.body, (results) ->
+    extractLinks request.body, (results) =>
       resources = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.resources), _.isEmpty
       links = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.links), _.isEmpty
       request.enqueue url for url in resources

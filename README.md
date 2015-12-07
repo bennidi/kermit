@@ -22,13 +22,11 @@ Tutorial
 TODO
 ====
 
-  + Better load distribution: Run context.execute() at process.nextTick --> Affects test design
-  + Options
-  	Merge options in extension constructor. Expects super to be called --> verify
-    + Resource Discovery
-    + Queue System: lokijs options (storage file, max queue size)
-    + Resource Discovery
-    + Resource Discovery
+  + Verify correctness of rate limits
+  + Select QueueWorker callback interval and batch size (options)
+  + Introduce common basedir as Crawler option, create and ensure that sub folders (for logs) exist
+  + optimize log levels
+  + Handle Request timeouts and 404
     
     
     

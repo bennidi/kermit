@@ -1,11 +1,10 @@
+merge = require 'merge'
+
 # An extension adds some functionality to a specific extension point of the crawler.
 class Extension
 
-  tap = (o, fn) -> fn(o); o
-
-  @mergeOptions : (xs...) ->
-    if xs?.length > 0
-      tap {}, (m) -> m[k] = v for k, v of x for x in xs
+  @mergeOptions : (a,b) ->
+    merge.recursive a,b
 
   @defaultOpts = {}
 

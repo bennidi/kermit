@@ -10,6 +10,7 @@ class TransitionRecorder extends Extension
 
   apply: (request) ->
     @expected[request.url()] = @expected[request.url()].filter (status) -> status isnt request.status()
+    @log "info", @expected[request.url()]
     expect(@expected[request.url()]).not.contain(request.status())
     @requests-- if @expected[request.url()].length is 0
     if @requests is 0

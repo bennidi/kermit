@@ -59,7 +59,7 @@ class CrawlRequest
   # Change the status and call subscribed listeners
   status: (status) ->
     if status?
-      @context.logger.debug "#{@state.status}->#{status} [#{@url()}]"
+      @context.logger.info "#{@state.status}->#{status} [#{@url()}]"
       @state.status = status
       notify this, "status"
     else @state.status

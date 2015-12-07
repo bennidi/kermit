@@ -60,6 +60,8 @@ class Cleanup extends Extension
 
   apply: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
+    @context.queue.completed(request)
+
 
 module.exports = {
   ExtensionPointConnector
