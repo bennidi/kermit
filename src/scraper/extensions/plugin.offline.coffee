@@ -21,7 +21,7 @@ class OfflineStorage extends Extension
   apply: (request) ->
     # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
     path = toLocalPath @basedir , request.uri()
-    @log "info", "Storing #{request.body.length} bytes to #{path}"
+    @log "verbose", "Storing #{request.body.length} bytes to #{path}"
     fs.outputFileSync path, request.body
 
 

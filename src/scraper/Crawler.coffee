@@ -10,14 +10,14 @@ winston = require 'winston'
 callExtensions = (extensions, request, context)->
   for extension in extensions
     try
-      # An extension may modify the request
-      # console.info "Executing #{extension.descriptor.name}"
+# An extension may modify the request
+# console.info "Executing #{extension.descriptor.name}"
       if request.isCanceled()
         return false
       else
         extension.apply(request)
     catch error
-      context.logger.error "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
+      context.log 'err', "Error in extension #{extension.descriptor.name}"
       request.error(error)
       return false
   true
@@ -43,7 +43,7 @@ class ExtensionPoint
       try
         extension.shutdown?()
       catch error
-        @context.logger.error "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
+        @context.log "err", "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
 
   apply: (request) ->
     @beforeApply?(request) # Hook for sub-classes to add pre-processing
@@ -114,12 +114,14 @@ class CrawlerContext
     @logger = config.logger
     @config = config.crawler.config
 
-  fork : () ->
+  fork: () ->
     child = Object.create this
     child.share = (property, value) =>
       @[property] = value
     child
 
+  log: (level, msg, meta) ->
+    @logger.log level, msg, meta
 
 # TODO: DOC
 class Crawler
@@ -149,7 +151,7 @@ class Crawler
   addPlugins = (crawler, context, plugins...) ->
     (addExtension crawler, extension, context for extension in plugin.extensions) for plugin in plugins
 
-  addExtension =    (crawler, extension) ->
+  addExtension = (crawler, extension) ->
     extpoint(crawler, point).addExtension(extension) for point in extension.targets()
 
   extpoint = (crawler, phase) ->
@@ -162,46 +164,80 @@ class Crawler
       extpoint(crawler, phase).apply request
     request
 
+  # Custom log levels for winston
+  LogLevels =
+    levels:
+      trace  : 0 # All information necessary to trace request flow
+      err  : 1 #
+      warn   : 2
+      info   : 3
+      verbose: 4
+      debug  : 5
+    colors:
+      trace  : 'blue'
+      err  : 'red'
+      warn   : 'yellow'
+      info   : 'green'
+      verbose: 'grey'
+      debug  : 'black'
+
   defaultTransports = (basedir) ->
     [
       new (winston.transports.Console)(
         colorize: true
+        level   : 'verbose'
       ),
       new (winston.transports.File)(
-        name: 'info-log'
+        name    : 'info-log'
         filename: "#{basedir}/logs/info.log"
-        level: 'info'
-        json : true
+        level   : 'info'
+        json    : false
       ),
       new (winston.transports.File)(
-        name: 'error-log'
+        name      : 'request-trace'
+        filename  : "#{basedir}/logs/trace.log"
+        level     : 'trace'
+        json      : false
+        maxfiles  : 5
+        maxsize   : 10485760
+      )
+      new (winston.transports.File)(
+        name    : 'error-log'
         filename: "#{basedir}/logs/error.log"
-        handleExceptions: true
-        humanReadableUnhandledException: true
-        level: 'error'
-        json : true
+        level   : 'err'
+        json    : true
+      ),
+      new (winston.transports.File)(
+        name                           : 'full-log'
+        filename                       : "#{basedir}/logs/full.log"
+        json                           : true
+        level                          : 'debug'
       )]
 
-  buildLog = (sharedTransports) ->
+  buildLog = (sharedTransports, basedir) ->
+    winston.addColors LogLevels.colors
     new (winston.Logger)({
-      transports: sharedTransports})
+      transports: sharedTransports
+      levels    : LogLevels.levels
+    })
 
   @defaultOpts =
-    name : "kermit"
-    basedir : "/tmp/sloth"
-    # Clients can add extensions
+    name      : "kermit"
+    basedir   : "/tmp/sloth"
+# Clients can add extensions
     extensions: []
-    # Options of each core extension can be customized here
-    options:
-      Queue : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streamer : {} # Options for the [Streamer]
-      Filter : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+# Options of each core extension can be customized here
+    options   :
+      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streamer: {} # Options for the [Streamer]
+      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
       Logging :
-        transports : []
+        transports     : []
+        ConsoleLogLevel: "verbose"
 
   constructor: (config = {}) ->
-    # Build and verify (TODO) options
-    # Use default options where no user defined options are given
+# Build and verify (TODO) options
+# Use default options where no user defined options are given
     @config = Extension.mergeOptions Crawler.defaultOpts, config
     if @config.options.Logging.transports.length is 0
       @config.options.Logging.transports = defaultTransports @basePath()
@@ -211,10 +247,10 @@ class Crawler
     @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in Crawler.extensionPoints
     # Create the root context of this crawler
     @context = new CrawlerContext
-        crawler: this
-        execute: (phase, request) =>
-          execute(@, phase, request)
-        logger: buildLog @config.options.Logging.transports
+      crawler: this
+      execute: (phase, request) =>
+        execute(@, phase, request)
+      logger : buildLog @config.options.Logging.transports, @basePath()
     # Core extensions that need to run BEFORE user extensions
     addExtension this, new RequestFilter @config.options.Filter
     addExtension this, new ExtensionPointConnector
@@ -224,7 +260,7 @@ class Crawler
     addExtension this, new DuplicatesFilter
     addExtension this, new RequestStreamer @config.options.Streamer
     # Add client extensions
-    @context.logger.info "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
+    @context.logger.log "verbose", "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
     addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     addExtension this, new Spooler
@@ -235,19 +271,18 @@ class Crawler
 
   basePath: () -> "#{@config.basedir}/#{@config.name}"
 
-  # Call shutdown method on all ExtensionPoint
+# Call shutdown method on all ExtensionPoint
   shutdown: () ->
+    @context.log 'info', 'Received shutdown signal'
     extpoint(this, phase).shutdown() for phase of @extpoints
 
-  # Create a new request and start its processing
+# Create a new request and start its processing
   enqueue: (url) ->
     request = new CrawlRequest url, @context
     execute @, INITIAL.phase, request
 
   toString: () ->
     "Crawler: " # TODO: List extension points and content
-
-
 
 module.exports = {
   Crawler

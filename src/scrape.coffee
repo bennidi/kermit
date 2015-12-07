@@ -1,21 +1,12 @@
-cherry = require './scraper/cherry.modules'
-Status = cherry.requests.Status
+sloth = require './scraper/cherry.modules'
+{Status} = require './scraper/CrawlRequest.coffee'
 {OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
 {ResourceDiscovery} = require './scraper/extensions/ext.resource.discovery.coffee'
 {Extension, ExtensionDescriptor} = require './scraper/Extension.coffee'
 {WithinDomain, MimeTypes} = require './scraper/extensions/core.filter.coffee'
 
-
-class ResponseLogger extends Extension
-
-  constructor: () ->
-    super new ExtensionDescriptor 'Logger', ['COMPLETED'], "Blubb"
-
-  apply: (request) ->
-    console.log request.body.substring(200)
-
 # opts: rateLimit, request depth
-Crawler = new cherry.Crawler
+Crawler = new sloth.Crawler
   name: "testicle"
   extensions : [
     new OfflineStorage
@@ -26,18 +17,18 @@ Crawler = new cherry.Crawler
   options:
     Queue:
       limits : [
-        domain : ".*jimmycuadra.com.*",
+        domain : ".*stackoverflow.com.*",
         to : 5,
         per : 'second'
       ]
     Filter:
       allow : [
-        WithinDomain "jimmycuadra"
+        WithinDomain "stackoverflow"
       ]
       deny : [
-        (request) -> request.depth() > 1 and not WithinDomain("jimmycuadra")(request)
+        (request) -> request.depth() > 1 and not WithinDomain("stackoverflow")(request)
       ]
 
-Crawler.enqueue("http://www.jimmycuadra.com/")
+Crawler.enqueue("http://stackoverflow.com/questions/20931089/winston-understanding-logging-levels")
 
-setTimeout Crawler.shutdown, 60000
+

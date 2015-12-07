@@ -59,7 +59,7 @@ class CrawlRequest
   # Change the status and call subscribed listeners
   status: (status) ->
     if status?
-      @context.logger.info "#{@state.status}->#{status} [#{@url()}]"
+      @context.logger.log "trace", "#{@state.status}->#{status} [#{@url()}]"
       @state.status = status
       notify this, "status"
     else @state.status
@@ -109,7 +109,6 @@ class CrawlRequest
     notify this, "status"
 
   cancel: (reason) ->
-    @context.logger.info "CANCELED: #{reason}"
     @state.status = status.CANCELED
     notify this, "status"
 
@@ -117,7 +116,6 @@ class CrawlRequest
     @state.status is status.CANCELED
     
   enqueue: (url) ->
-    @context.logger.info "Subrequest to #{url}"
     @context.execute status.INITIAL, @subrequest url
 
   subrequest: (url) ->
