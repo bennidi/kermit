@@ -16,8 +16,10 @@ class ResponseLogger extends Extension
 
 # opts: rateLimit, request depth
 Crawler = new cherry.Crawler
+  name: "testicle"
   extensions : [
-    new OfflineStorage,
+    new OfflineStorage
+      basedir : ""
     new  ResourceDiscovery
       scripts:false
       links:false]

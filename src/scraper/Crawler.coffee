@@ -112,6 +112,7 @@ class CrawlerContext
     @crawler = config.crawler
     @execute = config.execute
     @logger = config.logger
+    @config = config.crawler.config
 
   fork : () ->
     child = Object.create this
@@ -140,6 +141,8 @@ class Crawler
     CANCELED
   ]
 
+  fs = require 'fs-extra'
+
   addExtensions = (crawler, extensions = []) ->
     addExtension crawler, extension for extension in extensions
 
@@ -159,44 +162,54 @@ class Crawler
       extpoint(crawler, phase).apply request
     request
 
+  defaultTransports = (basedir) ->
+    [
+      new (winston.transports.Console)(
+        colorize: true
+      ),
+      new (winston.transports.File)(
+        name: 'info-log'
+        filename: "#{basedir}/logs/info.log"
+        level: 'info'
+        json : true
+      ),
+      new (winston.transports.File)(
+        name: 'error-log'
+        filename: "#{basedir}/logs/error.log"
+        handleExceptions: true
+        humanReadableUnhandledException: true
+        level: 'error'
+        json : true
+      )]
+
   buildLog = (sharedTransports) ->
     new (winston.Logger)({
       transports: sharedTransports})
 
   @defaultOpts =
+    name : "kermit"
+    basedir : "/tmp/sloth"
     # Clients can add extensions
     extensions: []
-    # Options of each core extension can be customized
+    # Options of each core extension can be customized here
     options:
-      Queue : {}
-      Streamer : {}
-      Filter : {}
+      Queue : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streamer : {} # Options for the [Streamer]
+      Filter : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
       Logging :
-        transports: [
-          new (winston.transports.Console)(
-            colorize: true
-          ),
-          new (winston.transports.File)(
-            name: 'info-log'
-            filename: '/tmp/sloth/logs/info.log'
-            level: 'info'
-            json : true
-          ),
-          new (winston.transports.File)(
-            name: 'error-log'
-            filename: '/tmp/sloth/logs/error.log'
-            #handleExceptions: true
-            humanReadableUnhandledException: true
-            level: 'error'
-            json : true
-          )]
+        transports : []
 
   constructor: (config = {}) ->
+    # Build and verify (TODO) options
     # Use default options where no user defined options are given
     @config = Extension.mergeOptions Crawler.defaultOpts, config
-    #console.log JSON.stringify @config
+    if @config.options.Logging.transports.length is 0
+      @config.options.Logging.transports = defaultTransports @basePath()
+    fs.mkdirsSync @basePath() + "/logs"
+    # Create and add extension points
     @extpoints = {}
     @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in Crawler.extensionPoints
+    # Create the root context of this crawler
     @context = new CrawlerContext
         crawler: this
         execute: (phase, request) =>
@@ -219,6 +232,8 @@ class Crawler
     addExtension this, new Cleanup
     @extpoints[phase].initialize @context for phase of @extpoints
 
+
+  basePath: () -> "#{@config.basedir}/#{@config.name}"
 
   # Call shutdown method on all ExtensionPoint
   shutdown: () ->

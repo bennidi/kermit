@@ -11,15 +11,16 @@ toLocalPath = (basedir = "", uri) ->
 # Store request results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
 
-  @defaultOpts =
-    basedir : "/tmp/sloth/local/"
-
-  constructor: (@opts = OfflineStorage.defaultOpts) ->
+  constructor: (opts = {}) ->
     super new ExtensionDescriptor "OfflineStorage", [Status.FETCHED]
+
+  initialize: (context) ->
+    super context
+    @basedir = context.crawler.basePath() + "/"
 
   apply: (request) ->
     # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-    path = toLocalPath @opts.basedir , request.uri()
+    path = toLocalPath @basedir , request.uri()
     @log "info", "Storing #{request.body.length} bytes to #{path}"
     fs.outputFileSync path, request.body
 
@@ -27,17 +28,16 @@ class OfflineStorage extends Extension
 class OfflineServer extends Extension
 
   @defaultOpts =
-    basedir : "/tmp/sloth/local/"
     port : 3000
 
-
-  constructor: (@opts = {}) ->
-    @opts = Extension.mergeOptions OfflineServer.defaultOpts, @opts
+  constructor: (opts = {}) ->
     super new ExtensionDescriptor "OfflineServer", [Status.INITIAL]
+    @opts = Extension.mergeOptions OfflineServer.defaultOpts, opts
 
 
   initialize: (context) ->
     super context
+    @opts.basedir = context.crawler.basePath() + "/"
     LocalFileServer = require('../util/static-server').LocalStorageServer
     @server =  new LocalFileServer @opts.port, @opts.basedir
     @server.start()
