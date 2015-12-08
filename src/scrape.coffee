@@ -17,18 +17,18 @@ Crawler = new sloth.Crawler
   options:
     Queue:
       limits : [
-        domain : ".*stackoverflow.com.*",
+        domain : ".*jimmycuadra.com.*",
         to : 5,
         per : 'second'
       ]
     Filter:
       allow : [
-        WithinDomain "stackoverflow"
+        WithinDomain "jimmycuadra"
       ]
       deny : [
-        (request) -> request.depth() > 1 and not WithinDomain("stackoverflow")(request)
+        (request) -> request.predecessors() > 1 and not WithinDomain("jimmycuadra")(request)
       ]
 
-Crawler.enqueue("http://stackoverflow.com/questions/20931089/winston-understanding-logging-levels")
+Crawler.enqueue("http://jimmycuadra.com")
 
 

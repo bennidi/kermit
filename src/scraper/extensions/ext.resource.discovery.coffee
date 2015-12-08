@@ -54,7 +54,7 @@ class ResourceDiscovery extends Extension
       # Drop in-page anchors, i.e. #info
       cleaned = "" if url.startsWith "#"
     else
-      @log "debug", "Extracted url was undefined or empty"
+      @log.debug "Extracted url was undefined or empty"
       cleaned = ""
     cleaned
 

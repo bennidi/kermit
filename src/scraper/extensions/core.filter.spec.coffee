@@ -11,7 +11,7 @@ describe  'Request filter',  ->
         deny : [
           ByUrl /.*shouldBeDenied.*/g,
           MimeTypes.CSS,
-          (request) -> request.depth() >= 1 and not WithinDomain("shouldBeAllowed")(request)
+          (request) -> request.predecessors() >= 1 and not WithinDomain("shouldBeAllowed")(request)
         ]
       filter.initialize(new MockContext)
 

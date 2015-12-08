@@ -26,6 +26,7 @@ class Extension
   #
   initialize: (context) ->
     @context = context
+    @log = context.log
     #TODO: Initialize log from context
     if !context
       throw new Error "Initialization of an extension requires a context object"
@@ -42,11 +43,6 @@ class Extension
     if !@context
       throw new Error "An extension requires a context object"
 
-  log: (level, msg) ->
-    @context.logger.log level, msg, {extension:@name()}
-
-  logger : () -> @context.logger
-
 class ExtensionDescriptor
 
   constructor: (@name,
@@ -62,19 +58,9 @@ class Plugin
     if !context
       throw new Error "Initialization of a plugin requires a context object"
 
-class ProcessingException
-
-  @types =
-    REJECTED : "RequestRejected"
-
-  constructor: (@type = ProcessingException.types.REJECTED,
-                @message = "The request was reject for processing",
-                @request) ->
-
 module.exports = {
   Extension
   ExtensionDescriptor
   Plugin
-  ProcessingException
 }
 

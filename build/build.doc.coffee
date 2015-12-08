@@ -23,10 +23,10 @@ gencodo = () ->
 	gulp.src ['./src/**/!(*.spec).coffee'], read: false
 		.pipe codo
 			dir: 'target/coffeedoc'
-			name: 'Greeter'
-			title: 'Greeter documentation'
+			name: 'Kermit the Sloth'
+			title: 'Kermit the Sloth'
 			readme: 'README.md'
-			extra: 'LICENSE.md'
+			extra: ['LICENSE.md', './doc/DOCROOT.md']
 gencodo.description = 'Generate coffee documentation'
 
 # Register tasks with gulp

@@ -27,7 +27,7 @@ class QueueConnector extends Extension
   apply: (request) ->
     @queue.trace(request)
 
-# Process requests that have been spooled for fetching.
+# Process requests that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
@@ -57,7 +57,7 @@ class QueueWorker extends Extension
       if @limits.isAllowed request.url
         @requests[request.id].ready()
       else
-        request["tsLastSpool"] = new Date().getTime()
+        request["tsSPOOLED"] = new Date().getTime()
         @queue.update request
     # Schedule next processing to keep QueueWorker running
     # Otherwise last requests might hang in queue forever

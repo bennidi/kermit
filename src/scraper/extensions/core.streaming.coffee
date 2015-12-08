@@ -17,7 +17,7 @@ class RequestStreamer extends Extension
     url = crawlRequest.uri().toString()
     process.nextTick =>
       crawlRequest.fetching()
-      @log "trace", "Fetching: #{url}"
+      @log.trace "Fetching: #{url}"
       httpRequest url, (error, response, body) ->
         if not error and response.statusCode is 200
           crawlRequest.fetched(body, response)

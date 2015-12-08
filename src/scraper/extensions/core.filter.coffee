@@ -34,10 +34,10 @@ class RequestFilter extends Extension
 
   apply: (request) ->
     if not match(request, @opts.allow)
-      @log "trace", "FILTERED: #{request.url()} not on whitelist"
+      @log.trace "FILTERED: #{request.url()} not on whitelist"
       return request.cancel()
     if match(request, @opts.deny)
-      @log "trace", "FILTERED: #{request.url()} on blacklist"
+      @log.trace "FILTERED: #{request.url()} on blacklist"
       return request.cancel()
 
 
@@ -58,7 +58,7 @@ class DuplicatesFilter extends Extension
   apply: (request) ->
     url = request.url()
     if @queue.contains(url)
-      @log "trace", "FILTERED: #{url} is duplicate"
+      @log.trace "FILTERED: #{url} is duplicate"
       request.cancel()
 
 module.exports = {

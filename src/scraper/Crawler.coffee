@@ -1,137 +1,194 @@
-{ProcessingException, Extension} = require './Extension'
+{Extension} = require './Extension'
 {ExtensionPointConnector, RequestLookup, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues.coffee'
 {RequestStreamer} = require './extensions/core.streaming.coffee'
 {RequestFilter, DuplicatesFilter} = require './extensions/core.filter.coffee'
 {Status, CrawlRequest, Status} = require './CrawlRequest'
-winston = require 'winston'
+bunyan = require 'bunyan'
 
-# Helper method to invoke all extensions for processing of a given request
-callExtensions = (extensions, request, context)->
-  for extension in extensions
-    try
-# An extension may modify the request
-# console.info "Executing #{extension.descriptor.name}"
-      if request.isCanceled()
-        return false
-      else
-        extension.apply(request)
-    catch error
-      context.log 'err', "Error in extension #{extension.descriptor.name}"
-      request.error(error)
-      return false
-  true
 
+# An extension point provides a mechanism to add functionality to the extension point provider.
+# Extension points act as containers for {Extension} - the objects providing the actual extension
+# code
+# @abstract (An extension point should be subclassed)
 class ExtensionPoint
 
-  constructor: (@phase, @description = "Extension Point has no description") ->
+  # Helper method to invoke all extensions for processing of a given request
+  callExtensions = (extensions, request, context)->
+    for extension in extensions
+      try
+        # An extension may modify the request
+        if request.isCanceled()
+          return false
+        else
+          extension.apply(request)
+      catch error
+        context.log.error {error}, "Error in extension #{extension.descriptor.name}"
+        request.error(error)
+        return false
+    true
+
+  # Construct an extension point
+  # @param phase [String] The phase that corresponds to the respective value of {CrawlRequest.Status}
+  constructor: (@phase, @description) ->
+    throw new Error("Please provide phase and description") if !@phase or !@description
     @extensions = []
 
+  # Add an extension to the list of extensions of this extension point
   addExtension: (extension) ->
     @extensions.push extension
     this
 
+  #
+  # Initializes this extension point with the given context. Initalization cascades
+  # to all contained extensions
+  # @param context [CrawlerContext] The context object used for the lifetime of this extension point
+  #
   initialize: (context) ->
     @context = context
     for extension in @extensions
-      subContext = context.fork()
+      subContext = context.fork() # Each extension has its own context scope
       extension.initialize(subContext)
 
-
+  # Run shutdown logic on all extensions
   shutdown: () ->
     for extension in @extensions
       try
         extension.shutdown?()
       catch error
-        @context.log "err", "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
+        @context.log.error "Error in extension #{extension.descriptor.name}. Message: #{error.message}"
 
+  #
+  # Execute all extensions for the given request
+  # @param request [CrawlRequest] The request to be processed
+  #
   apply: (request) ->
-    @beforeApply?(request) # Hook for sub-classes to add pre-processing
+  #@beforeApply?(request) # Hook for sub-classes to add pre-processing
     result = callExtensions(@extensions, request, @context)
-    @afterApply?(request, result) # Hook for sub-classes to add post-processing
+    #@afterApply?(request, result) # Hook for sub-classes to add post-processing
     request
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "INITIAL"
 class INITIAL extends ExtensionPoint
   @phase = Status.INITIAL
   constructor: () ->
     super Status.INITIAL, "This extension point marks the beginning of a request cycle."
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "SPOOLED"
 class SPOOLED extends ExtensionPoint
   @phase = Status.SPOOLED
   constructor: () ->
-    super Status.SPOOLED, "Extension Point for status #{Status.SPOOLED}"
+    super Status.SPOOLED, "Extension Point for request status #{Status.SPOOLED}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "FETCHING"
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
   constructor: () ->
-    super Status.FETCHING, "Extension Point for status #{Status.FETCHING}"
+    super Status.FETCHING, "Extension Point for request status #{Status.FETCHING}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "READY"
 class READY extends ExtensionPoint
   @phase = Status.READY
   constructor: () ->
-    super Status.READY, "Extension Point for status #{Status.READY}"
+    super Status.READY, "Extension Point for request status #{Status.READY}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "FETCHING"
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
   constructor: () ->
-    super Status.FETCHING, "Extension Point for status #{Status.FETCHING}"
+    super Status.FETCHING, "Extension Point for request status #{Status.FETCHING}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "FETCHED"
 class FETCHED extends ExtensionPoint
   @phase = Status.FETCHED
   constructor: () ->
-    super Status.FETCHED, "Extension Point for status #{Status.FETCHED}"
+    super Status.FETCHED, "Extension Point for request status #{Status.FETCHED}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "COMPLETE"
 class COMPLETE extends ExtensionPoint
   @phase = Status.COMPLETE
   constructor: () ->
-    super Status.COMPLETE, "Extension Point for status #{Status.COMPLETE}"
+    super Status.COMPLETE, "Extension Point for request status #{Status.COMPLETE}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "ERROR"
 class ERROR extends ExtensionPoint
   @phase = Status.ERROR
   constructor: () ->
-    super Status.ERROR, "Extension Point for status #{Status.ERROR}"
+    super Status.ERROR, "Extension Point for request status #{Status.ERROR}"
 
-# TODO: DOC
+# Extension point for extensions that process requests with status "CANCELED"
 class CANCELED extends ExtensionPoint
   @phase = Status.CANCELED
   constructor: () ->
-    super Status.CANCELED, "Extension Point for status #{Status.CANCELED}"
+    super Status.CANCELED, "Extension Point for request status #{Status.CANCELED}"
 
-# TODO: DOC
+#
+# A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
+# of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
+#
+# Any instance of {Extension} or {ExtensionPoint} may modify the context to expose additional functionality
+# to other extensions or extension points
+#
 class CrawlerContext
 
+  #
+  # Construct a new CrawlerContext
+  #
+  # @param [Object] config The configuration object for this context
+  # @option config [Crawler] crawler The crawler that created this context
+  # @option config [Function] execute A function handle to execute an extension point
+  # @option config [bunyan.Logger] log A logger to handle log messages
+  #
   constructor: (config) ->
     @crawler = config.crawler
     @execute = config.execute
-    @logger = config.logger
+    @log = config.log
     @config = config.crawler.config
 
+  #
+  # Create a child context that shares all properties with its parent context.
+  # The child context exposes a method to share properties with all other child contexts
+  # @return [CrawlerContext] A new child context of this context
+  #
   fork: () ->
     child = Object.create this
     child.share = (property, value) =>
       @[property] = value
     child
 
-  log: (level, msg, meta) ->
-    @logger.log level, msg, meta
+# The configuration object for a crawler
+class CrawlerConfig
 
-# TODO: DOC
-class Crawler
+  constructor: (config = {}) ->
+    config = Extension.mergeOptions @defaultOpts, config
+    @name = config.name
+    @basedir = config.basedir
+    @extensions = config.extensions
+    @options = config.options
 
-  # The set of all provided extension points. One for each distinct state
-  # in the CrawlRequest state diagram.
-  # Extensions are added to extension points while initialization (constructor).
+  # @property [Object] An initial set of configuration options
+  # that can be used to instantiate a {Crawler}
+  defaultOpts : {
+    name      : "kermit"
+    basedir   : "/tmp/sloth"
+    extensions: [] # Clients can add extensions
+    options   : # Options of each core extension can be customized here
+      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streamer: {} # Options for the [Streamer]
+      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Logging :
+        Streams: []
+  }
+  #
+  # @property [Array<ExtensionPoint.constructor>] An array of all defined extension point constructors
+  # The set of all provided extension points. One for each distinct status
+  # in the {CrawlRequest.Status} state diagram.
+  #
+  # Extensions are added to extension points during initialization.
+  #
   # Core extensions are added automatically, user extensions are specified in the
   # options of the constructor.
-  @extensionPoints = [
+  extensionPoints: [
     INITIAL,
     FETCHING,
     SPOOLED,
@@ -143,114 +200,124 @@ class Crawler
     CANCELED
   ]
 
-  fs = require 'fs-extra'
+###
+The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s of
+the {ExtensionPoint} that matches the request's current status.
 
+All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
+is implemented as {Extension}s to {ExtensionPoint}s.
+
+The crawler defines exactly one {ExtensionPoint} for each distinct value of {CrawlRequest.Status}.
+Each extension point contains the processing steps carried out when the request changes its status
+to the respective phase.
+
+The processing of a request follows the {CrawlRequest.Status} transitions which are defined by the
+{CrawlRequest}.
+
+```txt
+
+       Steps INITIAL
+    --------------------
+    - Filtering
+    - Connect Queue     .-------------.       .------------.            Steps
+    - User extensions   |   INITIAL   |       |  CANCELED  |          CANCELED
+                        |-------------|       |------------|            ERROR
+                        | Unprocessed |------>| Filtered   |          COMPLETED
+                        |             |       | Duplicate  |     -------------------
+                        '-------------'       |            |     - User extensions
+       Steps SPOOLED          |               '------------'     - Cleanup
+    --------------------      |
+    - User extensions         v
+                        .-------------.       .------------.           .-----------.
+                        |   SPOOLED   |       |   ERROR    |           | COMPLETED |
+                        |-------------|       |------------|           |-----------|
+                        | Waiting for |------>| Processing |           | Done!     |
+                        | free slot   |       | Error      |           |           |
+                        '-------------'       '------------'           '-----------'
+        Steps READY            |                     ^                       ^
+    --------------------       |                     |                       |
+    + User extensions          v                     |                       |
+                        .-------------.       .-------------.          .-----------.
+                        |    READY    |       |  FETCHING   |          |  FETCHED  |
+                        |-------------|       |-------------|          |-----------|
+                        | Ready for   |------>| Request     |--------->| Content   |
+                        | fetching    |       | streaming   |          | received  |
+                        '-------------'       '-------------'          '-----------'
+                                              Steps FETCHING          Steps FETCHED
+                                             ---------------------   -------------------
+                                           + Request Streaming     + User extensions
+                                           + User extensions
+
+```
+###
+class Crawler
+
+  fse = require 'fs-extra'
+
+  # @nodoc
   addExtensions = (crawler, extensions = []) ->
     addExtension crawler, extension for extension in extensions
-
+  # @nodoc
   addPlugins = (crawler, context, plugins...) ->
     (addExtension crawler, extension, context for extension in plugin.extensions) for plugin in plugins
-
+  # @nodoc
   addExtension = (crawler, extension) ->
     extpoint(crawler, point).addExtension(extension) for point in extension.targets()
-
+  # @nodoc
   extpoint = (crawler, phase) ->
     if !crawler.extpoints[phase]?
       throw new Error "Extension point #{phase} does not exists"
     crawler.extpoints[phase]
-
+  # @nodoc
   execute = (crawler, phase, request) ->
     process.nextTick ->
       extpoint(crawler, phase).apply request
     request
 
-  # Custom log levels for winston
-  LogLevels =
-    levels:
-      trace  : 0 # All information necessary to trace request flow
-      err  : 1 #
-      warn   : 2
-      info   : 3
-      verbose: 4
-      debug  : 5
-    colors:
-      trace  : 'blue'
-      err  : 'red'
-      warn   : 'yellow'
-      info   : 'green'
-      verbose: 'grey'
-      debug  : 'black'
-
-  defaultTransports = (basedir) ->
+  defaultStreams = (basedir) ->
     [
-      new (winston.transports.Console)(
-        colorize: true
-        level   : 'verbose'
-      ),
-      new (winston.transports.File)(
-        name    : 'info-log'
-        filename: "#{basedir}/logs/info.log"
-        level   : 'info'
-        json    : false
-      ),
-      new (winston.transports.File)(
-        name      : 'request-trace'
-        filename  : "#{basedir}/logs/trace.log"
-        level     : 'trace'
-        json      : false
-        maxfiles  : 5
-        maxsize   : 10485760
-      )
-      new (winston.transports.File)(
-        name    : 'error-log'
-        filename: "#{basedir}/logs/error.log"
-        level   : 'err'
-        json    : true
-      ),
-      new (winston.transports.File)(
-        name                           : 'full-log'
-        filename                       : "#{basedir}/logs/full.log"
-        json                           : true
-        level                          : 'debug'
-      )]
+      {
+        stream: process.stdout
+        level : 'trace'
+      },
+      {
+        path : "#{basedir}/logs/full.log"
+        level: 'trace'
+      },
+      {
+        path : "#{basedir}/logs/error.log"
+        level: 'error'
+      },
+      {
+        path : "#{basedir}/logs/info.log"
+        level: 'info'
+      }
+    ]
 
-  buildLog = (sharedTransports, basedir) ->
-    winston.addColors LogLevels.colors
-    new (winston.Logger)({
-      transports: sharedTransports
-      levels    : LogLevels.levels
-    })
+  buildLog = (streams) ->
+    bunyan.createLogger
+      name   : 'log',
+      streams: streams
 
-  @defaultOpts =
-    name      : "kermit"
-    basedir   : "/tmp/sloth"
-# Clients can add extensions
-    extensions: []
-# Options of each core extension can be customized here
-    options   :
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streamer: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-      Logging :
-        transports     : []
-        ConsoleLogLevel: "verbose"
-
+  # Create a new crawler with the given options
+  # @param config [Object] The configuration object that will be used
+  # @see {CrawlerConfig.defaultOpts}
   constructor: (config = {}) ->
-# Build and verify (TODO) options
-# Use default options where no user defined options are given
-    @config = Extension.mergeOptions Crawler.defaultOpts, config
-    if @config.options.Logging.transports.length is 0
-      @config.options.Logging.transports = defaultTransports @basePath()
-    fs.mkdirsSync @basePath() + "/logs"
+    # Build and verify (TODO) options
+    # Use default options where no user defined options are given
+    @config = new CrawlerConfig config
+    if @config.options.Logging.Streams.length is 0
+      @config.options.Logging.Streams = defaultStreams @basePath()
+    fse.mkdirsSync @basePath() + "/logs"
     # Create and add extension points
     @extpoints = {}
-    @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in Crawler.extensionPoints
+    @extpoints[ExtensionPoint.phase] = new ExtensionPoint  for ExtensionPoint in @config.extensionPoints
     # Create the root context of this crawler
     @context = new CrawlerContext
-      crawler: this
+      crawler: this # re-expose this crawler
       execute: (phase, request) =>
         execute(@, phase, request)
-      logger : buildLog @config.options.Logging.transports, @basePath()
+      log    : buildLog @config.options.Logging.Streams, @basePath()
     # Core extensions that need to run BEFORE user extensions
     addExtension this, new RequestFilter @config.options.Filter
     addExtension this, new ExtensionPointConnector
@@ -260,7 +327,7 @@ class Crawler
     addExtension this, new DuplicatesFilter
     addExtension this, new RequestStreamer @config.options.Streamer
     # Add client extensions
-    @context.logger.log "verbose", "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
+    @context.log.info "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
     addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     addExtension this, new Spooler
@@ -268,19 +335,21 @@ class Crawler
     addExtension this, new Cleanup
     @extpoints[phase].initialize @context for phase of @extpoints
 
-
+  # @return [String] The configured base path of this crawler
   basePath: () -> "#{@config.basedir}/#{@config.name}"
 
-# Call shutdown method on all ExtensionPoint
+  # Call shutdown method on all {ExtensionPoint}
   shutdown: () ->
-    @context.log 'info', 'Received shutdown signal'
+    @context.log.info 'Received shutdown signal'
     extpoint(this, phase).shutdown() for phase of @extpoints
 
-# Create a new request and start its processing
+  # Create a new {CrawlRequest} and start its processing
+  # @return [CrawlRequest] The created request
   enqueue: (url) ->
     request = new CrawlRequest url, @context
     execute @, INITIAL.phase, request
 
+  # Pretty print this crawler
   toString: () ->
     "Crawler: " # TODO: List extension points and content
 

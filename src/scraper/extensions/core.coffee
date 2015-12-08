@@ -1,8 +1,8 @@
 {Status} = require('../CrawlRequest')
 {Extension, ExtensionDescriptor} = require '../Extension'
 
-# Adds callbacks to the requests such that each state transition will
-# trigger execution of the respective extension point registered with the crawler
+# Adds listeners to the requests such that each status transition will
+# trigger execution of the respective {ExtensionPoint}
 class ExtensionPointConnector extends Extension
 
   constructor: () ->
@@ -13,22 +13,26 @@ class ExtensionPointConnector extends Extension
     request.onChange 'status', (request) ->
       request.context.execute request.status(), request
 
-# State transition CREATED -> SPOOLED
+# Handle status transition CREATED -> SPOOLED
 class Spooler extends Extension
 
   constructor: ->
     super new ExtensionDescriptor "Spooler", [Status.INITIAL]
 
+  # Handle status transition CREATED -> SPOOLED
+  # @return [CrawlRequest] The processed request
   apply: (request) ->
     request["tsLastSpool"] = new Date().getTime()
     request.spool()
 
-# State transition FETCHED -> COMPLETED
+# Handle status transition FETCHED -> COMPLETED
 class Completer extends Extension
 
   constructor: ->
     super new ExtensionDescriptor "Completer", [Status.FETCHED]
 
+  # Handle status transition FETCHED -> COMPLETED
+  # @return [CrawlRequest] The processed request
   apply: (request) ->
     request.complete()
 
@@ -52,15 +56,12 @@ class RequestLookup extends Extension
 # Run cleanup on all terminal states
 class Cleanup extends Extension
 
-  @defaultOpts =
-    queue: true #TODO: implement removal from storage
-
   constructor: () ->
     super(new ExtensionDescriptor "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR])
 
   apply: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    @context.queue.completed(request)
+    @context.queue.completed(request) # Remove from
 
 
 module.exports = {
