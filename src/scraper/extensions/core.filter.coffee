@@ -1,5 +1,5 @@
 {Status} = require '../CrawlRequest'
-{Extension, ExtensionDescriptor} = require '../Extension'
+{Extension} = require '../Extension'
 
 
 ByUrl = (pattern) ->
@@ -29,7 +29,7 @@ class RequestFilter extends Extension
     false
 
   constructor: (opts = {} ) ->
-    super new ExtensionDescriptor "RequestFilter", [Status.INITIAL]
+    super "RequestFilter", [Status.INITIAL]
     @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
 
   apply: (request) ->
@@ -48,7 +48,7 @@ class DuplicatesFilter extends Extension
     allowDuplicates: false
 
   constructor: (opts = {} ) ->
-    super new ExtensionDescriptor "DuplicatesFilter", [Status.INITIAL]
+    super "DuplicatesFilter", [Status.INITIAL]
     @opts = Extension.mergeOptions DuplicatesFilter.defaultOpts, opts
 
   initialize: (context) ->

@@ -12,7 +12,7 @@ toLocalPath = (basedir = "", uri) ->
 class OfflineStorage extends Extension
 
   constructor: (opts = {}) ->
-    super new ExtensionDescriptor "OfflineStorage", [Status.FETCHED]
+    super "OfflineStorage", [Status.FETCHED]
 
   initialize: (context) ->
     super context
@@ -31,7 +31,7 @@ class OfflineServer extends Extension
     port : 3000
 
   constructor: (opts = {}) ->
-    super new ExtensionDescriptor "OfflineServer", [Status.INITIAL]
+    super "OfflineServer", [Status.INITIAL]
     @opts = Extension.mergeOptions OfflineServer.defaultOpts, opts
 
 

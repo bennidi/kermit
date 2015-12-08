@@ -4,7 +4,7 @@ tCookie = require 'tough-cookie'
 class CookieSupport extends crawl.extensions.Extension
 
   constructor: () ->
-    super new crawl.extensions.ExtensionDescriptor "Cookie Support", ["PROCESSING"]
+    super "Cookie Support", ["PROCESSING"]
     @cookiejar = new tCookie.CookieJar();
 
   apply: (request) ->

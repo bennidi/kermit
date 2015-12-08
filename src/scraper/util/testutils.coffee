@@ -4,7 +4,7 @@
 class TransitionRecorder extends Extension
 
   constructor: (@done)->
-    super new ExtensionDescriptor "TransitionRecorder", Status.ALL
+    super "TransitionRecorder", Status.ALL
     @expected = {}
     @requests = 0
 
@@ -23,7 +23,7 @@ class TransitionRecorder extends Extension
 class RejectingExtension extends Extension
 
   constructor: ->
-    super new ExtensionDescriptor "Rejecting Extension", ["INITIAL"]
+    super "Rejecting Extension", ["INITIAL"]
     @invocations = 0
 
   apply: (request) ->

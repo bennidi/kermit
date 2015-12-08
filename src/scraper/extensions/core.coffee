@@ -1,12 +1,12 @@
 {Status} = require('../CrawlRequest')
-{Extension, ExtensionDescriptor} = require '../Extension'
+{Extension} = require '../Extension'
 
 # Adds listeners to the requests such that each status transition will
 # trigger execution of the respective {ExtensionPoint}
 class ExtensionPointConnector extends Extension
 
   constructor: () ->
-    super new ExtensionDescriptor "Request Extension Point Connector", [Status.INITIAL]
+    super "Request Extension Point Connector", [Status.INITIAL]
 
   apply: (request) ->
     request.context = @context
@@ -17,7 +17,7 @@ class ExtensionPointConnector extends Extension
 class Spooler extends Extension
 
   constructor: ->
-    super new ExtensionDescriptor "Spooler", [Status.INITIAL]
+    super "Spooler", [Status.INITIAL]
 
   # Handle status transition CREATED -> SPOOLED
   # @return [CrawlRequest] The processed request
@@ -29,7 +29,7 @@ class Spooler extends Extension
 class Completer extends Extension
 
   constructor: ->
-    super new ExtensionDescriptor "Completer", [Status.FETCHED]
+    super "Completer", [Status.FETCHED]
 
   # Handle status transition FETCHED -> COMPLETED
   # @return [CrawlRequest] The processed request
@@ -42,7 +42,7 @@ class Completer extends Extension
 class RequestLookup extends Extension
 
   constructor: () ->
-    super(new ExtensionDescriptor "RequestLookup", [Status.INITIAL])
+    super "RequestLookup", [Status.INITIAL]
 
   initialize: (context) ->
     super context
@@ -57,7 +57,7 @@ class RequestLookup extends Extension
 class Cleanup extends Extension
 
   constructor: () ->
-    super(new ExtensionDescriptor "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR])
+    super "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR]
 
   apply: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC

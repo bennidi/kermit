@@ -327,7 +327,7 @@ class Crawler
     addExtension this, new DuplicatesFilter
     addExtension this, new RequestStreamer @config.options.Streamer
     # Add client extensions
-    @context.log.info "Installing user extensions #{(ext.name() for ext in @config.extensions)}"
+    @context.log.info "Installing user extensions #{(ext.name for ext in @config.extensions)}"
     addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     addExtension this, new Spooler

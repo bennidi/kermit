@@ -22,7 +22,7 @@ class ResourceDiscovery extends Extension
 
 
   constructor: (@opts = ResourceDiscovery.defaultOpts) ->
-    super new ExtensionDescriptor "ResourceDiscovery", [Status.FETCHED]
+    super "ResourceDiscovery", [Status.FETCHED]
     @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
 
   apply: (request) ->

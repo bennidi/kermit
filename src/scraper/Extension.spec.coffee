@@ -1,4 +1,4 @@
-{Extension, ExtensionDescriptor} = require './Extension.coffee'
+{Extension} = require './Extension.coffee'
 
 describe  'Extension',  ->
   describe 'Extending an extension', ->
@@ -7,21 +7,13 @@ describe  'Extension',  ->
       class SimpleExtension extends Extension
 
         constructor: () ->
-          super new ExtensionDescriptor "Phase", "This is a simple extension that does nothing"
+          super "Phase", "This is a simple extension that does nothing"
 
       simpleExt = new SimpleExtension
       expect(simpleExt).not.to.be.null()
       expect(simpleExt).to.be.a(SimpleExtension)
       expect(simpleExt).to.be.a(Extension)
       expect(simpleExt).not.to.be.a(Function)
-
-    it '# fails when no descriptor is provided', ->
-      class ExtensionWithoutDescriptor extends Extension
-
-      try
-        brokenExt = new ExtensionWithoutDescriptor
-        expect(false).to.be.true() # this code should not be reached
-      catch error
 
     it '# can merge options', ->
       baseOpts = # Clients can add extensions
