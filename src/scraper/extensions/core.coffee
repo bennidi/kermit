@@ -5,9 +5,12 @@
 # trigger execution of the respective {ExtensionPoint}
 class ExtensionPointConnector extends Extension
 
+  # @nodoc
   constructor: () ->
     super "Request Extension Point Connector", [Status.INITIAL]
 
+  # Add listener to the request such that status change will trigger
+  # execution of corresponding {ExtensionPoint}
   apply: (request) ->
     request.context = @context
     request.onChange 'status', (request) ->
@@ -16,6 +19,7 @@ class ExtensionPointConnector extends Extension
 # Handle status transition CREATED -> SPOOLED
 class Spooler extends Extension
 
+  # @nodoc
   constructor: ->
     super "Spooler", [Status.INITIAL]
 
@@ -28,6 +32,7 @@ class Spooler extends Extension
 # Handle status transition FETCHED -> COMPLETED
 class Completer extends Extension
 
+  # @nodoc
   constructor: ->
     super "Completer", [Status.FETCHED]
 
@@ -41,14 +46,17 @@ class Completer extends Extension
 # because lokijs does not store the entire JavaScript object
 class RequestLookup extends Extension
 
+  # @nodoc
   constructor: () ->
     super "RequestLookup", [Status.INITIAL]
 
+  # Expose a map that allows to lookup a {CrawlRequest} object by id
   initialize: (context) ->
     super context
     @requests = {}
     context.share "requests", @requests
 
+  # Associated the requests id with the request object itself
   apply: (request) ->
     @requests[request.id()] = request
 
@@ -56,9 +64,11 @@ class RequestLookup extends Extension
 # Run cleanup on all terminal states
 class Cleanup extends Extension
 
+  # @nodoc
   constructor: () ->
     super "RequestLookup", [Status.COMPLETE, Status.CANCELED, Status.ERROR]
 
+  # Do cleanup work to prevent memory leaks
   apply: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
     @context.queue.completed(request) # Remove from

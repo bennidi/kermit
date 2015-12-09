@@ -61,7 +61,6 @@ class ExtensionPoint
   #
   # Execute all extensions for the given request
   # @param request [CrawlRequest] The request to be processed
-  #
   apply: (request) ->
   #@beforeApply?(request) # Hook for sub-classes to add pre-processing
     result = callExtensions(@extensions, request, @context)
@@ -71,42 +70,49 @@ class ExtensionPoint
 # Extension point for extensions that process requests with status "INITIAL"
 class INITIAL extends ExtensionPoint
   @phase = Status.INITIAL
+  # @nodoc
   constructor: () ->
     super Status.INITIAL, "This extension point marks the beginning of a request cycle."
 
 # Extension point for extensions that process requests with status "SPOOLED"
 class SPOOLED extends ExtensionPoint
   @phase = Status.SPOOLED
+  # @nodoc
   constructor: () ->
     super Status.SPOOLED, "Extension Point for request status #{Status.SPOOLED}"
 
 # Extension point for extensions that process requests with status "FETCHING"
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
+  # @nodoc
   constructor: () ->
     super Status.FETCHING, "Extension Point for request status #{Status.FETCHING}"
 
 # Extension point for extensions that process requests with status "READY"
 class READY extends ExtensionPoint
   @phase = Status.READY
+  # @nodoc
   constructor: () ->
     super Status.READY, "Extension Point for request status #{Status.READY}"
 
 # Extension point for extensions that process requests with status "FETCHING"
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
+  # @nodoc
   constructor: () ->
     super Status.FETCHING, "Extension Point for request status #{Status.FETCHING}"
 
 # Extension point for extensions that process requests with status "FETCHED"
 class FETCHED extends ExtensionPoint
   @phase = Status.FETCHED
+  # @nodoc
   constructor: () ->
     super Status.FETCHED, "Extension Point for request status #{Status.FETCHED}"
 
 # Extension point for extensions that process requests with status "COMPLETE"
 class COMPLETE extends ExtensionPoint
   @phase = Status.COMPLETE
+  # @nodoc
   constructor: () ->
     super Status.COMPLETE, "Extension Point for request status #{Status.COMPLETE}"
 
@@ -119,6 +125,7 @@ class ERROR extends ExtensionPoint
 # Extension point for extensions that process requests with status "CANCELED"
 class CANCELED extends ExtensionPoint
   @phase = Status.CANCELED
+  # @nodoc
   constructor: () ->
     super Status.CANCELED, "Extension Point for request status #{Status.CANCELED}"
 

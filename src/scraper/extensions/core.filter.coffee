@@ -25,6 +25,7 @@ class RequestFilter extends Extension
     allow : [Filters.ByUrl /.*/g] # allow all by default
     deny : []
 
+  # @nodoc
   constructor: (opts = {} ) ->
     super "RequestFilter", [Status.INITIAL]
     @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
@@ -50,6 +51,7 @@ class RequestFilter extends Extension
 # Filter out duplicate requests (requests to the same url)
 class DuplicatesFilter extends Extension
 
+  # @nodoc
   constructor: (@opts = {} ) ->
     super "DuplicatesFilter", [Status.INITIAL]
 

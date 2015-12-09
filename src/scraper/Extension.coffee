@@ -15,6 +15,8 @@ merge = require 'merge'
 #
 class Extension
 
+  # Merge two objects recursively.
+  # This is used to combine user specified options with default options
   @mergeOptions : (a,b) ->
     merge.recursive a,b
 
@@ -35,7 +37,6 @@ class Extension
   #
   # @param [CrawlerContext] context The context provided by the crawler
   # @throw Error if it does not find the context to be providing what it expects.
-  #
   initialize: (context) ->
     @context = context
     @log = context.log
