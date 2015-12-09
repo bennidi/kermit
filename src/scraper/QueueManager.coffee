@@ -1,6 +1,12 @@
 {Status} = require './CrawlRequest'
 lokijs = require 'lokijs'
 
+# Provides access to a queue like system that allows to access {CrawlRequest}s by their
+# status.
+#
+# Currently implemented on top of beautiful [http://lokijs.org lokijs]
+# => Queues are emulated with dynamic views on a single request collection.
+#
 class QueueManager
 
   constructor: (@store = new lokijs 'crawlrequests.json') ->
@@ -9,6 +15,7 @@ class QueueManager
   inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
   waiting = [Status.INITIAL, Status.SPOOLED]
 
+  # Initialize this queue manager
   initialize: () ->
     # One collection for all requests and dynamic views for various request status
     @requests = @store.addCollection 'requests'
@@ -69,8 +76,6 @@ class QueueManager
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->
     @requests.getDynamicView(Status.SPOOLED).branchResultset().simplesort('tsSPOOLED', true).limit(batchSize).data()
-
-
 
 module.exports = {
   QueueManager

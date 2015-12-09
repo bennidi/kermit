@@ -23,7 +23,7 @@ class ExtensionPoint
         else
           extension.apply(request)
       catch error
-        context.log.error {error}, "Error in extension #{extension.descriptor.name}"
+        context.log.error error, "Error in extension #{extension.name}"
         request.error(error)
         return false
     true

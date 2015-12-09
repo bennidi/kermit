@@ -39,6 +39,7 @@ class Extension
   initialize: (context) ->
     @context = context
     @log = context.log
+    @log.debug "Initializing #{@name}"
     #TODO: Initialize log from context
     if !context
       throw new Error "Initialization of an extension requires a context object"

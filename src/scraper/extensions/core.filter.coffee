@@ -1,37 +1,43 @@
 {Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
 
+# Predefined filters for convenient configuration of {RequestFilter}
+class Filters
 
-ByUrl = (pattern) ->
-  (request) ->
-    request.url().match pattern
+  @ByUrl: (pattern) ->
+    (request) ->
+      request.url().match pattern
 
-WithinDomain = (domain) ->
-  ByUrl new RegExp(".*#{domain}\..*", "g")
+  @WithinDomain : (domain) ->
+    Filters.ByUrl new RegExp(".*#{domain}\..*", "g")
 
-MimeTypes =
-  CSS : ByUrl /.*\.css/g
-  JS : ByUrl /.*\.js/g
-  PDF : ByUrl /.*\.pdf/g
-AllUrls = ByUrl /.*/g
-Texts = {}
+  @MimeTypes:
+    CSS : Filters.ByUrl /.*\.css/g
+    JS : Filters.ByUrl /.*\.js/g
+    PDF : Filters.ByUrl /.*\.pdf/g
+  @AllUrls : Filters.ByUrl /.*/g
 
-# Filter newly created (=INITIAL) requests based on a flexible set of filter functions.
+
+# Filter newly created {RequestStatus.INITIAL} requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
   @defaultOpts =
-    allow : [ByUrl /.*/g] # allow all by default
+    allow : [Filters.ByUrl /.*/g] # allow all by default
     deny : []
-
-  match = (request, filters) ->
-    for filter in filters
-      return true if filter(request)
-    false
 
   constructor: (opts = {} ) ->
     super "RequestFilter", [Status.INITIAL]
     @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
 
+
+  match = (request, filters) ->
+      for filter in filters
+        return true if filter(request)
+      false
+
+  # Apply defined filters
+  # Cancels the request if it is not whitelisted or blacklisted
+  # @param request {CrawlRequest} The request to filter
   apply: (request) ->
     if not match(request, @opts.allow)
       @log.trace "FILTERED: #{request.url()} not on whitelist"
@@ -41,20 +47,19 @@ class RequestFilter extends Extension
       return request.cancel()
 
 
-# Filter newly created (=INITIAL) requests based on a flexible set of filter functions.
+# Filter out duplicate requests (requests to the same url)
 class DuplicatesFilter extends Extension
 
-  @defaultOpts =
-    allowDuplicates: false
-
-  constructor: (opts = {} ) ->
+  constructor: (@opts = {} ) ->
     super "DuplicatesFilter", [Status.INITIAL]
-    @opts = Extension.mergeOptions DuplicatesFilter.defaultOpts, opts
 
+  # Initialize with {QueueManager} from context
   initialize: (context) ->
     super context
     @queue = context.queue
 
+  # Filter out all requests with a url already fetched
+  # or in progress of fetching
   apply: (request) ->
     url = request.url()
     if @queue.contains(url)
@@ -64,9 +69,8 @@ class DuplicatesFilter extends Extension
 module.exports = {
   DuplicatesFilter
   RequestFilter
-  ByUrl
-  MimeTypes
-  AllUrls
-  Texts
-  WithinDomain
+  Filters
+  ByUrl : Filters.ByUrl
+  WithinDomain : Filters.WithinDomain
+  MimeTypes : Filters.MimeTypes
 }
