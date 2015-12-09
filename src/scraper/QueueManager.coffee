@@ -9,6 +9,7 @@ lokijs = require 'lokijs'
 #
 class QueueManager
 
+  # Construct a new QueueManager with its own data file
   constructor: (@store = new lokijs 'crawlrequests.json') ->
     @initialize()
 

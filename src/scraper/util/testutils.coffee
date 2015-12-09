@@ -4,8 +4,9 @@
 
 class TransitionRecorder extends Extension
 
+  # @nodoc
   constructor: (@done)->
-    super "TransitionRecorder", Status.ALL
+    super  Status.ALL
     @expected = {}
     @requests = 0
 
@@ -24,7 +25,7 @@ class TransitionRecorder extends Extension
 class RejectingExtension extends Extension
 
   constructor: ->
-    super "Rejecting Extension", ["INITIAL"]
+    super ["INITIAL"]
     @invocations = 0
 
   apply: (request) ->

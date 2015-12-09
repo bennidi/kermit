@@ -2,14 +2,23 @@ sloth = require './scraper/cherry.modules'
 {Status} = require './scraper/CrawlRequest.coffee'
 {OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
 {ResourceDiscovery} = require './scraper/extensions/ext.resource.discovery.coffee'
-{Extension, ExtensionDescriptor} = require './scraper/Extension.coffee'
+{Extension} = require './scraper/Extension.coffee'
 {WithinDomain, MimeTypes} = require './scraper/extensions/core.filter.coffee'
+
+class ResponseLogger extends Extension
+
+  constructor:() ->
+    super "ResponseLogger", [Status.FETCHED]
+
+  apply: (request) ->
+    console.log request.body
 
 # opts: rateLimit, request depth
 Crawler = new sloth.Crawler
   name: "testicle"
   extensions : [
-    new OfflineStorage
+    new ResponseLogger
+    new OfflineServer
       basedir : ""
     new  ResourceDiscovery
       scripts:false

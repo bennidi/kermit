@@ -21,8 +21,9 @@ class ResourceDiscovery extends Extension
 
 
 
+  # Create a new resource discovery extension
   constructor: (@opts = ResourceDiscovery.defaultOpts) ->
-    super "ResourceDiscovery", [Status.FETCHED]
+    super[Status.FETCHED]
     @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
 
   apply: (request) ->

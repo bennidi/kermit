@@ -12,7 +12,7 @@ merge = require 'merge'
 # The motivation behind the extension design is that its abstraction
 # defines clear boundaries of responsibility and encourages the development of relatively
 # small, testable and reusable request processing components.
-#
+# @abstract
 class Extension
 
   # Merge two objects recursively.
@@ -20,7 +20,11 @@ class Extension
   @mergeOptions : (a,b) ->
     merge.recursive a,b
 
-  constructor: (@name, @extpoints = [], @description = "Please provide a description") ->
+
+  # Construct a new extension. By convention the property "name"
+  # will be assigned the class name of this extension
+  constructor: (@extpoints = [], @description = "Please provide a description") ->
+    @name = @constructor.name
 
   # Do the request processing that this extension was designed to do.
   # NOTE: Unintended processing errors (like NPEs, calling methods with wrong
@@ -40,7 +44,6 @@ class Extension
   initialize: (context) ->
     @context = context
     @log = context.log
-    @log.debug "Initializing #{@name}"
     #TODO: Initialize log from context
     if !context
       throw new Error "Initialization of an extension requires a context object"
@@ -57,6 +60,8 @@ class Extension
   # actual request processing starts
   # @throw Error if the configuration is invalid in any way
   verify: () ->
+    if !@name
+      throw new Error "An extension requires a name"
     if !@context
       throw new Error "An extension requires a context object"
 

@@ -49,6 +49,7 @@ class ExtensionPoint
     for extension in @extensions
       subContext = context.fork() # Each extension has its own context scope
       extension.initialize(subContext)
+      extension.verify()
 
   # Run shutdown logic on all extensions
   shutdown: () ->

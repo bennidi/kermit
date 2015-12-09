@@ -5,14 +5,14 @@ fs = require 'fs-extra'
 
 toLocalPath = (basedir = "", uri) ->
   uri = uri.clone()
-  !uri.filename("index.html") if !uri.filename()
+  !uri.filename("index.html") if !uri.suffix()
   basedir + uri.tld() + "/" + uri.hostname() + uri.pathname()
 
 # Store request results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
 
   constructor: (opts = {}) ->
-    super "OfflineStorage", [Status.FETCHED]
+    super [Status.FETCHED]
 
   initialize: (context) ->
     super context
@@ -31,7 +31,7 @@ class OfflineServer extends Extension
     port : 3000
 
   constructor: (opts = {}) ->
-    super "OfflineServer", [Status.INITIAL]
+    super [Status.INITIAL]
     @opts = Extension.mergeOptions OfflineServer.defaultOpts, opts
 
 

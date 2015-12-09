@@ -27,7 +27,7 @@ class RequestFilter extends Extension
 
   # @nodoc
   constructor: (opts = {} ) ->
-    super "RequestFilter", [Status.INITIAL]
+    super [Status.INITIAL]
     @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
 
 
@@ -53,7 +53,7 @@ class DuplicatesFilter extends Extension
 
   # @nodoc
   constructor: (@opts = {} ) ->
-    super "DuplicatesFilter", [Status.INITIAL]
+    super [Status.INITIAL]
 
   # Initialize with {QueueManager} from context
   initialize: (context) ->
