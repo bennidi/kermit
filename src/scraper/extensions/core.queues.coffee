@@ -25,7 +25,10 @@ class QueueConnector extends Extension
   # Enrich each request with methods that propagate its
   # state transitions to the queue system
   apply: (request) ->
-    @queue.trace(request)
+    @queue.insert request
+    # TODO: Use language embedded auto-update feature if available
+    request.onChange 'status', (request) =>
+      @queue.update(request)
 
 # Process requests that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
@@ -51,6 +54,8 @@ class QueueWorker extends Extension
     @requests = context.requests
 
 
+  #
+  # @private
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
     for request in @queue.spooled()

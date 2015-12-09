@@ -12,13 +12,3 @@ describe  'QueueManager',  ->
       expect(QueueManager.spooled()).not.to.be.null()
       expect(QueueManager.initial().length).to.equal(0)
       expect(QueueManager.spooled().length).to.equal(0)
-
-    it '# can enrich requests for state tracing', ->
-      QueueManager = new Queue
-      TestRequest = new CrawlRequest 'www.npmjs.com', new MockContext
-      QueueManager.trace TestRequest
-      expect(QueueManager.initial().length).to.equal(1)
-      expect(QueueManager.spooled().length).to.equal(0)
-      TestRequest.spool()
-      expect(QueueManager.initial().length).to.equal(0)
-      expect(QueueManager.spooled().length).to.equal(1)

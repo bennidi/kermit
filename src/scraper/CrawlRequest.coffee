@@ -10,27 +10,29 @@ extensions = require './Extension'
 class RequestStatus
   # @property [String] The first status of any request
   @INITIAL:'INITIAL'
-  # @property [String] Spooled requests are waiting in
-  # the queuing system {QueueManager} for further processing
+  # @property [String]
+  # Spooled requests are waiting in the queuing system
+  # {QueueManager} for further processing
   @SPOOLED:'SPOOLED'
-  # @property [String] Request is ready to be fetched
-  # by the {Streamer}
+  # @property [String] Request is ready to be fetched by the {Streamer}
   @READY:'READY'
-  # @property [String] Http(s) call is made and response
-  # is being streamed
+  # @property [String] Http(s) call is made and response is being streamed
   @FETCHING:'FETCHING'
-  #@property [String] All data has been received and
+  #@property [String]
+  # All data has been received and
   # the response is ready for further processing
   @FETCHED:'FETCHED'
-  # @property [String] Response processing is finished.
+  # @property [String]
+  # Response processing is finished.
   # This is the terminal status of a successfully processed
   # request
   @COMPLETE:'COMPLETED'
-  # @property [String] Something went wrong during processing.
+  # @property [String]
   # {ExtensionPoint}s will set this status if an
   # exception occurs during execution of an {Extension}
   @ERROR:'ERROR'
-  # @property [String] Any extension might cancel a request.
+  # @property [String]
+  # Any extension might cancel a request.
   # Canceled requests are not elligible for further processing
   # and will be cleaned up, see {Cleanup}
   @CANCELED:'CANCELED'

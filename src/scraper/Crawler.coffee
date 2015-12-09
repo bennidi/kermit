@@ -254,21 +254,21 @@ class Crawler
 
   fse = require 'fs-extra'
 
-  # @nodoc
+  # @private
   addExtensions = (crawler, extensions = []) ->
     addExtension crawler, extension for extension in extensions
-  # @nodoc
+  # @private
   addPlugins = (crawler, context, plugins...) ->
     (addExtension crawler, extension, context for extension in plugin.extensions) for plugin in plugins
-  # @nodoc
+  # @private
   addExtension = (crawler, extension) ->
     extpoint(crawler, point).addExtension(extension) for point in extension.targets()
-  # @nodoc
+  # @private
   extpoint = (crawler, phase) ->
     if !crawler.extpoints[phase]?
       throw new Error "Extension point #{phase} does not exists"
     crawler.extpoints[phase]
-  # @nodoc
+  # @private
   execute = (crawler, phase, request) ->
     process.nextTick ->
       extpoint(crawler, phase).apply request

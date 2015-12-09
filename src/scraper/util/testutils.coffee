@@ -1,5 +1,6 @@
 {Extension, ExtensionDescriptor} = require '../Extension.coffee'
 {Status} = require '../CrawlRequest.coffee'
+{QueueManager} = require '../QueueManager.coffee'
 
 class TransitionRecorder extends Extension
 
@@ -32,7 +33,9 @@ class RejectingExtension extends Extension
 
 class MockContext
   execute: (state, request) -> request
-  queue: contains: () -> false
+  queue: new QueueManager
+  share: (property, value ) =>
+    @[property] = value
   crawler :
     enqueue: (request) -> request
   log :
