@@ -6,8 +6,8 @@
 class ExtensionPointConnector extends Extension
 
   # @nodoc
-  constructor: () ->
-    super [Status.INITIAL]
+  constructor: (@context) ->
+    super INITIAL : @apply , @context
 
   # Add listener to the request such that status change will trigger
   # execution of corresponding {ExtensionPoint}
@@ -20,8 +20,8 @@ class ExtensionPointConnector extends Extension
 class Spooler extends Extension
 
   # Create a Spooler
-  constructor: ->
-    super [Status.INITIAL]
+  constructor: ()->
+    super INITIAL : @apply
 
   # Handle status transition CREATED -> SPOOLED
   # @return [CrawlRequest] The processed request
@@ -29,14 +29,14 @@ class Spooler extends Extension
     request["tsLastSpool"] = new Date().getTime()
     request.spool()
 
-# Handle status transition FETCHED -> COMPLETED
+# Handle status transition FETCHED -> COMPLETE
 class Completer extends Extension
 
   # Create a Completer
   constructor: ->
-    super [Status.FETCHED]
+    super FETCHED : @apply
 
-  # Handle status transition FETCHED -> COMPLETED
+  # Handle status transition FETCHED -> COMPLETE
   # @return [CrawlRequest] The processed request
   apply: (request) ->
     request.complete()
@@ -48,7 +48,7 @@ class RequestLookup extends Extension
 
   # @nodoc
   constructor: () ->
-    super [Status.INITIAL]
+    super INITIAL : @apply
 
   # Expose a map that allows to lookup a {CrawlRequest} object by id
   initialize: (context) ->
@@ -66,13 +66,16 @@ class Cleanup extends Extension
 
   # @nodoc
   constructor: () ->
-    super [Status.COMPLETE, Status.CANCELED, Status.ERROR], "Cleanup requests that will not be processed further"
+    super
+      COMPLETE : @apply
+      CANCELED : @apply
+      ERROR : @apply
 
   # Do cleanup work to prevent memory leaks
   apply: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
     @context.queue.completed(request) # Remove from
-    delete request.body
+    delete request.response
 
 
 module.exports = {

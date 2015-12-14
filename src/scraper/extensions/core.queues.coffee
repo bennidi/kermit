@@ -13,7 +13,7 @@ class QueueConnector extends Extension
     dbfile : "crawler.json"
 
   constructor: (opts = {}) ->
-    super [Status.INITIAL]
+    super INITIAL : @apply
     @opts = Extension.mergeOptions QueueConnector.defaultOpts, opts
 
   # Create a queue system and re-expose in context
@@ -43,7 +43,7 @@ class QueueWorker extends Extension
 
   # https://www.npmjs.com/package/simple-rate-limiter
   constructor: (opts = {}) ->
-    super [Status.SPOOLED]
+    super SPOOLED : @apply
     @opts = Extension.mergeOptions QueueWorker.defaultOpts, opts
     # 'second', 'minute', 'day', or a number of milliseconds
     @limits = new RateLimits @opts.limits

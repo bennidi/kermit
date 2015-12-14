@@ -11,21 +11,21 @@ class RequestStreamer extends Extension
 
   # Create a new Streamer
   constructor: (opts = {}) ->
-    super [Status.READY]
+    super READY:@apply
     @opts = Extension.mergeOptions RequestStreamer.defaultOpts, opts
 
   apply: (crawlRequest) ->
     url = crawlRequest.uri().toString()
-    process.nextTick =>
-      crawlRequest.fetching()
-      @log.trace "Fetching: #{url}"
-      httpRequest url, (error, response, body) ->
-        if not error and response.statusCode is 200
-          crawlRequest.fetched(body, response)
-        if error
-          crawlRequest.error(error)
-
-
+    httpRequest.get url
+      .on 'response', (response) ->
+        crawlRequest.fetching()
+        response.pipe crawlRequest.response.incoming
+        # TODO: copy useful response attributes
+      .on 'error', (error) ->
+        crawlRequest.error(error)
+      .on 'end', ->
+        crawlRequest.fetched()
+      .pipe(crawlRequest.response.incoming)
 
 # Export a function to create the core plugin with default extensions
 module.exports = {

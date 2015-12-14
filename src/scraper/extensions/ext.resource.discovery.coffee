@@ -19,31 +19,22 @@ class ResourceDiscovery extends Extension
     scripts: true # TODO: implement discovery
     images : true # TODO: implement discovery
 
-
-
   # Create a new resource discovery extension
-  constructor: (@opts = ResourceDiscovery.defaultOpts) ->
-    super[Status.FETCHED]
+  constructor: (@opts = {}) ->
+    super
+      READY : (request) ->
+        request.response.parser().extract(
+          resources: ['link',
+            'href':  ($section) -> $section.attr 'href'
+          ]
+          links: ['a',
+            'href':  ($link) -> $link.attr 'href'
+          ]).then (results) =>
+            resources = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.resources), _.isEmpty
+            links = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.links), _.isEmpty
+            request.enqueue url for url in resources
+            request.enqueue url for url in links
     @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
-
-  apply: (request) ->
-    extractLinks request.body, (results) =>
-      resources = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.resources), _.isEmpty
-      links = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.filter.links), _.isEmpty
-      request.enqueue url for url in resources
-      request.enqueue url for url in links
-
-
-  # Run a htmlToJson extractor
-  extractLinks = (html, handler) ->
-    htmlToJson.batch(html,
-      htmlToJson.createParser
-        resources: ['link',
-          'href':  ($section) -> $section.attr 'href'
-        ]
-        links: ['a',
-          'href':  ($link) -> $link.attr 'href'
-        ]).done handler
 
   cleanUrl = (base, url)  ->
     cleaned = url

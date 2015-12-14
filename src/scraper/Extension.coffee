@@ -4,13 +4,15 @@ merge = require 'merge'
 # to the {Crawler}. All of the available request processing functionality, like filtering,
 # queueing, streaming, logging etc. is implemented by means of extensions.
 #
-# {Extension}s are associated with at least one {ExtensionPoint} in order
-# to be invoked in the expected stages of the request processing.
+# Each extension exposes one or more handlers for request processing by association them
+# with one of the defined {CrawlRequest.Status} values.
+# Thereby, extensions are associated with at least one {ExtensionPoint}.
+
 # @see {Crawler} for the state diagram that models the request flow and respective
 # {ExtensionPoint}s.
 
-# The motivation behind the extension design is that its abstraction
-# defines clear boundaries of responsibility and encourages the development of relatively
+# A major motivation behind the extension design is to support the principle
+# of separations of concern/responsibility and to encourage the development of relatively
 # small, testable and reusable request processing components.
 # @abstract
 class Extension
@@ -23,18 +25,8 @@ class Extension
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
-  constructor: (@extpoints = [], @description = "Please provide a description") ->
+  constructor: (@handlers = {}) ->
     @name = @constructor.name
-
-  # Do the request processing that this extension was designed to do.
-  # NOTE: Unintended processing errors (like NPEs, calling methods with wrong
-  # signature etc.) are handled upwards and will cause the request to end up
-  # with status {RequestStatus.Error}
-  #
-  # @param request {CrawlRequest}  The request to be processed by this extension
-  # It will be in one of the status defined by this.extpoints
-  # @abstract
-  apply: (request) ->
 
   # This method is called by the corresponding {ExtensionPoint}
   # during crawler construction.
@@ -54,7 +46,7 @@ class Extension
 
   # Get the list of {ExtensionPoint} identifiers handled by this extension.
   targets: () ->
-    @extpoints
+    (phase for phase of @handlers)
 
   # Run validity checks of this extension. Called after initialization and before
   # actual request processing starts

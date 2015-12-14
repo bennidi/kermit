@@ -1,8 +1,9 @@
 cherry = require './cherry.modules'
-{RejectingExtension, TransitionRecorder} = require './util/testutils.coffee'
+{RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/testutils.coffee'
 {Status} = require './CrawlRequest.coffee'
 
 describe  'Crawler',  ->
+  @timeout 3000
   describe 'package', ->
 
     it '# can be instantiated without any options', ()->
@@ -20,7 +21,7 @@ describe  'Crawler',  ->
       Recorder = new TransitionRecorder done
       Recorder.validate("http://www.google.com/", [Status.INITIAL,Status.SPOOLED, Status.READY,
         Status.FETCHING, Status.FETCHED, Status.COMPLETE])
-      SimpleCrawler = new cherry.Crawler extensions : [Recorder]
+      SimpleCrawler = new cherry.Crawler extensions : [Recorder, new ResponseStreamLogger]
       SimpleCrawler.enqueue("http://www.google.com")
 
 
@@ -28,7 +29,7 @@ describe  'Crawler',  ->
       Recorder = new TransitionRecorder done
       Recorder.validate("http://www.google.com/", [Status.INITIAL])
       Recorder.validate("http://www.github.com/", [Status.INITIAL])
-      SimpleCrawler = new cherry.Crawler extensions : [Recorder, new RejectingExtension]
+      SimpleCrawler = new cherry.Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
       SimpleCrawler.enqueue("http://www.google.com")
       SimpleCrawler.enqueue("http://www.github.com")
 
@@ -40,7 +41,7 @@ describe  'Crawler',  ->
       Recorder.validate("http://www.wikipedia.org/", [Status.INITIAL,Status.SPOOLED, Status.READY,
         Status.FETCHING, Status.FETCHED, Status.COMPLETE])
       SimpleCrawler = new cherry.Crawler
-          extensions : [Recorder]
+          extensions : [Recorder, new ResponseStreamLogger]
       SimpleCrawler.enqueue("http://www.google.com/").enqueue("http://www.wikipedia.org/")
 
 

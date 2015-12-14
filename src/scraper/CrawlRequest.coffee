@@ -1,5 +1,6 @@
 URI = require 'urijs'
-extensions = require './Extension'
+{Response} = require './Pipeline.coffee'
+
 
 # At any time, each request has a status value equal to one of the values
 # defined by this class. Any request starts with status INITIAL (set in constructor).
@@ -26,7 +27,7 @@ class RequestStatus
   # Response processing is finished.
   # This is the terminal status of a successfully processed
   # request
-  @COMPLETE:'COMPLETED'
+  @COMPLETE:'COMPLETE'
   # @property [String]
   # {ExtensionPoint}s will set this status if an
   # exception occurs during execution of an {Extension}
@@ -37,10 +38,10 @@ class RequestStatus
   # and will be cleaned up, see {Cleanup}
   @CANCELED:'CANCELED'
   # @property [Array<String>] Collection of all defined status'
-  @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETED','ERROR','CANCELED']
+  @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
-# A crawl request is the central object of processing. It is not to be confused with an Http(s) request
-# (which might be created during the processing of the corresponding crawl request).
+# The crawl request is the central object of processing. It is not to be confused with an Http(s) request
+# (which might be created during the processing of its corresponding crawl request).
 # Each crawl request has a lifecycle determined by the state diagram as defined by the {Crawler}
 # and its {Extension}s.
 # A crawl request encapsulates all of the state associated with the processing of a single request.
@@ -75,6 +76,7 @@ class CrawlRequest
       predecessors : predecessors
     @changeListeners = {}
     @context = context
+    @response = new Response
 
 
   # Register a listener {Function} to be invoked whenever the

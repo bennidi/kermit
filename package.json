@@ -36,6 +36,7 @@
     "merge": "^1.2.0",
     "mitm": "^1.2.0",
     "request": "^2.67.0",
+    "through2": "^2.0.0",
     "tough-cookie": "^2.2.1",
     "urijs": "^1.17.0",
     "valid-url": "^1.0.9",

@@ -1,12 +1,22 @@
 {Extension, ExtensionDescriptor} = require '../Extension.coffee'
 {Status} = require '../CrawlRequest.coffee'
 {QueueManager} = require '../QueueManager.coffee'
+through = require 'through2'
+stream = require 'stream'
 
 class TransitionRecorder extends Extension
 
   # @nodoc
   constructor: (@done)->
-    super  Status.ALL
+    super
+      INITIAL: @apply
+      SPOOLED: @apply
+      READY: @apply
+      FETCHING: @apply
+      FETCHED: @apply
+      COMPLETE: @apply
+      ERROR: @apply
+      CANCELED : @apply
     @expected = {}
     @requests = 0
 
@@ -25,8 +35,27 @@ class TransitionRecorder extends Extension
 class RejectingExtension extends Extension
 
   constructor: ->
-    super ["INITIAL"]
+    super INITIAL: @apply
     @invocations = 0
+
+  apply: (request) ->
+    @log.info "Rejecting " + request.url()
+    request.cancel("Rejected by RejectingExtension")
+
+class LogStream extends stream.Writable
+
+  constructor: (@target = []) ->
+    super
+
+  _write: (chunk, enc, next) ->
+    #console.log chunk.toString()
+    next()
+
+class ResponseStreamLogger extends Extension
+
+  constructor: ->
+    super INITIAL: (request) ->
+      request.response.incoming.pipe new LogStream
 
   apply: (request) ->
     @log.info "Rejecting " + request.url()
@@ -47,8 +76,35 @@ class MockContext
     log : (level, msg) -> console.log msg
 
 
+
+
+# https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/
+# https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html
+# Thanks to http://jeroenpelgrims.com/node-streams-in-coffeescript/
+# https://github.com/dominictarr/stream-spec
+class CharStream extends stream.Readable
+  constructor: (@s) ->
+    super
+
+  _read: ->
+    for c in @s
+      @push c
+    @push null
+
+class InmemoryStream extends stream.Writable
+
+  constructor: (@target = []) ->
+    super
+
+  _write: (chunk, enc, next) ->
+    @target.push chunk
+    next()
+
 module.exports = {
   RejectingExtension
   TransitionRecorder
   MockContext
+  CharStream
+  InmemoryStream
+  ResponseStreamLogger
 }

@@ -12,17 +12,16 @@ toLocalPath = (basedir = "", uri) ->
 class OfflineStorage extends Extension
 
   constructor: (opts = {}) ->
-    super [Status.FETCHED]
+    super
+      FETCHED: (request) =>
+        # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
+        path = toLocalPath @basedir , request.uri()
+        #@log.debug "Storing #{request.body.length} bytes to #{path}"
+        fs.outputFileSync path, request.response.content()
 
   initialize: (context) ->
     super context
     @basedir = context.crawler.basePath() + "/"
-
-  apply: (request) ->
-    # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-    path = toLocalPath @basedir , request.uri()
-    @log.debug "Storing #{request.body.length} bytes to #{path}"
-    fs.outputFileSync path, request.body
 
 
 class OfflineServer extends Extension
@@ -31,9 +30,8 @@ class OfflineServer extends Extension
     port : 3000
 
   constructor: (opts = {}) ->
-    super [Status.INITIAL]
+    super INITIAL : @apply
     @opts = Extension.mergeOptions OfflineServer.defaultOpts, opts
-
 
   initialize: (context) ->
     super context
