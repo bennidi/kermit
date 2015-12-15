@@ -2,11 +2,11 @@
        src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
        width="80" height="15" alt="WTFPL" /></a>
 
-Meet Kermit...the sloth
-=======================
-
 > Kermit is an extensible and feature rich web-scraper that comes with many useful extensions for
 > scraping data from the web
+
+Meet Kermit ...the sloth
+========================
 
 Kermit in a Nutshell:
 
@@ -19,15 +19,21 @@ Kermit in a Nutshell:
     * Persistent queueing system with configurable rate limits per domain (regex)
     * Automated resource discovery (links, images, resources etc.)
     * Html extraction support
-  * Thoroughly documented using codo: Read the [api-docs](https://open-medicine.initiative.github.io/kermit) 
+  * Thoroughly documented using codo: Read the [api-docs](https://open-medicine-initiative.github.io/kermit) 
 
 
 ## Installation
     
-	$ npm install -g open-medicine-initiative/code gulpjs/gulp-cli#4.0
+### Prerequisites
+    
+  * Installation of Node.js. Recommendation: Use nvm and install 5.0
+  * (optional) Installation of Tor  
+
+### Setup
+    
+	$ npm install -g open-medicine-initiative/codo gulpjs/gulp-cli#4.0
 	$ npm install
 	$ npm test
-    $ sudo apt-get install tor # if you want to use the Tor network
 
 ## Documentation
 
