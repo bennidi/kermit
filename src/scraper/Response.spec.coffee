@@ -1,5 +1,5 @@
-{Response} = require './Pipeline.coffee'
-{CharStream} = require './util/testutils.coffee'
+{Response} = require './Response.coffee'
+{CharStream} = require './util/utils.coffee'
 through = require 'through2'
 
 describe  'Pipeline',  ->

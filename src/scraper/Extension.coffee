@@ -1,18 +1,18 @@
 merge = require 'merge'
 
 # {Extension}s are the core abstraction for adding actual request processing functionality
-# to the {Crawler}. All of the available request processing functionality, like filtering,
+# to the {Crawler}. In fact, **ALL** of the available request processing functionality like filtering,
 # queueing, streaming, logging etc. is implemented by means of extensions.
 #
-# Each extension exposes one or more handlers for request processing by association them
-# with one of the defined {CrawlRequest.Status} values.
-# Thereby, extensions are associated with at least one {ExtensionPoint}.
-
-# @see {Crawler} for the state diagram that models the request flow and respective
-# {ExtensionPoint}s.
-
-# A major motivation behind the extension design is to support the principle
-# of separations of concern/responsibility and to encourage the development of relatively
+# Each extension can expose one handler for request processing by mapping it to
+# one of the defined {CrawlRequest.Status} values.
+# This mapping implicitly associates each extension with the {ExtensionPoint} that
+# corresponds to the mapped {CrawlRequest.Status} value.
+# @see {Crawler} for the state diagram modeling the values and transitions of {CrawlRequest.Status}
+# and respective {ExtensionPoint}s.
+#
+# A major motivation of the extension design is to support the principle
+# of separations of concern/single responsibility and to encourage the development of relatively
 # small, testable and reusable request processing components.
 # @abstract
 class Extension
@@ -22,9 +22,10 @@ class Extension
   @mergeOptions : (a,b) ->
     merge.recursive a,b
 
-
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
+  # @param handlers [Object] A mapping of {CrawlRequest.Status} values
+  # to handlers that will be invoked for requests with that status
   constructor: (@handlers = {}) ->
     @name = @constructor.name
 
@@ -44,7 +45,7 @@ class Extension
   # @abstract
   destroy : () ->
 
-  # Get the list of {ExtensionPoint} identifiers handled by this extension.
+  # Get all {CrawlRequest.Status} values handled by this extension
   targets: () ->
     (phase for phase of @handlers)
 
@@ -57,7 +58,9 @@ class Extension
     if !@context
       throw new Error "An extension requires a context object"
 
+
 module.exports = {
   Extension
+
 }
 

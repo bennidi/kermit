@@ -1,5 +1,5 @@
 URI = require 'urijs'
-{Response} = require './Pipeline.coffee'
+{Response} = require './Response.coffee'
 
 
 # At any time, each request has a status value equal to one of the values
@@ -103,6 +103,9 @@ class CrawlRequest
 
   # @return [String] The synthetic id of this request
   id: () -> @state.id
+
+  useSSL: () ->
+    @uri().protocol() is "https"
 
   # Change the status and notify subscribed listeners
   # or retrieve the current status value

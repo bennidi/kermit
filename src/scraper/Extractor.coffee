@@ -1,11 +1,5 @@
 htmlToJson = require 'html-to-json'
 
-# An extractor is a combination of selector and processor.
-# TODO: Refer to html-to-json documentation here
-class Extractor
-
-  constructor: (@selector, @processor) ->
-
 # Wrapper around html-to-json library. Allows to compose {Extractor}s and run them against
 # any piece of valid html code.
 #
@@ -27,8 +21,8 @@ class HtmlExtractor
     @extractors = []
 
   extract: (selector) ->
-    then : (handler) =>
-      @extractors.push new Extractor selector, handler
+    then : (processor) =>
+      @extractors.push {selector, processor}
 
   process: (input) ->
     htmlToJson.batch(input, htmlToJson.createParser selectors @extractors).done processors @extractors

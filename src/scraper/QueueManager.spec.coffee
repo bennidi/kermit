@@ -1,6 +1,6 @@
 {CrawlRequest} = require('./CrawlRequest')
 Queue = require('./QueueManager').QueueManager
-{MockContext} = require './util/testutils.coffee'
+{MockContext} = require './util/spec.utils.coffee'
 
 describe  'QueueManager',  ->
   describe 'manages requests in different states', ->

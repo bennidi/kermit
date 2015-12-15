@@ -1,5 +1,6 @@
 cherry = require './cherry.modules'
-{RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/testutils.coffee'
+{RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils.coffee'
+{ResponseStreamLogger} = require './util/utils.coffee'
 {Status} = require './CrawlRequest.coffee'
 
 describe  'Crawler',  ->

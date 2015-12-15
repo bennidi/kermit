@@ -1,31 +1,46 @@
-CherryTree
-==============
+<a href="http://www.wtfpl.net/"><img
+       src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
+       width="80" height="15" alt="WTFPL" /></a>
 
-A toolstack for convenient development and execution of functional webscraping scripts. Scripts can be composed
-using a publish-subscribe like pattern.
- 
-Functional webscrapers (cherry pickers) are implemented as simple functions which are leveraged to have access to 
-the scraping environment such that it is easy to build site traversals with decoupled scraper components.
+Meet Kermit...the sloth
+=======================
 
-Run these commands for initial setup and test run
+> Kermit is an extensible and feature rich web-scraper that comes with many useful extensions for
+> scraping data from the web
 
-	$ npm install gulpjs/gulp-cli#4.0 codo -g
+Kermit in a Nutshell:
+
+  * Written entirely in CoffeeScript. Designed for extensibility and ease of use.
+  * Built around solid js libraries (request, lokijs, through2, lodash, koa, fs-extra, urijs, cheerio)
+  * Handles request data using streams
+  * Extensible component model for extension with custom features
+  * Comprehensive set of composable extensions
+    * Configurable request filtering (regex blacklist, regex whitelist, custom filters)
+    * Persistent queueing system with configurable rate limits per domain (regex)
+    * Automated resource discovery (links, images, resources etc.)
+    * Html extraction support
+  * Thoroughly documented using codo: Read the [api-docs](https://open-medicine.initiative.github.io/kermit) 
+
+
+## Installation
+    
+	$ npm install -g open-medicine-initiative/code gulpjs/gulp-cli#4.0
 	$ npm install
 	$ npm test
+    $ sudo apt-get install tor # if you want to use the Tor network
+
+## Documentation
 
 
-Tutorial
---------
 
+##License
+
+See the [License.md](License.md)
 
 
 TODO
 ====
-
-  + Verify correctness of rate limits
-  + Select QueueWorker callback interval and batch size (options)
-  + Introduce common basedir as Crawler option, create and ensure that sub folders (for logs) exist
-  + optimize log levels
+  + Create
   + Handle Request timeouts and 404
     
     

@@ -1,6 +1,6 @@
 {RequestFilter, ByUrl, WithinDomain, MimeTypes} = require './core.filter.coffee'
 {CrawlRequest} = require '../CrawlRequest.coffee'
-{MockContext} =  require '../util/testutils.coffee'
+{MockContext} =  require '../util/spec.utils.coffee'
 
 describe  'Request filter',  ->
   describe 'is used for flexible filtering of requests', ->

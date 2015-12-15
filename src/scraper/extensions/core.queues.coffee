@@ -53,8 +53,6 @@ class QueueWorker extends Extension
     @queue = context.queue
     @requests = context.requests
 
-
-  #
   # @private
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached

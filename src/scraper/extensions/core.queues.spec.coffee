@@ -1,6 +1,6 @@
 {QueueConnector} = require './core.queues.coffee'
 {CrawlRequest} = require '../CrawlRequest.coffee'
-{MockContext} =  require '../util/testutils.coffee'
+{MockContext} =  require '../util/spec.utils.coffee'
 
 describe  'Queueing extension',  ->
   describe 'QueueConnector', ->

@@ -1,5 +1,5 @@
 {CrawlRequest, Status} = require('./CrawlRequest')
-{MockContext} = require('./util/testutils.coffee')
+{MockContext} = require('./util/spec.utils.coffee')
 Queue = require('./QueueManager')
 
 describe  'Requests',  ->

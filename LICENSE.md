@@ -1,19 +1,13 @@
-CherryTree
-==============
+       DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+                Version 2, December 2004 
 
-A toolstack for convenient development and execution of functional webscraping scripts. Scripts can be composed
-using a publish-subscribe like pattern.
- 
-Functional webscrapers (cherry pickers) are implemented as simple functions which are leveraged to have access to 
-the scraping environment such that it is easy to build site traversals with decoupled scraper components.
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net> 
 
-Run these commands for initial setup and test run
+ Everyone is permitted to copy and distribute verbatim or modified 
+ copies of this license document, and changing it is allowed as long 
+ as the name is changed. 
 
-	$ npm install gulpjs/gulp-cli#4.0 -g
-	$ npm install
-	$ npm test
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
 
-
-Tutorial
---------
-
+  0. You just DO WHAT THE FUCK YOU WANT TO.

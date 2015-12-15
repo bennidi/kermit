@@ -4,6 +4,8 @@
 through = require 'through2'
 stream = require 'stream'
 
+# Record status transitions of all requests and assert the a specified series of
+# transitions has been made
 class TransitionRecorder extends Extension
 
   # @nodoc
@@ -20,6 +22,7 @@ class TransitionRecorder extends Extension
     @expected = {}
     @requests = 0
 
+  # @nodoc
   apply: (request) ->
     @expected[request.url()] = @expected[request.url()].filter (status) -> status isnt request.status()
     #@log.info @expected[request.url()]
@@ -42,25 +45,6 @@ class RejectingExtension extends Extension
     @log.info "Rejecting " + request.url()
     request.cancel("Rejected by RejectingExtension")
 
-class LogStream extends stream.Writable
-
-  constructor: (@target = []) ->
-    super
-
-  _write: (chunk, enc, next) ->
-    #console.log chunk.toString()
-    next()
-
-class ResponseStreamLogger extends Extension
-
-  constructor: ->
-    super INITIAL: (request) ->
-      request.response.incoming.pipe new LogStream
-
-  apply: (request) ->
-    @log.info "Rejecting " + request.url()
-    request.cancel("Rejected by RejectingExtension")
-
 class MockContext
   execute: (state, request) -> request
   queue: new QueueManager
@@ -75,36 +59,8 @@ class MockContext
     trace : (msg) -> console.log msg
     log : (level, msg) -> console.log msg
 
-
-
-
-# https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/
-# https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html
-# Thanks to http://jeroenpelgrims.com/node-streams-in-coffeescript/
-# https://github.com/dominictarr/stream-spec
-class CharStream extends stream.Readable
-  constructor: (@s) ->
-    super
-
-  _read: ->
-    for c in @s
-      @push c
-    @push null
-
-class InmemoryStream extends stream.Writable
-
-  constructor: (@target = []) ->
-    super
-
-  _write: (chunk, enc, next) ->
-    @target.push chunk
-    next()
-
 module.exports = {
   RejectingExtension
   TransitionRecorder
   MockContext
-  CharStream
-  InmemoryStream
-  ResponseStreamLogger
 }
