@@ -16,13 +16,13 @@ Crawler = new sloth.Crawler
       scripts:false
       links:false]
   options:
-    Queue:
+    Queueing:
       limits : [
         domain : ".*jimmycuadra.com.*",
         to : 5,
         per : 'second'
       ]
-    Filter:
+    Filtering:
       allow : [
         WithinDomain "jimmycuadra"
       ]

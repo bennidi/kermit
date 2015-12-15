@@ -3,11 +3,10 @@ URI = require 'urijs'
 
 
 # At any time, each request has a status value equal to one of the values
-# defined by this class. Any request starts with status INITIAL (set in constructor).
-# From status INITIAL it transitions forward while being processed by the {Extensions}s
+# defined by this class. Any request starts with status {RequestStatus.INITIAL}
+# From status {RequestStatus.INITIAL} it transitions forward while being processed by the {Extension}s
 # that handle requests of that particular status.
-# A full state diagram of the status transitions is found in the documentation of the
-# {Crawler}
+# See {Crawler} for a complete state diagram of the status transitions
 class RequestStatus
   # @property [String] The first status of any request
   @INITIAL:'INITIAL'
@@ -43,12 +42,12 @@ class RequestStatus
 # The crawl request is the central object of processing. It is not to be confused with an Http(s) request
 # (which might be created during the processing of its corresponding crawl request).
 # Each crawl request has a lifecycle determined by the state diagram as defined by the {Crawler}
-# and its {Extension}s.
+# and its {ExtensionPoint}s.
 # A crawl request encapsulates all of the state associated with the processing of a single request.
 # During its lifecycle the request is enriched with listeners and properties by the {Extension}s
-# that take care of its correct processing.
-# Any information necessary for request processing SHOULD be ATTACHED to the request in order
-# to centralize state. Any property added to its internal {CrawlRequest.state} property will be persistent
+# that take care of its processing.
+# Any information necessary for request processing is usually to the request in order
+# to centralize state. Any property added to its internal state {CrawlRequest#state} will be persistent
 # after the next status transition.
 class CrawlRequest
 
@@ -104,6 +103,7 @@ class CrawlRequest
   # @return [String] The synthetic id of this request
   id: () -> @state.id
 
+  # Check whether https should be used to fetch this request  
   useSSL: () ->
     @uri().protocol() is "https"
 
@@ -133,7 +133,7 @@ class CrawlRequest
   spool: ->
     if @isInitial()
       @status(RequestStatus.SPOOLED);this
-    else throw new Error "Transition from #{@state} to SPOOLED not allowed"
+    else throw new Error "Transition from #{@state.status} to SPOOLED not allowed"
 
   # Change the requests status to READY
   # @return {CrawlRequest} This request
@@ -141,7 +141,7 @@ class CrawlRequest
   ready: ->
     if @isSPOOLED()
       @status(RequestStatus.READY);this
-    else throw new Error "Transition from #{@state} to READY not allowed"
+    else throw new Error "Transition from #{@state.status} to READY not allowed"
 
   # Change the requests status to FETCHING
   # @return {CrawlRequest} This request
@@ -149,7 +149,7 @@ class CrawlRequest
   fetching: ->
     if @isReady()
       @status(RequestStatus.FETCHING);this
-    else throw new Error "Transition from #{@state} to FETCHING not allowed"
+    else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
 
   # Change the requests status to FETCHED
   # @return {CrawlRequest} This request
@@ -159,7 +159,7 @@ class CrawlRequest
       @body = body
       @respone = response
       @status(RequestStatus.FETCHED);this
-    else throw new Error "Transition from #{@state} to FETCHED not allowed"
+    else throw new Error "Transition from #{@state.status} to FETCHED not allowed"
 
   # Change the requests status to COMPLETE
   # @return {CrawlRequest} This request
@@ -167,7 +167,7 @@ class CrawlRequest
   complete: ->
     if @isFetched()
       @status(RequestStatus.COMPLETE);this
-    else throw new Error "Transition from #{@state} to COMPLETE not allowed"
+    else throw new Error "Transition from #{@state.status} to COMPLETE not allowed"
 
   # Change the requests status to ERROR
   # @return {CrawlRequest} This request

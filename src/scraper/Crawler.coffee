@@ -14,7 +14,7 @@ bunyan = require 'bunyan'
 class ExtensionPoint
 
   # Construct an extension point
-  # @param phase [String] The phase that corresponds to the respective value of {CrawlRequest.Status}
+  # @param phase [String] The phase that corresponds to the respective value of {RequestStatus}
   constructor: (@phase, @context) ->
     throw new Error("Please provide phase and description") if !@phase
     @extensions = []
@@ -46,7 +46,10 @@ class ExtensionPoint
     @callExtensions(request)
     request
 
-# Extension point for extensions that process requests with status "INITIAL"
+# Extension point for extensions that process requests with status {RequestStatus.INITIAL}
+#   * Filtering
+#   * Connect to {QueueManager Queueing System}
+#   * User extensions
 class INITIAL extends ExtensionPoint
   @phase = Status.INITIAL
   # @nodoc
@@ -139,6 +142,26 @@ class CrawlerContext
 # The central object for configuring an instance of {Crawler}
 class CrawlerConfig
 
+  # @nodoc
+  defaultOpts : {
+    name      : "kermit"
+    basedir   : "/tmp/sloth"
+    extensions: [] # Clients can add extensions
+    options   : # Options of each core extension can be customized here
+      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streaming: {} # Options for the [Streamer]
+      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Logging :
+        Streams: []
+  }
+
+  # @param config [Object] The configuration parameters
+  # @option config [String] name The name of the crawler
+  # @option config [String] basedir The base directory used for all data (logs, offline storage etc.)
+  # @option config [Array<Extension>] extensions An array of user {Extension}s to be installed
+  # @option config.options [Object] Queue Options for {QueueWorker} and {QueueConnector}
+  # @option config.options [Object] Streaming Options for {RequestStreamer}
+  # @option config.options [Object] Filtering Options for {RequestFilter} and {DuplicatesFilter}
   constructor: (config = {}) ->
     config = Extension.mergeOptions @defaultOpts, config
     @name = config.name
@@ -146,39 +169,38 @@ class CrawlerConfig
     @extensions = config.extensions
     @options = config.options
 
-  # @property [Object] An initial set of configuration options
-  # that can be used to instantiate a {Crawler}
-  defaultOpts : {
-    name      : "kermit"
-    basedir   : "/tmp/sloth"
-    extensions: [] # Clients can add extensions
-    options   : # Options of each core extension can be customized here
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streamer: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-      Logging :
-        Streams: []
-  }
-
-  # @property [Array<ExtensionPoint.constructor>] An array of all defined extension point constructors
-  # The set of all provided extension points. One for each distinct status
-  # in the {CrawlRequest.Status} state diagram.
-  #
-  # Extensions are added to extension points during initialization.
-  #
-  # Core extensions are added automatically, user extensions are specified in the
-  # options of the constructor.
-  @extensionPoints: [
-    INITIAL,
-    FETCHING,
-    SPOOLED,
-    READY,
-    FETCHING,
-    FETCHED,
-    COMPLETE,
-    ERROR,
-    CANCELED
-  ]
+# Overview of all available {ExtensionPoint}s - one for each distinct status
+# in the {C} state diagram.
+#
+# Extensions are added to extension points during initialization.
+#
+# Core extensions are added automatically, user extensions are specified in the
+# options of the constructor.
+class ExtensionPoints
+  # @property [ExtensionPoint]
+  # Process requests in state INITIAL. See {INITIAL}
+  @INITIAL : INITIAL
+  # @property [ExtensionPoint]
+  # Process requests in state FETCHING. See {FETCHING}
+  @SPOOLED : SPOOLED
+  # @property [ExtensionPoint]
+  # Process requests in state READY. See {READY}
+  @READY : READY
+  # @property [ExtensionPoint]
+  # Process requests in state FETCHING. See {FETCHING}
+  @FETCHING : FETCHING
+  # @property [ExtensionPoint]
+  # Process requests in state FETCHED. See {FETCHED}
+  @FETCHED : FETCHED
+  # @property [ExtensionPoint]
+  # Process requests in state COMPLETE. See {COMPLETE}
+  @COMPLETE : COMPLETE
+  # @property [ExtensionPoint]
+  # Process requests in state ERROR. See {ERROR}
+  @ERROR : ERROR
+  # @property [ExtensionPoint]
+  # Process requests in state CANCELED. See {CANCELED}
+  @CANCELED : CANCELED
 
 ###
 The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s of
@@ -187,11 +209,11 @@ the {ExtensionPoint} that matches the request's current status.
 All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as {Extension}s to {ExtensionPoint}s.
 
-The crawler defines exactly one {ExtensionPoint} for each distinct value of {CrawlRequest.Status}.
+The crawler defines exactly one {ExtensionPoint} for each distinct value of {RequestStatus}.
 Each extension point contains the processing steps carried out when the request changes its status
 to the respective phase.
 
-The processing of a request follows the {CrawlRequest.Status} transitions which are defined by the
+The processing of a request follows the {RequestStatus} transitions which are defined by the
 {CrawlRequest}.
 
 ```txt
@@ -273,7 +295,7 @@ class Crawler
       streams: streams
 
   # Create a new crawler with the given options
-  # @param config [Object] The configuration object that will be used
+  # @param config [Object] The configuration for this crawler. See {CrawlerConfig}
   # @see {CrawlerConfig.defaultOpts}
   constructor: (config = {}) ->
     # Build and verify (TODO) options
@@ -281,7 +303,7 @@ class Crawler
     @config = new CrawlerConfig config
     if @config.options.Logging.Streams.length is 0
       @config.options.Logging.Streams = defaultStreams @basePath()
-    fse.mkdirsSync @basePath() + "/logs"
+    fse.mkdirsSync "#{@basePath()}/logs"
 
     # Create the root context of this crawler
     @context = new CrawlerContext
@@ -292,7 +314,7 @@ class Crawler
 
     # Create and add extension points
     @extpoints = {}
-    @extpoints[ExtensionPoint.phase] = new ExtensionPoint @context for ExtensionPoint in CrawlerConfig.extensionPoints
+    @extpoints[ExtensionPoint.phase] = new ExtensionPoint @context for name, ExtensionPoint of ExtensionPoints
     @_extensions = []
 
     # Core extensions that need to run BEFORE user extensions

@@ -1,20 +1,31 @@
 merge = require 'merge'
 
-# {Extension}s are the core abstraction for adding actual request processing functionality
-# to the {Crawler}. In fact, **ALL** of the available request processing functionality like filtering,
-# queueing, streaming, logging etc. is implemented by means of extensions.
-#
-# Each extension can expose one handler for request processing by mapping it to
-# one of the defined {CrawlRequest.Status} values.
-# This mapping implicitly associates each extension with the {ExtensionPoint} that
-# corresponds to the mapped {CrawlRequest.Status} value.
-# @see {Crawler} for the state diagram modeling the values and transitions of {CrawlRequest.Status}
-# and respective {ExtensionPoint}s.
-#
-# A major motivation of the extension design is to support the principle
-# of separations of concern/single responsibility and to encourage the development of relatively
-# small, testable and reusable request processing components.
-# @abstract
+###
+{Extension}s are the core abstraction for adding actual request processing functionality
+to the {Crawler}. In fact, **all** of the available **request processing functionality** like filtering,
+queueing, streaming, logging etc. **is implemented by means of extensions**.
+
+A major motivation of the extension design is to support the principles
+of separation of concern as well as single responsibility.
+It aims to encourage the development of relatively small, testable and reusable
+request processing components.
+
+Each extension can expose handlers for request processing by mapping them to
+one of the defined values of {RequestStatus}.
+Note:
+ -  The mapping implicitly associates each extension with the {ExtensionPoint}
+   corresponding to one of {RequestStatus}.ALL
+ -  Each extension may expose only one handler per status value
+
+See {Crawler} for the state diagram modeling the values and transitions of {RequestStatus}
+and respective {ExtensionPoint}s.
+
+@abstract
+@see Crawler
+@see ExtensionPoint
+@see CrawlRequest
+  
+###
 class Extension
 
   # Merge two objects recursively.
@@ -24,7 +35,7 @@ class Extension
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
-  # @param handlers [Object] A mapping of {CrawlRequest.Status} values
+  # @param handlers [Object] A mapping of {RequestStatus} values
   # to handlers that will be invoked for requests with that status
   constructor: (@handlers = {}) ->
     @name = @constructor.name
@@ -45,7 +56,7 @@ class Extension
   # @abstract
   destroy : () ->
 
-  # Get all {CrawlRequest.Status} values handled by this extension
+  # Get all {RequestStatus} values handled by this extension
   targets: () ->
     (phase for phase of @handlers)
 
@@ -61,6 +72,5 @@ class Extension
 
 module.exports = {
   Extension
-
 }
 

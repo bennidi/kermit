@@ -8,7 +8,7 @@ Crawler = new sloth.Crawler
     new  ResponseStreamLogger true
   ]
   options:
-    Streamer:
+    Streaming:
       Tor :
         enabled : true
 
