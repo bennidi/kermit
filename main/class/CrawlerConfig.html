@@ -52,21 +52,13 @@
   extensions: [],
   options: {
     Queue: {},
-    Streamer: {},
+    Streaming: {},
     Filter: {},
     Logging: {
       Streams: []
     }
   }
 }</code></pre>
-    
-  </dd>
-  <dt id='extensionPoints-variable'>
-    extensionPoints
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>[INITIAL, FETCHING, SPOOLED, READY, FETCHING, FETCHED, COMPLETE, ERROR, CANCELED]</code></pre>
     
   </dd>
 </dl>
@@ -79,12 +71,98 @@
 <b>constructor</b><span>(config = {})</span>
       <br>
     </p>
-    
+    <div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>config</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>The configuration parameters </span>
+    </li>
+  </ul>
+  <h3>
+    Options Hash:
+    (config):
+  </h3>
+  <ul class='options'>
+    <li>
+      <span class='name'>name</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>The name of the crawler </span>
+    </li>
+    <li>
+      <span class='name'>basedir</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>The base directory used for all data (logs, offline storage etc.) </span>
+    </li>
+    <li>
+      <span class='name'>extensions</span>
+      <span class='type'>
+        (
+          <tt>Array&lt;Extension&gt;</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>An array of user <a href='../class/Extension.html'>Extension</a>s to be installed </span>
+    </li>
+  </ul>
+  <h3>
+    Options Hash:
+    (config.options):
+  </h3>
+  <ul class='options'>
+    <li>
+      <span class='name'>Queue</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>Options for <a href='../class/QueueWorker.html'>QueueWorker</a> and <a href='../class/QueueConnector.html'>QueueConnector</a> </span>
+    </li>
+    <li>
+      <span class='name'>Streaming</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>Options for <a href='../class/RequestStreamer.html'>RequestStreamer</a> </span>
+    </li>
+    <li>
+      <span class='name'>Filtering</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>Options for <a href='../class/RequestFilter.html'>RequestFilter</a> and <a href='../class/DuplicatesFilter.html'>DuplicatesFilter</a> </span>
+    </li>
+  </ul>
+</div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 15:30:09 by
+  December 15, 15 18:31:12 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

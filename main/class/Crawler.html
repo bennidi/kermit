@@ -37,9 +37,9 @@
       <div class='docstring'>
   <p>The Crawler coordinates execution of submitted <a href='../class/CrawlRequest.html'>CrawlRequest</a> by applying all <a href='../class/Extension.html'>Extension</a>s of
 the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> that matches the request&#39;s current status.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
-is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>The crawler defines exactly one <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for each distinct value of {CrawlRequest.Status}.
+is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>The crawler defines exactly one <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
 Each extension point contains the processing steps carried out when the request changes its status
-to the respective phase.</p><p>The processing of a request follows the {CrawlRequest.Status} transitions which are defined by the
+to the respective phase.</p><p>The processing of a request follows the <a href='../class/RequestStatus.html'>RequestStatus</a> transitions which are defined by the
 <a href='../class/CrawlRequest.html'>CrawlRequest</a>.</p><pre><code class="lang-txt">
        Steps INITIAL
     --------------------
@@ -163,7 +163,7 @@ to the respective phase.</p><p>The processing of a request follows the {CrawlReq
         )
       </span>
       &mdash;
-      <span class='desc'>The configuration object that will be used </span>
+      <span class='desc'>The configuration for this crawler. See <a href='../class/CrawlerConfig.html'>CrawlerConfig</a> </span>
     </li>
   </ul>
   <h3>See also:</h3>
@@ -266,7 +266,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 15:30:09 by
+  December 15, 15 18:31:12 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

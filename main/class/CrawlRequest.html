@@ -38,12 +38,12 @@
   <p>The crawl request is the central object of processing. It is not to be confused with an Http(s) request
 (which might be created during the processing of its corresponding crawl request).
 Each crawl request has a lifecycle determined by the state diagram as defined by the <a href='../class/Crawler.html'>Crawler</a>
-and its <a href='../class/Extension.html'>Extension</a>s.
+and its <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.
 A crawl request encapsulates all of the state associated with the processing of a single request.
 During its lifecycle the request is enriched with listeners and properties by the <a href='../class/Extension.html'>Extension</a>s
-that take care of its correct processing.
-Any information necessary for request processing SHOULD be ATTACHED to the request in order
-to centralize state. Any property added to its internal {CrawlRequest.state} property will be persistent
+that take care of its processing.
+Any information necessary for request processing is usually to the request in order
+to centralize state. Any property added to its internal state {CrawlRequest#state} will be persistent
 after the next status transition.</p>
 </div>
 <div class='tags'>
@@ -107,6 +107,7 @@ changes.</p>
       </a>
     </span>
     <span class='desc'>
+      Check whether https should be used to fetch this request 
     </span>
   </li>
   <li>
@@ -505,7 +506,11 @@ changes. The post-change state of the request will be passed to the handler</p>
 <b>useSSL</b><span>()</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Check whether https should be used to fetch this request</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='status-dynamic'>
@@ -1112,7 +1117,7 @@ That predecessor might in turn have been created by another request and so on.</
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 15:30:09 by
+  December 15, 15 18:31:12 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

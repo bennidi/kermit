@@ -45,20 +45,30 @@
     
   </div>
   <p><a href='../class/Extension.html'>Extension</a>s are the core abstraction for adding actual request processing functionality
-to the <a href='../class/Crawler.html'>Crawler</a>. In fact, <strong>ALL</strong> of the available request processing functionality like filtering,
-queueing, streaming, logging etc. is implemented by means of extensions.</p><p>Each extension can expose one handler for request processing by mapping it to
-one of the defined {CrawlRequest.Status} values.
-This mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> that
-corresponds to the mapped {CrawlRequest.Status} value.
-and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>A major motivation of the extension design is to support the principle
-of separations of concern/single responsibility and to encourage the development of relatively
-small, testable and reusable request processing components.</p>
+to the <a href='../class/Crawler.html'>Crawler</a>. In fact, <strong>all</strong> of the available <strong>request processing functionality</strong> like filtering,
+queueing, streaming, logging etc. <strong>is implemented by means of extensions</strong>.</p><p>A major motivation of the extension design is to support the principles
+of separation of concern as well as single responsibility.
+It aims to encourage the development of relatively small, testable and reusable
+request processing components.</p><p>Each extension can expose handlers for request processing by mapping them to
+one of the defined values of <a href='../class/RequestStatus.html'>RequestStatus</a>.
+Note:</p><ul>
+<li>The mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
+corresponding to one of {RequestStatus.ALL}.</li>
+<li>Each extension may expose only one handler per <a href='../class/RequestStatus.html'>RequestStatus</a> value</li>
+</ul><p>See <a href='../class/Crawler.html'>Crawler</a> for the state diagram modeling the values and transitions of <a href='../class/RequestStatus.html'>RequestStatus</a>
+and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
 </div>
 <div class='tags'>
   <h3>See also:</h3>
   <ul class='see'>
     <li>
-      <a href='{Crawler}'>for the state diagram modeling the values and transitions of {CrawlRequest.Status}</a>
+      <a href='../class/Crawler.html'>Crawler</a>
+    </li>
+    <li>
+      <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
+    </li>
+    <li>
+      <a href='../class/CrawlRequest.html'>CrawlRequest</a>
     </li>
   </ul>
 </div>
@@ -131,7 +141,7 @@ small, testable and reusable request processing components.</p>
       </a>
     </span>
     <span class='desc'>
-      Get all {CrawlRequest.Status} values handled by this extension 
+      Get all <a href='../class/RequestStatus.html'>RequestStatus</a> values handled by this extension 
     </span>
   </li>
   <li>
@@ -189,7 +199,7 @@ to handlers that will be invoked for requests with that status</p>
         )
       </span>
       &mdash;
-      <span class='desc'>A mapping of {CrawlRequest.Status} values </span>
+      <span class='desc'>A mapping of <a href='../class/RequestStatus.html'>RequestStatus</a> values </span>
     </li>
   </ul>
 </div>
@@ -264,7 +274,7 @@ during crawler construction.</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Get all {CrawlRequest.Status} values handled by this extension</p>
+  <p>Get all <a href='../class/RequestStatus.html'>RequestStatus</a> values handled by this extension</p>
 </div>
 <div class='tags'>
 </div>
@@ -297,7 +307,7 @@ actual request processing starts</p>
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 15:30:09 by
+  December 15, 15 18:31:12 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

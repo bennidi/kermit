@@ -19,27 +19,25 @@
       Index
     </a>
     &raquo;
-    <span class='title'>RequestStatus</span>
+    <span class='title'>ExtensionPoints</span>
   </div>
 </div>
     <div id='content'>
       <h1>
         Class:
-        RequestStatus
+        ExtensionPoints
       </h1>
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;CrawlRequest.coffee</td>
+          <td>src&#47;scraper&#47;Crawler.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>At any time, each request has a status value equal to one of the values
-defined by this class. Any request starts with status {RequestStatus.INITIAL}
-From status {RequestStatus.INITIAL} it transitions forward while being processed by the <a href='../class/Extension.html'>Extension</a>s
-that handle requests of that particular status.
-See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of the status transitions</p>
+  <p>Overview of all available <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s - one for each distinct status
+in the {C} state diagram.</p><p>Extensions are added to extension points during initialization.</p><p>Core extensions are added automatically, user extensions are specified in the
+options of the constructor.</p>
 </div>
 <div class='tags'>
 </div>
@@ -47,107 +45,91 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
       <dl class='properties'>
         <dt id='INITIAL-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               INITIAL
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          The first status of any request 
+          Process requests in state INITIAL. See <a href='../class/INITIAL.html'>INITIAL</a> 
         </dd>
         <dt id='SPOOLED-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               SPOOLED
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          Spooled requests are waiting in the queuing system <a href='../class/QueueManager.html'>QueueManager</a> for further processing
-
+          Process requests in state FETCHING. See <a href='../class/FETCHING.html'>FETCHING</a> 
         </dd>
         <dt id='READY-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               READY
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          Request is ready to be fetched by the {Streamer} 
+          Process requests in state READY. See <a href='../class/READY.html'>READY</a> 
         </dd>
         <dt id='FETCHING-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               FETCHING
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          Http(s) call is made and response is being streamed 
+          Process requests in state FETCHING. See <a href='../class/FETCHING.html'>FETCHING</a> 
         </dd>
         <dt id='FETCHED-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               FETCHED
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          All data has been received and the response is ready for further processing
-
+          Process requests in state FETCHED. See <a href='../class/FETCHED.html'>FETCHED</a> 
         </dd>
         <dt id='COMPLETE-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               COMPLETE
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          <p>Response processing is finished. This is the terminal status of a successfully processed
-request</p>
+          Process requests in state COMPLETE. See <a href='../class/COMPLETE.html'>COMPLETE</a> 
         </dd>
         <dt id='ERROR-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               ERROR
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s will set this status if an exception occurs during execution of an <a href='../class/Extension.html'>Extension</a>
-
+          Process requests in state ERROR. See <a href='../class/ERROR.html'>ERROR</a> 
         </dd>
         <dt id='CANCELED-property'>
           <span class='signature'>
-            (String)
+            (ExtensionPoint)
             <b>
               CANCELED
             </b>
           </span>
         </dt>
         <dd class='desc'>
-          <p>Any extension might cancel a request. Canceled requests are not elligible for further processing
-and will be cleaned up, see <a href='../class/Cleanup.html'>Cleanup</a></p>
-        </dd>
-        <dt id='ALL-property'>
-          <span class='signature'>
-            (Array&lt;String&gt;)
-            <b>
-              ALL
-            </b>
-          </span>
-        </dt>
-        <dd class='desc'>
-          Collection of all defined status&#39; 
+          Process requests in state CANCELED. See <a href='../class/CANCELED.html'>CANCELED</a> 
         </dd>
       </dl>
     </div>
