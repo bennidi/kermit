@@ -8,33 +8,21 @@ URI = require 'urijs'
 # that handle requests of that particular status.
 # See {Crawler} for a complete state diagram of the status transitions
 class RequestStatus
-  # @property [String] The first status of any request
+  # @property [String] @see INITIAL
   @INITIAL:'INITIAL'
-  # @property [String]
-  # Spooled requests are waiting in the queuing system
-  # {QueueManager} for further processing
+  # @property [String] @see SPOOLED
   @SPOOLED:'SPOOLED'
-  # @property [String] Request is ready to be fetched by the {Streamer}
+  # @property [String] @see READY
   @READY:'READY'
-  # @property [String] Http(s) call is made and response is being streamed
+  # @property [String] @see FETCHING
   @FETCHING:'FETCHING'
-  #@property [String]
-  # All data has been received and
-  # the response is ready for further processing
+  #@property [String] @see FETCHED
   @FETCHED:'FETCHED'
-  # @property [String]
-  # Response processing is finished.
-  # This is the terminal status of a successfully processed
-  # request
+  # @property [String] @see COMPLETE
   @COMPLETE:'COMPLETE'
-  # @property [String]
-  # {ExtensionPoint}s will set this status if an
-  # exception occurs during execution of an {Extension}
+  # @property [String] @see ERROR
   @ERROR:'ERROR'
-  # @property [String]
-  # Any extension might cancel a request.
-  # Canceled requests are not elligible for further processing
-  # and will be cleaned up, see {Cleanup}
+  # @property [String] @see CANCELED
   @CANCELED:'CANCELED'
   # @property [Array<String>] Collection of all defined status'
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
@@ -154,10 +142,8 @@ class CrawlRequest
   # Change the requests status to FETCHED
   # @return {CrawlRequest} This request
   # @throw Error if request request does have other status than FETCHING
-  fetched: (body, response) ->
+  fetched: () ->
     if @isFetching()
-      @body = body
-      @respone = response
       @status(RequestStatus.FETCHED);this
     else throw new Error "Transition from #{@state.status} to FETCHED not allowed"
 

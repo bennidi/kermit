@@ -46,65 +46,87 @@ class ExtensionPoint
     @callExtensions(request)
     request
 
-# Extension point for extensions that process requests with status {RequestStatus.INITIAL}
-#   * Filtering
-#   * Connect to {QueueManager Queueing System}
-#   * User extensions
+###
+Extension point for extensions that process requests with status {RequestStatus.INITIAL}.
+This ExtensionPoint runs: Filtering, Connect to {QueueManager Queueing System}, User extensions
+###
 class INITIAL extends ExtensionPoint
   @phase = Status.INITIAL
   # @nodoc
   constructor: (@context) ->
     super Status.INITIAL, @context
 
-# Extension point for extensions that process requests with status "SPOOLED"
+###
+Extension point for extensions that process requests with status "SPOOLED"
+Spooled requests are waiting in the {QueueManager} for further processing.
+This ExtensionPoint runs: User extensions, {QueueManager}
+###
 class SPOOLED extends ExtensionPoint
   @phase = Status.SPOOLED
   # @nodoc
   constructor: (@context) ->
     super Status.SPOOLED, @context
 
-# Extension point for extensions that process requests with status "FETCHING"
-class FETCHING extends ExtensionPoint
-  @phase = Status.FETCHING
-  # @nodoc
-  constructor: (@context) ->
-    super Status.FETCHING, @context
 
-# Extension point for extensions that process requests with status "READY"
+###
+Extension point for extensions that process requests with status "READY".
+Request with status "READY" are eligible to be fetched by the {Streamer}.
+This ExtensionPoint runs: User extensions.
+###
 class READY extends ExtensionPoint
   @phase = Status.READY
   # @nodoc
   constructor: (@context) ->
     super Status.READY, @context
 
-# Extension point for extensions that process requests with status "FETCHING"
+###
+Extension point for extensions that process requests with status "FETCHING"
+Http(s) call to URL is made and response is being streamed.
+This ExtensionPoint runs: {RequestStreamer}, User extensions.
+###
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
   # @nodoc
   constructor: (@context) ->
     super Status.FETCHING, @context
 
-# Extension point for extensions that process requests with status "FETCHED"
+###
+Extension point for extensions that process requests with status "FETCHED".
+All data has been received and the response is ready for further processing.
+This ExtensionPoint runs: User extensions.
+###
 class FETCHED extends ExtensionPoint
   @phase = Status.FETCHED
   # @nodoc
   constructor: (@context) ->
     super Status.FETCHED, @context
 
-# Extension point for extensions that process requests with status "COMPLETE"
+###
+Extension point for extensions that process requests with status "COMPLETE".
+Response processing is finished. This is the terminal status of a successfully processed
+request. This ExtensionPoint runs: User extensions, {Cleanup}
+###
 class COMPLETE extends ExtensionPoint
   @phase = Status.COMPLETE
   # @nodoc
   constructor: (@context) ->
     super Status.COMPLETE, @context
 
-# Extension point for extensions that process requests with status "ERROR"
+###
+Extension point for extensions that process requests with status "ERROR".
+{ExtensionPoint}s will set this status if an exception occurs during execution of an {Extension}.
+This ExtensionPoint runs: User extensions, {Cleanup}
+###
 class ERROR extends ExtensionPoint
   @phase = Status.ERROR
   constructor: (@context) ->
     super Status.ERROR, @context
 
-# Extension point for extensions that process requests with status "CANCELED"
+###
+ExtensionPoint for extensions that process requests with status "CANCELED".
+Any extension might cancel a request. Canceled requests are not elligible for further processing
+and will be cleaned up. This ExtensionPoint runs: User extensions, {Cleanup}
+###
 class CANCELED extends ExtensionPoint
   @phase = Status.CANCELED
   # @nodoc
@@ -114,8 +136,8 @@ class CANCELED extends ExtensionPoint
 # A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
 # of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
 #
-# Any instance of {Extension} or {ExtensionPoint} may modify the context to expose additional functionality
-# to other extensions or extension points
+# Any Extension or ExtensionPoint may modify the context to expose additional functionality
+# to other Extensions or ExtensionPoints
 class CrawlerContext
 
   # Construct a new CrawlerContext
@@ -169,19 +191,22 @@ class CrawlerConfig
     @extensions = config.extensions
     @options = config.options
 
-# Overview of all available {ExtensionPoint}s - one for each distinct status
-# in the {C} state diagram.
-#
-# Extensions are added to extension points during initialization.
-#
-# Core extensions are added automatically, user extensions are specified in the
-# options of the constructor.
+
+###
+Overview of all available {ExtensionPoint}s - one for each distinct status
+in the {Crawler} state diagram.
+
+Extensions are added to extension points during initialization.
+
+Core extensions are added automatically, user extensions are specified in the
+options of the Crawler's constructor.
+###
 class ExtensionPoints
   # @property [ExtensionPoint]
   # Process requests in state INITIAL. See {INITIAL}
   @INITIAL : INITIAL
   # @property [ExtensionPoint]
-  # Process requests in state FETCHING. See {FETCHING}
+  # Process requests in state SPOOLED. See {SPOOLED}
   @SPOOLED : SPOOLED
   # @property [ExtensionPoint]
   # Process requests in state READY. See {READY}
@@ -203,52 +228,46 @@ class ExtensionPoints
   @CANCELED : CANCELED
 
 ###
-The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s of
-the {ExtensionPoint} that matches the request's current status.
+The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s
+matching the request's current status.
 
 All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as {Extension}s to {ExtensionPoint}s.
 
-The crawler defines exactly one {ExtensionPoint} for each distinct value of {RequestStatus}.
-Each extension point contains the processing steps carried out when the request changes its status
-to the respective phase.
-
-The processing of a request follows the {RequestStatus} transitions which are defined by the
-{CrawlRequest}.
+The crawler defines an ExtensionPoint for each distinct value of {RequestStatus}.
+Each ExtensionPoint wraps the processing steps carried out when the request status changes
+to a new value. The status transitions implicitly define a request flow illustrated in the
+diagram below.
 
 ```txt
 
-       Steps INITIAL
-    --------------------
-    - Filtering
-    - Connect Queue     .-------------.       .------------.            Steps
-    - User extensions   |   INITIAL   |       |  CANCELED  |          CANCELED
-                        |-------------|       |------------|            ERROR
-                        | Unprocessed |------>| Filtered   |          COMPLETED
-                        |             |       | Duplicate  |     -------------------
-                        '-------------'       |            |     - User extensions
-       Steps SPOOLED          |               '------------'     - Cleanup
-    --------------------      |
-    - User extensions         v
-                        .-------------.       .------------.           .-----------.
-                        |   SPOOLED   |       |   ERROR    |           | COMPLETED |
-                        |-------------|       |------------|           |-----------|
-                        | Waiting for |------>| Processing |           | Done!     |
-                        | free slot   |       | Error      |           |           |
-                        '-------------'       '------------'           '-----------'
-        Steps READY            |                     ^                       ^
-    --------------------       |                     |                       |
-    + User extensions          v                     |                       |
-                        .-------------.       .-------------.          .-----------.
-                        |    READY    |       |  FETCHING   |          |  FETCHED  |
-                        |-------------|       |-------------|          |-----------|
-                        | Ready for   |------>| Request     |--------->| Content   |
-                        | fetching    |       | streaming   |          | received  |
-                        '-------------'       '-------------'          '-----------'
-                                              Steps FETCHING          Steps FETCHED
-                                             ---------------------   -------------------
-                                           + Request Streaming     + User extensions
-                                           + User extensions
+  .-------------.
+ |   INITIAL   |
+ |-------------|
+ | Unprocessed |
+ |             |
+ '-------------'   \
+        |           \
+        |            \
+        |             v
+        v             .--------------------.
+ .-------------.      |  ERROR | CANCELED  |      .-----------.
+ |  SPOOLED    |      |--------------------|      | COMPLETED |
+ |-------------|  --->| - Error            |      |-----------|
+ | Waiting for |      | - Duplicate        |      | Done!     |
+ | free slot   |      | - Blacklisted etc. |      |           |
+ '-------------'      '--------------------'      '-----------'
+        |             ^         ^          ^            ^
+        |            /          |           \           |
+        |           /           |            \          |
+        v          /                          \         |
+ .-------------.         .-------------.          .-----------.
+ |    READY    |         |  FETCHING   |          |  FETCHED  |
+ |-------------|         |-------------|          |-----------|
+ | Ready for   |-------->| Request     |--------->| Content   |
+ | fetching    |         | streaming   |          | received  |
+ '-------------'         '-------------'          '-----------'
+
 
 ```
 ###
