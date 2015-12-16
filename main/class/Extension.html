@@ -53,8 +53,8 @@ request processing components.</p><p>Each extension can expose handlers for requ
 one of the defined values of <a href='../class/RequestStatus.html'>RequestStatus</a>.
 Note:</p><ul>
 <li>The mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
-corresponding to one of {RequestStatus.ALL}.</li>
-<li>Each extension may expose only one handler per <a href='../class/RequestStatus.html'>RequestStatus</a> value</li>
+corresponding to one of <a href='../class/RequestStatus.html'>RequestStatus</a>.ALL</li>
+<li>Each extension may expose only one handler per status value</li>
 </ul><p>See <a href='../class/Crawler.html'>Crawler</a> for the state diagram modeling the values and transitions of <a href='../class/RequestStatus.html'>RequestStatus</a>
 and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
 </div>
@@ -307,7 +307,7 @@ actual request processing starts</p>
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 18:31:12 by
+  December 16, 15 14:23:03 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

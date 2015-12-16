@@ -36,44 +36,38 @@
         </p>
       </nav>
       <div id='filecontents'>
-        <pre><code class="lang-txt">
-       Steps INITIAL
-    --------------------
-    - Filtering
-    - Connect Queue     .-------------.       .------------.            Steps
-    - User extensions   |   INITIAL   |       |  CANCELED  |          CANCELED
-                        |-------------|       |------------|            ERROR
-                        | Unprocessed |------&gt;| Filtered   |          COMPLETED
-                        |             |       | Duplicate  |     -------------------
-                        &#39;-------------&#39;       |            |     - User extensions
-       Steps SPOOLED          |               &#39;------------&#39;     - Cleanup
-    --------------------      |
-    - User extensions         v
-                        .-------------.       .------------.           .-----------.
-                        |   SPOOLED   |       |   ERROR    |           | COMPLETED |
-                        |-------------|       |------------|           |-----------|
-                        | Waiting for |------&gt;| Processing |           | Done!     |
-                        | free slot   |       | Error      |           |           |
-                        &#39;-------------&#39;       &#39;------------&#39;           &#39;-----------&#39;
-        Steps READY            |                     ^                       ^
-    --------------------       |                     |                       |
-    + User extensions          v                     |                       |
-                        .-------------.       .-------------.          .-----------.
-                        |    READY    |       |  FETCHING   |          |  FETCHED  |
-                        |-------------|       |-------------|          |-----------|
-                        | Ready for   |------&gt;| Request     |---------&gt;| Content   |
-                        | fetching    |       | streaming   |          | received  |
-                        &#39;-------------&#39;       &#39;-------------&#39;          &#39;-----------&#39;
-                                              Steps FETCHING          Steps FETCHED
-                                             ---------------------   -------------------
-                                           + Request Streaming     + User extensions
-                                           + User extensions
+        <pre><code class="lang-txt"> .-------------.
+ |   INITIAL   |
+ |-------------|
+ | Unprocessed |
+ |             |
+ &#39;-------------&#39;   \
+        |           \
+        |            \
+        |             v
+        v             .--------------------.
+ .-------------.      |  ERROR | CANCELED  |      .-----------.
+ |  SPOOLED    |      |--------------------|      | COMPLETED |
+ |-------------|  ---&gt;| - Error            |      |-----------|
+ | Waiting for |      | - Duplicate        |      | Done!     |
+ | free slot   |      | - Blacklisted etc. |      |           |
+ &#39;-------------&#39;      &#39;--------------------&#39;      &#39;-----------&#39;
+        |             ^         ^          ^            ^
+        |            /          |           \           |
+        |           /           |            \          |
+        v          /                          \         |
+ .-------------.         .-------------.          .-----------.
+ |    READY    |         |  FETCHING   |          |  FETCHED  |
+ |-------------|         |-------------|          |-----------|
+ | Ready for   |--------&gt;| Request     |---------&gt;| Content   |
+ | fetching    |         | streaming   |          | received  |
+ &#39;-------------&#39;         &#39;-------------&#39;          &#39;-----------&#39;
 </code></pre>
 
       </div>
     </div>
     <div id='footer'>
-  December 15, 15 18:31:12 by
+  December 16, 15 14:23:04 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

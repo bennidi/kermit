@@ -54,7 +54,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          The first status of any request 
+          
         </dd>
         <dt id='SPOOLED-property'>
           <span class='signature'>
@@ -65,8 +65,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          Spooled requests are waiting in the queuing system <a href='../class/QueueManager.html'>QueueManager</a> for further processing
-
+          
         </dd>
         <dt id='READY-property'>
           <span class='signature'>
@@ -77,7 +76,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          Request is ready to be fetched by the {Streamer} 
+          
         </dd>
         <dt id='FETCHING-property'>
           <span class='signature'>
@@ -88,7 +87,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          Http(s) call is made and response is being streamed 
+          
         </dd>
         <dt id='FETCHED-property'>
           <span class='signature'>
@@ -99,8 +98,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          All data has been received and the response is ready for further processing
-
+          
         </dd>
         <dt id='COMPLETE-property'>
           <span class='signature'>
@@ -111,8 +109,7 @@ See <a href='../class/Crawler.html'>Crawler</a> for a complete state diagram of 
           </span>
         </dt>
         <dd class='desc'>
-          <p>Response processing is finished. This is the terminal status of a successfully processed
-request</p>
+          
         </dd>
         <dt id='ERROR-property'>
           <span class='signature'>
@@ -123,8 +120,7 @@ request</p>
           </span>
         </dt>
         <dd class='desc'>
-          <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s will set this status if an exception occurs during execution of an <a href='../class/Extension.html'>Extension</a>
-
+          
         </dd>
         <dt id='CANCELED-property'>
           <span class='signature'>
@@ -135,8 +131,7 @@ request</p>
           </span>
         </dt>
         <dd class='desc'>
-          <p>Any extension might cancel a request. Canceled requests are not elligible for further processing
-and will be cleaned up, see <a href='../class/Cleanup.html'>Cleanup</a></p>
+          
         </dd>
         <dt id='ALL-property'>
           <span class='signature'>
@@ -152,7 +147,7 @@ and will be cleaned up, see <a href='../class/Cleanup.html'>Cleanup</a></p>
       </dl>
     </div>
     <div id='footer'>
-  December 15, 15 18:31:12 by
+  December 16, 15 14:23:03 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

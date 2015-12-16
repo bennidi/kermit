@@ -35,43 +35,37 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>The Crawler coordinates execution of submitted <a href='../class/CrawlRequest.html'>CrawlRequest</a> by applying all <a href='../class/Extension.html'>Extension</a>s of
-the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> that matches the request&#39;s current status.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
-is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>The crawler defines exactly one <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
-Each extension point contains the processing steps carried out when the request changes its status
-to the respective phase.</p><p>The processing of a request follows the <a href='../class/RequestStatus.html'>RequestStatus</a> transitions which are defined by the
-<a href='../class/CrawlRequest.html'>CrawlRequest</a>.</p><pre><code class="lang-txt">
-       Steps INITIAL
-    --------------------
-    - Filtering
-    - Connect Queue     .-------------.       .------------.            Steps
-    - User extensions   |   INITIAL   |       |  CANCELED  |          CANCELED
-                        |-------------|       |------------|            ERROR
-                        | Unprocessed |------&gt;| Filtered   |          COMPLETED
-                        |             |       | Duplicate  |     -------------------
-                        &#39;-------------&#39;       |            |     - User extensions
-       Steps SPOOLED          |               &#39;------------&#39;     - Cleanup
-    --------------------      |
-    - User extensions         v
-                        .-------------.       .------------.           .-----------.
-                        |   SPOOLED   |       |   ERROR    |           | COMPLETED |
-                        |-------------|       |------------|           |-----------|
-                        | Waiting for |------&gt;| Processing |           | Done!     |
-                        | free slot   |       | Error      |           |           |
-                        &#39;-------------&#39;       &#39;------------&#39;           &#39;-----------&#39;
-        Steps READY            |                     ^                       ^
-    --------------------       |                     |                       |
-    + User extensions          v                     |                       |
-                        .-------------.       .-------------.          .-----------.
-                        |    READY    |       |  FETCHING   |          |  FETCHED  |
-                        |-------------|       |-------------|          |-----------|
-                        | Ready for   |------&gt;| Request     |---------&gt;| Content   |
-                        | fetching    |       | streaming   |          | received  |
-                        &#39;-------------&#39;       &#39;-------------&#39;          &#39;-----------&#39;
-                                              Steps FETCHING          Steps FETCHED
-                                             ---------------------   -------------------
-                                           + Request Streaming     + User extensions
-                                           + User extensions
+  <p>The Crawler coordinates execution of submitted <a href='../class/CrawlRequest.html'>CrawlRequest</a> by applying all <a href='../class/Extension.html'>Extension</a>s
+matching the request&#39;s current status.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
+is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>The crawler defines an ExtensionPoint for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
+Each ExtensionPoint wraps the processing steps carried out when the request status changes
+to a new value. The status transitions implicitly define a request flow illustrated in the
+diagram below.</p><pre><code class="lang-txt"> .-------------.
+ |   INITIAL   |
+ |-------------|
+ | Unprocessed |
+ |             |
+ &#39;-------------&#39;   \
+        |           \
+        |            \
+        |             v
+        v             .--------------------.
+ .-------------.      |  ERROR | CANCELED  |      .-----------.
+ |  SPOOLED    |      |--------------------|      | COMPLETED |
+ |-------------|  ---&gt;| - Error            |      |-----------|
+ | Waiting for |      | - Duplicate        |      | Done!     |
+ | free slot   |      | - Blacklisted etc. |      |           |
+ &#39;-------------&#39;      &#39;--------------------&#39;      &#39;-----------&#39;
+        |             ^         ^          ^            ^
+        |            /          |           \           |
+        |           /           |            \          |
+        v          /                          \         |
+ .-------------.         .-------------.          .-----------.
+ |    READY    |         |  FETCHING   |          |  FETCHED  |
+ |-------------|         |-------------|          |-----------|
+ | Ready for   |--------&gt;| Request     |---------&gt;| Content   |
+ | fetching    |         | streaming   |          | received  |
+ &#39;-------------&#39;         &#39;-------------&#39;          &#39;-----------&#39;
 </code></pre>
 
 </div>
@@ -266,7 +260,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  December 15, 15 18:31:12 by
+  December 16, 15 14:23:03 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
