@@ -10,7 +10,8 @@ lokijs = require 'lokijs'
 class QueueManager
 
   # Construct a new QueueManager with its own data file
-  constructor: (@store = new lokijs 'crawlrequests.json') ->
+  constructor: (@file) ->
+    @store =  new lokijs @file
     @initialize()
 
   inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
@@ -20,7 +21,7 @@ class QueueManager
   initialize: () ->
     # One collection for all requests and dynamic views for various request status
     @requests = @store.addCollection 'requests'
-    @visited = @store.addCollection 'visited', unique: ['url']
+    @visited = @store.addCollection 'visited'#, unique: ['url']
     # Fresh requests
     @requests.addDynamicView(Status.INITIAL)
              .applyWhere (request) ->

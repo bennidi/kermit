@@ -1,12 +1,9 @@
-{Extension, ExtensionDescriptor} = require '../Extension.coffee'
-{Status} = require '../CrawlRequest.coffee'
-{QueueManager} = require '../QueueManager.coffee'
-through = require 'through2'
+{Extension} = require '../Extension.coffee'
 stream = require 'stream'
 
 class LogStream extends stream.Writable
 
-  constructor: (@shouldLog = false) -> super
+  constructor: (@shouldLog = true) -> super
 
   _write: (chunk, enc, next) ->
     console.log chunk.toString() if @shouldLog
@@ -32,7 +29,7 @@ class CharStream extends stream.Readable
       @push c
     @push null
 
-class InmemoryStream extends stream.Writable
+class MemoryStream extends stream.Writable
 
   constructor: (@target = []) ->
     super
@@ -41,8 +38,24 @@ class InmemoryStream extends stream.Writable
     @target.push chunk
     next()
 
+class CountingStream extends stream.Transform
+
+  constructor: (@cnt = 0) -> super
+
+  _transform: (chunk, enc, next) ->
+    @cnt++
+    @push chunk
+    next()
+
+
 module.exports = {
   CharStream
-  InmemoryStream
+  MemoryStream
   ResponseStreamLogger
+  CountingStream
+  LogStream
+  RandomId : (length=8) ->
+    id = ""
+    id += Math.random().toString(36).substr(2) while id.length < length
+    id.substr 0, length
 }

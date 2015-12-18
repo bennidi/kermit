@@ -5,8 +5,7 @@
 class Filters
 
   @ByUrl: (pattern) ->
-    (request) ->
-      request.url().match pattern
+    (request) -> request.url().match pattern
 
   @WithinDomain : (domain) ->
     Filters.ByUrl new RegExp(".*#{domain}\..*", "g")
@@ -21,14 +20,16 @@ class Filters
 # Filter newly created {RequestStatus.INITIAL} requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
-  @defaultOpts =
-    allow : [Filters.ByUrl /.*/g] # allow all by default
+  @defaultOpts : () ->
+    allow : [Filters.ByUrl(/.*/g)] # allow all by default
     deny : []
 
   # @nodoc
   constructor: (opts = {} ) ->
     super INITIAL : @apply
-    @opts = Extension.mergeOptions RequestFilter.defaultOpts, opts
+    @opts = Extension.mergeOptions RequestFilter.defaultOpts(), opts
+    console.log JSON.stringify [()->34]
+    #console.log JSON.stringify RequestFilter.defaultOpts()
 
 
   match = (request, filters) ->

@@ -35,8 +35,6 @@ class RequestStreamer extends Extension
     httpRequest.get url, requestOptions(@opts)
       .on 'response', (response) ->
         crawlRequest.fetching()
-        response.pipe crawlRequest.response.incoming
-        # TODO: copy useful response attributes
       .on 'error', (error) ->
         crawlRequest.error(error)
       .on 'end', ->

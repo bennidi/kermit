@@ -47,6 +47,8 @@ class RejectingExtension extends Extension
 
 class MockContext
   execute: (state, request) -> request
+  config:
+    basePath : () -> "somepath"
   queue: new QueueManager
   share: (property, value ) =>
     @[property] = value

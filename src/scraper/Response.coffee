@@ -1,18 +1,7 @@
 through = require 'through2'
 {PassThrough} = require 'stream'
 {HtmlExtractor} = require './Extractor.coffee'
-
-
-stream = require 'stream'
-
-class InmemoryStream extends stream.Writable
-
-  constructor: (@target = []) ->
-    super
-
-  _write: (chunk, enc, next) ->
-    @target.push chunk
-    next()
+{MemoryStream} = require './util/utils.coffee'
 
 class Response
 
@@ -24,7 +13,7 @@ class Response
     if !@extractor
       @extractor = new HtmlExtractor
       @incoming
-        .pipe new InmemoryStream @data
+        .pipe new MemoryStream @data
       @incoming.on 'end', =>
         @extractor.process @content()
     @extractor

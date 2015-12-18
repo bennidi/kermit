@@ -21,7 +21,7 @@ class OfflineStorage extends Extension
 
   initialize: (context) ->
     super context
-    @basedir = context.crawler.basePath() + "/"
+    @basedir = context.config.basePath() + "/"
 
 
 class OfflineServer extends Extension
@@ -35,7 +35,7 @@ class OfflineServer extends Extension
 
   initialize: (context) ->
     super context
-    @opts.basedir = context.crawler.basePath() + "/"
+    @opts.basedir = context.config.basePath() + "/"
     LocalFileServer = require('../util/static-server').LocalStorageServer
     @server =  new LocalFileServer @opts.port, @opts.basedir
     @server.start()

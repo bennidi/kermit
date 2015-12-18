@@ -2,6 +2,7 @@
 storage = require '../QueueManager'
 {Extension , ExtensionDescriptor} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
+{RandomId} = require '../util/utils.coffee'
 
 # The Queue Connector establishes a system of queues where each state
 # of the CrawlRequest state machine is represented in its own queue.
@@ -9,17 +10,17 @@ RateLimiter = require('limiter').RateLimiter
 # are propagated to the queuing system automatically.
 class QueueConnector extends Extension
 
-  @defaultOpts =
-    dbfile : "crawler.json"
+  @defaultOpts : () ->
+    dbfile : "#{RandomId()}-queue.json"
 
   constructor: (opts = {}) ->
     super INITIAL : @apply
-    @opts = Extension.mergeOptions QueueConnector.defaultOpts, opts
+    @opts = Extension.mergeOptions QueueConnector.defaultOpts(), opts
 
   # Create a queue system and re-expose in context
   initialize: (context) ->
     super context
-    @queue = new storage.QueueManager
+    @queue = new storage.QueueManager "#{context.config.basePath()}/#{@opts.dbfile}"
     context.share "queue", @queue
 
   # Enrich each request with methods that propagate its
@@ -57,10 +58,11 @@ class QueueWorker extends Extension
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
     for request in @queue.spooled()
-      if @limits.isAllowed request.url
-        @requests[request.id].ready()
+      request = @requests[request.id]
+      if @limits.isAllowed request.url()
+        request.ready()
       else
-        request["tsSPOOLED"] = new Date().getTime()
+        request.state["tsSPOOLED"] = new Date().getTime()
         @queue.update request
     # Schedule next processing to keep QueueWorker running
     # Otherwise last requests might hang in queue forever

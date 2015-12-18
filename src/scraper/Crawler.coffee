@@ -4,6 +4,7 @@
 {RequestStreamer} = require './extensions/core.streaming.coffee'
 {RequestFilter, DuplicatesFilter} = require './extensions/core.filter.coffee'
 {Status, CrawlRequest, Status} = require './CrawlRequest'
+{LogHub, LogAppender, FileAppender, ConsoleAppender} = require './util/Logging.coffee'
 bunyan = require 'bunyan'
 
 
@@ -35,7 +36,7 @@ class ExtensionPoint
         else
           extension.handlers[@phase].call(extension, request)
       catch error
-        @context.log.error error, "Error in extension #{extension.name}"
+        @context.log.error "Error in extension #{extension.name}: #{JSON.stringify error}"
         request.error(error)
         return false
     true
@@ -47,7 +48,7 @@ class ExtensionPoint
     request
 
 ###
-Extension point for extensions that process requests with status {RequestStatus.INITIAL}.
+Process requests with status {RequestStatus.INITIAL}.
 This ExtensionPoint runs: Filtering, Connect to {QueueManager Queueing System}, User extensions
 ###
 class INITIAL extends ExtensionPoint
@@ -57,7 +58,7 @@ class INITIAL extends ExtensionPoint
     super Status.INITIAL, @context
 
 ###
-Extension point for extensions that process requests with status "SPOOLED"
+Process requests with status "SPOOLED".
 Spooled requests are waiting in the {QueueManager} for further processing.
 This ExtensionPoint runs: User extensions, {QueueManager}
 ###
@@ -69,7 +70,7 @@ class SPOOLED extends ExtensionPoint
 
 
 ###
-Extension point for extensions that process requests with status "READY".
+Process requests with status "READY".
 Request with status "READY" are eligible to be fetched by the {Streamer}.
 This ExtensionPoint runs: User extensions.
 ###
@@ -80,7 +81,7 @@ class READY extends ExtensionPoint
     super Status.READY, @context
 
 ###
-Extension point for extensions that process requests with status "FETCHING"
+Process requests with status "FETCHING".
 Http(s) call to URL is made and response is being streamed.
 This ExtensionPoint runs: {RequestStreamer}, User extensions.
 ###
@@ -91,7 +92,7 @@ class FETCHING extends ExtensionPoint
     super Status.FETCHING, @context
 
 ###
-Extension point for extensions that process requests with status "FETCHED".
+Process requests with status "FETCHED".
 All data has been received and the response is ready for further processing.
 This ExtensionPoint runs: User extensions.
 ###
@@ -102,7 +103,7 @@ class FETCHED extends ExtensionPoint
     super Status.FETCHED, @context
 
 ###
-Extension point for extensions that process requests with status "COMPLETE".
+Process requests with status "COMPLETE".
 Response processing is finished. This is the terminal status of a successfully processed
 request. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
@@ -113,7 +114,7 @@ class COMPLETE extends ExtensionPoint
     super Status.COMPLETE, @context
 
 ###
-Extension point for extensions that process requests with status "ERROR".
+Process requests with status "ERROR".
 {ExtensionPoint}s will set this status if an exception occurs during execution of an {Extension}.
 This ExtensionPoint runs: User extensions, {Cleanup}
 ###
@@ -123,7 +124,7 @@ class ERROR extends ExtensionPoint
     super Status.ERROR, @context
 
 ###
-ExtensionPoint for extensions that process requests with status "CANCELED".
+Process requests with status "CANCELED".
 Any extension might cancel a request. Canceled requests are not elligible for further processing
 and will be cleaned up. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
@@ -164,18 +165,29 @@ class CrawlerContext
 # The central object for configuring an instance of {Crawler}
 class CrawlerConfig
 
-  # @nodoc
-  defaultOpts : {
+  ###
+
+  @example The default configuration
+    name      : "kermit"
+      basedir   : "/tmp/sloth"
+      extensions: [] # Clients can add extensions
+      options   : # Options of each core extension can be customized here
+        Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+        Streaming: {} # Options for the [Streamer]
+        Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+        Logging :
+          Streams: []
+  ###
+  @defaultOpts : () ->
     name      : "kermit"
     basedir   : "/tmp/sloth"
     extensions: [] # Clients can add extensions
     options   : # Options of each core extension can be customized here
       Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
       Logging :
         Streams: []
-  }
 
   # @param config [Object] The configuration parameters
   # @option config [String] name The name of the crawler
@@ -185,12 +197,14 @@ class CrawlerConfig
   # @option config.options [Object] Streaming Options for {RequestStreamer}
   # @option config.options [Object] Filtering Options for {RequestFilter} and {DuplicatesFilter}
   constructor: (config = {}) ->
-    config = Extension.mergeOptions @defaultOpts, config
+    config = Extension.mergeOptions CrawlerConfig.defaultOpts(), config
     @name = config.name
     @basedir = config.basedir
     @extensions = config.extensions
     @options = config.options
 
+  # @return [String] The configured base path of this crawler
+  basePath: () -> "#{@basedir}/#{@name}"
 
 ###
 Overview of all available {ExtensionPoint}s - one for each distinct status
@@ -288,31 +302,6 @@ class Crawler
       extpoint(crawler, phase).apply request
     request
 
-  defaultStreams = (basedir) ->
-    [
-      {
-        stream: process.stdout
-        level : 'trace'
-      },
-      {
-        path : "#{basedir}/logs/full.log"
-        level: 'trace'
-      },
-      {
-        path : "#{basedir}/logs/error.log"
-        level: 'error'
-      },
-      {
-        path : "#{basedir}/logs/info.log"
-        level: 'info'
-      }
-    ]
-
-  buildLog = (streams) ->
-    bunyan.createLogger
-      name   : 'log',
-      streams: streams
-
   # Create a new crawler with the given options
   # @param config [Object] The configuration for this crawler. See {CrawlerConfig}
   # @see {CrawlerConfig.defaultOpts}
@@ -320,16 +309,34 @@ class Crawler
     # Build and verify (TODO) options
     # Use default options where no user defined options are given
     @config = new CrawlerConfig config
-    if @config.options.Logging.Streams.length is 0
-      @config.options.Logging.Streams = defaultStreams @basePath()
-    fse.mkdirsSync "#{@basePath()}/logs"
+    fse.mkdirsSync "#{@config.basePath()}/logs"
 
     # Create the root context of this crawler
     @context = new CrawlerContext
+      config : @config
       crawler: this # re-expose this crawler
       execute: (phase, request) =>
         execute(@, phase, request)
-      log    : buildLog @config.options.Logging.Streams, @basePath()
+      log    : new LogHub(
+        levels : ['trace', 'info', 'error', 'debug']
+        destinations: [
+          {
+            appender: new ConsoleAppender
+            levels : ['trace', 'error', 'info', 'debug']
+          },
+          {
+            appender : new FileAppender "#{@config.basePath()}/logs/full.log"
+            levels: ['trace', 'error', 'info', 'debug']
+          },
+          {
+            appender : new FileAppender "#{@config.basePath()}/logs/error.log"
+            levels: ['error']
+          },
+          {
+            appender : new FileAppender "#{@config.basePath()}/logs/info.log"
+            levels: ['info']
+          }
+        ]).logger()
 
     # Create and add extension points
     @extpoints = {}
@@ -338,7 +345,7 @@ class Crawler
 
     # Core extensions that need to run BEFORE user extensions
     addExtensions this, [
-      new RequestFilter @config.options.Filter
+      new RequestFilter @config.options.Filtering
       new ExtensionPointConnector
       new RequestLookup
       new QueueConnector @config.options.Queue
@@ -371,8 +378,7 @@ class Crawler
       catch error
         @context.log.error "Error in extension #{extension.name}. Message: #{error.message}"
 
-  # @return [String] The configured base path of this crawler
-  basePath: () -> "#{@config.basedir}/#{@config.name}"
+
 
   # Create a new {CrawlRequest} and start its processing
   # @return [CrawlRequest] The created request

@@ -1,4 +1,4 @@
-sloth = require './scraper/cherry.modules'
+{Crawler} = require './scraper/Crawler.coffee'
 {Status} = require './scraper/CrawlRequest.coffee'
 {OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
 {ResourceDiscovery} = require './scraper/extensions/ext.resource.discovery.coffee'
@@ -6,7 +6,7 @@ sloth = require './scraper/cherry.modules'
 {WithinDomain, MimeTypes} = require './scraper/extensions/core.filter.coffee'
 
 # opts: rateLimit, request depth
-Crawler = new sloth.Crawler
+Crawler = new Crawler
   name: "testicle"
   extensions : [
     new OfflineStorage
@@ -25,9 +25,6 @@ Crawler = new sloth.Crawler
     Filtering:
       allow : [
         WithinDomain "jimmycuadra"
-      ]
-      deny : [
-        (request) -> request.predecessors() > 1 and not WithinDomain("jimmycuadra")(request)
       ]
 
 Crawler.enqueue("http://jimmycuadra.com")

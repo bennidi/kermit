@@ -65,4 +65,11 @@ Resources
   + https://www.npmjs.com/package/raml-mocker
   + https://www.npmjs.com/package/apidoc-swagger
   + https://www.npmjs.com/package/hapi-swagger
-  http://jrhicks.github.io/replicate_architecture_ideas_for_react_flux_apps/index.html
+  + http://jrhicks.github.io/replicate_architecture_ideas_for_react_flux_apps/index.html
+  + http://www.html5rocks.com/en/tutorials/speed/static-mem-pools/?redirect_from_locale=de
+  + https://strongloop.com/strongblog/robust-node-applications-error-handling/
+  + http://www.coffeescriptlove.com/2014/05/react-and-coffeescript-with-or-without.html
+  + http://www.html5rocks.com/en/tutorials/speed/static-mem-pools/?redirect_from_locale=de
+  + https://github.com/pjeby/yieldable-streams
+  + http://mattsnider.com/object-pool-pattern-in-javascript/
+  + http://mattsnider.com/object-pool-pattern-in-javascript/

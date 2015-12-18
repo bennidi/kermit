@@ -1,5 +1,6 @@
 URI = require 'urijs'
 {Response} = require './Response.coffee'
+{RandomId} = require './util/utils.coffee'
 
 
 # At any time, each request has a status value equal to one of the values
@@ -48,18 +49,13 @@ class CrawlRequest
       request.changeListeners[property] = []
     request.changeListeners[property]  
 
-  uniqueId = (length=8) ->
-    id = ""
-    id += Math.random().toString(36).substr(2) while id.length < length
-    id.substr 0, length
-
   constructor: (url, context, predecessors = 0) ->
     @_uri = URI(url)
     @state =
       url:  @_uri.toString()
       tsLastModified: new Date().getTime()
       status: RequestStatus.INITIAL
-      id : uniqueId(20)
+      id : RandomId(20)
       predecessors : predecessors
     @changeListeners = {}
     @context = context
