@@ -5,25 +5,24 @@ fs = require 'fs-extra'
 class LogFormats
 
   @default : (lvl, msg, data) ->
-    "#{lvl} - #{data?.tags?} - #{msg}\n"
+    "[#{new Date().toISOString()}] #{lvl.toUpperCase()} #{if data?.tags? then JSON.stringify data.tags} - #{msg}\n"
 
 class LogAppender
 
   constructor: (@sink, @formatter = LogFormats.default) ->
 
-class FileLogStream extends Writable
-
-  constructor: (@filename)-> super
-
-  _write: (chunk, enc, next) ->
-    fs.appendFileSync @filename, chunk
-    next()
+  # @private
+  # @abstract
+  initialize: () ->
 
 class FileAppender extends LogAppender
 
   constructor: (@filename, @formatter = LogFormats.default) ->
     #super new FileLogStream @filename, @formatter
-    super fs.createWriteStream(@filename, flags : 'a'), @formatter
+    super null, @formatter
+
+  initialize : () ->
+    @sink = fs.createWriteStream(@filename, flags : 'a')
 
 class ConsoleLogStream extends Writable
 
@@ -53,6 +52,7 @@ class LogFormatter extends Transform
 class LogHub
 
   @defaultOpts : () ->
+    basedir : "/tmp/loghub"
     destinations : [
       {
         appender: new LogAppender new ConsoleLogStream
@@ -67,6 +67,7 @@ class LogHub
     @addDestination destination for destination in @opts.destinations
 
   _initialize: () ->
+    fs.mkdirsSync "#{@opts.basedir}/logs"
     @dispatcher = {}
     for level in @opts.levels
       connector = new PassThrough(objectMode : true)
@@ -74,6 +75,7 @@ class LogHub
       @dispatcher[level] = connector
 
   addDestination: (destination) ->
+    destination.appender.initialize()
     for level in destination.levels
       if not @dispatcher[level] then throw new Error "Log level #{level} not defined"
       formatter = destination.appender.formatter or LogFormats.default

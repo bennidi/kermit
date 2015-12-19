@@ -36,7 +36,7 @@ class ExtensionPoint
         else
           extension.handlers[@phase].call(extension, request)
       catch error
-        @context.log.error "Error in extension #{extension.name}: #{JSON.stringify error}"
+        @log.error "Error in extension #{extension.name}: #{JSON.stringify error}"
         request.error(error)
         return false
     true
@@ -165,6 +165,33 @@ class CrawlerContext
 # The central object for configuring an instance of {Crawler}
 class CrawlerConfig
 
+  logconfig = (basedir) ->
+    basedir: basedir
+    levels : ['trace', 'info', 'error', 'debug', 'warn']
+    destinations: [
+      {
+        appender: new ConsoleAppender
+        levels : ['trace', 'error', 'info', 'debug', 'warn']
+      },
+      {
+        appender : new FileAppender "#{basedir}/logs/full.log"
+        levels: ['trace', 'error', 'info', 'debug']
+      },
+      {
+        appender : new FileAppender "#{basedir}/logs/error.log"
+        levels: ['error', 'warn']
+      },
+      {
+        appender : new FileAppender "#{basedir}/logs/info.log"
+        levels: ['info', 'warn']
+      },
+      {
+        appender : new FileAppender "#{basedir}/logs/trace.log"
+        levels: ['trace']
+      }
+    ]
+
+
   ###
 
   @example The default configuration
@@ -186,8 +213,7 @@ class CrawlerConfig
       Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-      Logging :
-        Streams: []
+      Logging : logconfig('/tmp/sloth/kermit')
 
   # @param config [Object] The configuration parameters
   # @option config [String] name The name of the crawler
@@ -302,6 +328,7 @@ class Crawler
       extpoint(crawler, phase).apply request
     request
 
+
   # Create a new crawler with the given options
   # @param config [Object] The configuration for this crawler. See {CrawlerConfig}
   # @see {CrawlerConfig.defaultOpts}
@@ -309,34 +336,14 @@ class Crawler
     # Build and verify (TODO) options
     # Use default options where no user defined options are given
     @config = new CrawlerConfig config
-    fse.mkdirsSync "#{@config.basePath()}/logs"
-
+    @log = new LogHub(@config.Logging).logger()
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
       crawler: this # re-expose this crawler
       execute: (phase, request) =>
         execute(@, phase, request)
-      log    : new LogHub(
-        levels : ['trace', 'info', 'error', 'debug']
-        destinations: [
-          {
-            appender: new ConsoleAppender
-            levels : ['trace', 'error', 'info', 'debug']
-          },
-          {
-            appender : new FileAppender "#{@config.basePath()}/logs/full.log"
-            levels: ['trace', 'error', 'info', 'debug']
-          },
-          {
-            appender : new FileAppender "#{@config.basePath()}/logs/error.log"
-            levels: ['error']
-          },
-          {
-            appender : new FileAppender "#{@config.basePath()}/logs/info.log"
-            levels: ['info']
-          }
-        ]).logger()
+      log    : @log
 
     # Create and add extension points
     @extpoints = {}
@@ -353,7 +360,7 @@ class Crawler
       new DuplicatesFilter
       new RequestStreamer @config.options.Streamer]
     # Add client extensions
-    @context.log.info "Installing user extensions #{(ext.name for ext in @config.extensions)}"
+    @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}"
     addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     addExtensions this, [new Spooler, new Completer, new Cleanup]
@@ -371,12 +378,12 @@ class Crawler
 
   # Run shutdown logic on all extensions
   shutdown: () ->
-    @context.log.info 'Received shutdown signal'
+    @log.info? 'Received shutdown signal'
     for extension in @_extensions
       try
         extension.shutdown?()
       catch error
-        @context.log.error "Error in extension #{extension.name}. Message: #{error.message}"
+        @log.error "Error in extension #{extension.name}. Message: #{error.message}"
 
 
 

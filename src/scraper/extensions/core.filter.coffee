@@ -28,8 +28,6 @@ class RequestFilter extends Extension
   constructor: (opts = {} ) ->
     super INITIAL : @apply
     @opts = Extension.mergeOptions RequestFilter.defaultOpts(), opts
-    console.log JSON.stringify [()->34]
-    #console.log JSON.stringify RequestFilter.defaultOpts()
 
 
   match = (request, filters) ->
@@ -42,10 +40,10 @@ class RequestFilter extends Extension
   # @param request {CrawlRequest} The request to filter
   apply: (request) ->
     if not match(request, @opts.allow)
-      @log.trace "FILTERED: #{request.url()} not on whitelist"
+      @log.trace? "FILTERED: #{request.url()} not on whitelist"
       return request.cancel()
     if match(request, @opts.deny)
-      @log.trace "FILTERED: #{request.url()} on blacklist"
+      @log.trace? "FILTERED: #{request.url()} on blacklist"
       return request.cancel()
 
 
@@ -66,7 +64,7 @@ class DuplicatesFilter extends Extension
   apply: (request) ->
     url = request.url()
     if @queue.contains(url)
-      @log.trace "FILTERED: #{url} is duplicate"
+      @log.trace? "FILTERED: #{url} is duplicate"
       request.cancel()
 
 module.exports = {

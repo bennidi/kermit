@@ -16,7 +16,7 @@ class OfflineStorage extends Extension
       FETCHED: (request) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = toLocalPath @basedir , request.uri()
-        #@log.debug "Storing #{request.body.length} bytes to #{path}"
+        #@log.debug? "Storing #{request.body.length} bytes to #{path}"
         fs.outputFileSync path, request.response.content()
 
   initialize: (context) ->

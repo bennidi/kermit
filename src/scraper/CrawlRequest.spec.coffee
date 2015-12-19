@@ -15,15 +15,16 @@ describe  'Requests',  ->
 
     it '# should notify state listeners when changes occurr', ->
       receivedStatusChanges = []
-      TestRequest = new CrawlRequest('localhost', new MockContext).onChange 'status', (request) ->
-        receivedStatusChanges.push request.status()
+      TestRequest = new CrawlRequest 'localhost', new MockContext
+        .onChange 'status', (request) ->
+          receivedStatusChanges.push request.status()
       TestRequest.status('STATE1')
       TestRequest.status('STATE2')
       TestRequest.status('STATE3')
-      expect(receivedStatusChanges).to.contain('STATE1','STATE2','STATE3')
+      expect(receivedStatusChanges).to.contain 'STATE1','STATE2','STATE3'
 
     it '# should respond to different errors with corresponding state transitions', ->
-      request = new CrawlRequest('localhost')
+      request = new CrawlRequest 'localhost', new MockContext
       request.error('TIMEOUT')
       # TODO assertions
 

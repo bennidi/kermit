@@ -25,7 +25,7 @@ class TransitionRecorder extends Extension
   # @nodoc
   apply: (request) ->
     @expected[request.url()] = @expected[request.url()].filter (status) -> status isnt request.status()
-    #@log.info @expected[request.url()]
+    #@log.info? @expected[request.url()]
     expect(@expected[request.url()]).not.contain(request.status())
     @requests-- if @expected[request.url()].length is 0
     if @requests is 0
@@ -42,7 +42,7 @@ class RejectingExtension extends Extension
     @invocations = 0
 
   apply: (request) ->
-    @log.info "Rejecting " + request.url()
+    @log.info? "Rejecting " + request.url()
     request.cancel("Rejected by RejectingExtension")
 
 class MockContext

@@ -59,6 +59,7 @@ class CrawlRequest
       predecessors : predecessors
     @changeListeners = {}
     @context = context
+    @log = context.log
     @response = new Response
 
 
@@ -98,7 +99,7 @@ class CrawlRequest
   # @private
   status: (status) ->
     if status?
-      @context.log.trace "#{@state.status}->#{status} [#{@url()}]"
+      @log.trace? "#{@state.status}->#{status} [#{@url()}]"
       @state.status = status
       notify this, "status"
     else @state.status
