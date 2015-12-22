@@ -54,13 +54,13 @@ class CrawlRequest
     @state =
       url:  @_uri.toString()
       tsLastModified: new Date().getTime()
-      status: RequestStatus.INITIAL
       id : RandomId(20)
       predecessors : predecessors
     @changeListeners = {}
     @context = context
     @log = context.log
     @response = new Response
+    @status RequestStatus.INITIAL
 
 
   # Register a listener {Function} to be invoked whenever the
@@ -99,7 +99,7 @@ class CrawlRequest
   # @private
   status: (status) ->
     if status?
-      @log.trace? "#{@state.status}->#{status} [#{@url()}]"
+      @log.trace? "#{status} [#{@url()}]"
       @state.status = status
       notify this, "status"
     else @state.status

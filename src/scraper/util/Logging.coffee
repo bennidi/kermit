@@ -1,11 +1,30 @@
 {PassThrough, Transform, Writable} = require 'stream'
-merge = require 'merge'
 fs = require 'fs-extra'
+_ = require 'lodash'
 
 class LogFormats
 
-  @default : (lvl, msg, data) ->
-    "[#{new Date().toISOString()}] #{lvl.toUpperCase()} #{if data?.tags? then JSON.stringify data.tags} - #{msg}\n"
+  extractTags = (data) ->
+    tags = if data?.tags then " [#{data.tags}]" else ""
+    delete data?.tags
+    tags
+
+  @llog : (newline = true) ->
+      (lvl, msg, data) ->
+        tags = extractTags data
+        data = if _.isEmpty data then "" else "(#{JSON.stringify data})"
+        entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{msg} #{data}"
+        if newline then entry + "\n" else entry
+
+
+
+class LogEntry
+  emptyArray = []
+
+  constructor: (@lvl, @msg, @data) ->
+
+  tags: () ->
+    @data?.tags or emptyArray
 
 class LogAppender
 
@@ -17,7 +36,7 @@ class LogAppender
 
 class FileAppender extends LogAppender
 
-  constructor: (@filename, @formatter = LogFormats.default) ->
+  constructor: (@filename, @formatter = LogFormats.llog()) ->
     #super new FileLogStream @filename, @formatter
     super null, @formatter
 
@@ -32,7 +51,8 @@ class ConsoleLogStream extends Writable
 
 class ConsoleAppender extends LogAppender
 
-  constructor: (@formatter = LogFormats.default) -> super new ConsoleLogStream, @formatter
+  constructor: (@formatter = LogFormats.llog false) ->
+    super new ConsoleLogStream, @formatter
 
 class LogFormatter extends Transform
 
@@ -43,7 +63,7 @@ class LogFormatter extends Transform
     msg = switch
       when chunk.constructor is String then @formatter @level, chunk
       when chunk instanceof Buffer then @formatter @level, chunk.toString()
-      when chunk instanceof Object then @formatter @level, chunk.msg, chunk
+      when chunk instanceof LogEntry then @formatter @level, chunk.msg, chunk.data
       else "Unexpected type of log message #{chunk}"
     @push msg
     next()
@@ -55,16 +75,15 @@ class LogHub
     basedir : "/tmp/loghub"
     destinations : [
       {
-        appender: new LogAppender new ConsoleLogStream
+        appender: new ConsoleAppender
         levels: ['info', 'warn', 'error', 'debug']
       }
     ]
     levels : ['info', 'warn', 'error', 'debug']
 
   constructor : (opts = {}) ->
-    @opts = merge.recursive LogHub.defaultOpts(), opts
+    @opts = _.merge {}, LogHub.defaultOpts(), opts, (a,b) -> if _.isArray a then b
     @_initialize()
-    @addDestination destination for destination in @opts.destinations
 
   _initialize: () ->
     fs.mkdirsSync "#{@opts.basedir}/logs"
@@ -73,21 +92,22 @@ class LogHub
       connector = new PassThrough(objectMode : true)
       connector.setMaxListeners(100) # what number here?
       @dispatcher[level] = connector
+    @addDestination destination for destination in @opts.destinations
 
   addDestination: (destination) ->
     destination.appender.initialize()
     for level in destination.levels
       if not @dispatcher[level] then throw new Error "Log level #{level} not defined"
-      formatter = destination.appender.formatter or LogFormats.default
+      formatter = destination.appender.formatter or LogFormats.llog()
       @dispatcher[level]
         .pipe new LogFormatter formatter, level
         .pipe destination.appender.sink
 
   log : (lvl, msg, data) ->
     if data
-      data.msg = msg
-      msg = data
-    @dispatcher[lvl]?.push msg
+      @dispatcher[lvl]?.push new LogEntry lvl, msg, data
+    else
+      @dispatcher[lvl]?.push msg
 
   logger: () -> new Logger @opts.levels, @
 

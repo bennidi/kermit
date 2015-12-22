@@ -55,4 +55,4 @@ describe  'LogHub',  ->
 
     it '# supports logging of additional data', () ->
       hub = new LogHub
-      hub.logger().info 'My message', tags : ['Streaming'] for i in [1..10]
+      hub.logger().info 'My message', tags : ['Streaming','AnotherTag'] for i in [1..10]

@@ -1,5 +1,5 @@
 {Status} = require('../CrawlRequest')
-{Extension, ExtensionDescriptor} = require '../Extension'
+{Extension} = require '../Extension'
 httpRequest = require 'request'
 
 
@@ -17,7 +17,7 @@ class RequestStreamer extends Extension
   # Create a new Streamer
   constructor: (opts = {}) ->
     super READY:@apply
-    @opts = Extension.mergeOptions RequestStreamer.defaultOpts, opts
+    @opts = @merge RequestStreamer.defaultOpts, opts
 
   requestOptions = (options) ->
     requestOpts = {}
@@ -30,11 +30,13 @@ class RequestStreamer extends Extension
     requestOpts
 
   apply: (crawlRequest) ->
-    url = crawlRequest.uri().toString()
+    url = crawlRequest.url()
     @opts.useSSL = crawlRequest.useSSL()
+    @log.debug? "Executing request #{url}"
     httpRequest.get url, requestOptions(@opts)
       .on 'response', (response) ->
         crawlRequest.fetching()
+        crawlRequest.response.import response
       .on 'error', (error) ->
         crawlRequest.error(error)
       .on 'end', ->

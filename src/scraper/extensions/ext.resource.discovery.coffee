@@ -1,5 +1,5 @@
 {Status} = require('../CrawlRequest')
-{Extension, ExtensionDescriptor} = require '../Extension'
+{Extension} = require '../Extension'
 URI = require 'urijs'
 validUrl = require 'valid-url'
 url = require 'url'
@@ -30,23 +30,25 @@ class ResourceDiscovery extends Extension
           links: ['a',
             'href':  ($link) -> $link.attr 'href'
           ]).then (results) =>
-            resources = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.resources), _.isEmpty
-            links = _.reject (cleanUrl.call(this, request.uri(), url.href) for url in results.links), _.isEmpty
+            resources = _.reject (@cleanUrl request, url.href for url in results.resources), _.isEmpty
+            links = _.reject (@cleanUrl request, url.href for url in results.links), _.isEmpty
             request.enqueue url for url in resources
             request.enqueue url for url in links
-    @opts = Extension.mergeOptions ResourceDiscovery.defaultOpts, @opts
+    @opts = @merge ResourceDiscovery.defaultOpts, @opts
 
-  cleanUrl = (base, url)  ->
+  cleanUrl: (request, url)  =>
+    base = request.uri()
     cleaned = url
     if cleaned
       # Handle //de.wikinews.org/wiki/Hauptseite
       cleaned = url.replace /\/\//g, base.scheme() + "://" if url.startsWith "//"
       # Handle relative urls with leading slash, i.e. /wiki/Hauptseite
       cleaned = URI(url).absoluteTo(base).toString() if url.startsWith "/"
-      # Drop in-page anchors, i.e. #info
-      cleaned = "" if url.startsWith "#"
+      # Drop in-page anchors, i.e. #info or self references, i.e. "/"
+      cleaned = "" if url.startsWith "#" or url is "/"
+      @log.debug? "Found #{url} in #{base} (#{request.response.headers['content-type']})"
     else
-      @log.debug? "Extracted url was undefined or empty"
+      @log.debug? "Invalid url in #{base} (#{request.response.headers['content-type']})"
       cleaned = ""
     cleaned
 

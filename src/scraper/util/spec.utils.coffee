@@ -1,4 +1,4 @@
-{Extension, ExtensionDescriptor} = require '../Extension.coffee'
+{Extension} = require '../Extension.coffee'
 {Status} = require '../CrawlRequest.coffee'
 {QueueManager} = require '../QueueManager.coffee'
 through = require 'through2'
@@ -11,22 +11,22 @@ class TransitionRecorder extends Extension
   # @nodoc
   constructor: (@done)->
     super
-      INITIAL: @apply
-      SPOOLED: @apply
-      READY: @apply
-      FETCHING: @apply
-      FETCHED: @apply
-      COMPLETE: @apply
-      ERROR: @apply
-      CANCELED : @apply
+      INITIAL: (request) -> @apply request, 'INITIAL'
+      SPOOLED: (request) -> @apply request, 'SPOOLED'
+      READY: (request) -> @apply request, 'READY'
+      FETCHING: (request) -> @apply request, 'FETCHING'
+      FETCHED: (request) -> @apply request, 'FETCHED'
+      COMPLETE: (request) -> @apply request, 'COMPLETE'
+      ERROR: (request) -> @apply request, 'ERROR'
+      CANCELED : (request) -> @apply request, 'CANCELED'
     @expected = {}
     @requests = 0
 
   # @nodoc
-  apply: (request) ->
-    @expected[request.url()] = @expected[request.url()].filter (status) -> status isnt request.status()
-    #@log.info? @expected[request.url()]
-    expect(@expected[request.url()]).not.contain(request.status())
+  apply: (request, status) ->
+    @expected[request.url()] = @expected[request.url()].filter (expected) -> expected isnt status
+    @log.info? "Expected for #{request.url()}: #{@expected[request.url()]}"
+    expect(@expected[request.url()]).not.contain(status)
     @requests-- if @expected[request.url()].length is 0
     if @requests is 0
       @done()

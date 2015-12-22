@@ -27,7 +27,7 @@ class RequestFilter extends Extension
   # @nodoc
   constructor: (opts = {} ) ->
     super INITIAL : @apply
-    @opts = Extension.mergeOptions RequestFilter.defaultOpts(), opts
+    @opts = @merge RequestFilter.defaultOpts(), opts
 
 
   match = (request, filters) ->

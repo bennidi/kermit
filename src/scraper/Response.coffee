@@ -15,8 +15,14 @@ class Response
       @incoming
         .pipe new MemoryStream @data
       @incoming.on 'end', =>
-        @extractor.process @content()
+        @extractor.process @content() if @isHtml()
     @extractor
+
+  import: (httpIncomingMessage)   ->
+    @headers = httpIncomingMessage.headers
+
+  isHtml: () ->
+    @headers["content-type"]?.indexOf 'html' > 0
 
   content : ->
     @data.join()

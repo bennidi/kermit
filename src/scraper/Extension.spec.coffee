@@ -27,7 +27,7 @@ describe  'Extension',  ->
                 "transport one", "transport two"
               ]
 
-      merged = Extension.mergeOptions baseOpts, {}
+      merged = new Extension().merge baseOpts, {}
       expect(merged.extensions).to.be.empty()
       expect(merged.options.Filter.duplicates).to.equal("allow")
       expect(merged.options.Logging.transports[0]).to.equal("transport one")

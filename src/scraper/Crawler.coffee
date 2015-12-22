@@ -5,8 +5,7 @@
 {RequestFilter, DuplicatesFilter} = require './extensions/core.filter.coffee'
 {Status, CrawlRequest, Status} = require './CrawlRequest'
 {LogHub, LogAppender, FileAppender, ConsoleAppender} = require './util/Logging.coffee'
-bunyan = require 'bunyan'
-
+_ = require 'lodash'
 
 # An extension point provides a mechanism to add functionality to the extension point provider.
 # Extension points act as containers for {Extension} - the objects providing the actual extension
@@ -18,6 +17,7 @@ class ExtensionPoint
   # @param phase [String] The phase that corresponds to the respective value of {RequestStatus}
   constructor: (@phase, @context) ->
     throw new Error("Please provide phase and description") if !@phase
+    @log = @context.log
     @extensions = []
 
   # Add an {Extension}s handler for the matching phase
@@ -27,13 +27,14 @@ class ExtensionPoint
 
   # Helper method to invoke all extensions for processing of a given request
   # @private
-  callExtensions : (request)->
+  callExtensions : (request) ->
     for extension in @extensions
       try
         # An extension may cancel request processing
         if request.isCanceled()
           return false
         else
+          @log.debug "#{extension.name}.#{@phase}()"
           extension.handlers[@phase].call(extension, request)
       catch error
         @log.error "Error in extension #{extension.name}: #{JSON.stringify error}"
@@ -202,8 +203,6 @@ class CrawlerConfig
         Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
         Streaming: {} # Options for the [Streamer]
         Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-        Logging :
-          Streams: []
   ###
   @defaultOpts : () ->
     name      : "kermit"
@@ -213,7 +212,6 @@ class CrawlerConfig
       Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-      Logging : logconfig('/tmp/sloth/kermit')
 
   # @param config [Object] The configuration parameters
   # @option config [String] name The name of the crawler
@@ -223,11 +221,12 @@ class CrawlerConfig
   # @option config.options [Object] Streaming Options for {RequestStreamer}
   # @option config.options [Object] Filtering Options for {RequestFilter} and {DuplicatesFilter}
   constructor: (config = {}) ->
-    config = Extension.mergeOptions CrawlerConfig.defaultOpts(), config
+    config = _.merge {}, CrawlerConfig.defaultOpts(), config
     @name = config.name
     @basedir = config.basedir
     @extensions = config.extensions
     @options = config.options
+    @options.Logging = logconfig(@basePath())
 
   # @return [String] The configured base path of this crawler
   basePath: () -> "#{@basedir}/#{@name}"
@@ -331,12 +330,11 @@ class Crawler
 
   # Create a new crawler with the given options
   # @param config [Object] The configuration for this crawler. See {CrawlerConfig}
-  # @see {CrawlerConfig.defaultOpts}
+  # @see CrawlerConfig.defaultOpts
   constructor: (config = {}) ->
-    # Build and verify (TODO) options
     # Use default options where no user defined options are given
     @config = new CrawlerConfig config
-    @log = new LogHub(@config.Logging).logger()
+    @log = new LogHub(@config.options.Logging).logger()
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
@@ -372,18 +370,17 @@ class Crawler
   # @private
   initialize: () ->
     for extension in @_extensions
-      subContext = @context.fork() # Each extension has its own context scope
-      extension.initialize(subContext)
+      extension.initialize(@context.fork())
       extension.verify()
 
   # Run shutdown logic on all extensions
   shutdown: () ->
-    @log.info? 'Received shutdown signal'
     for extension in @_extensions
       try
-        extension.shutdown?()
+        @log.debug? "Calling shutdown on #{extension.name}"
+        extension.shutdown?() # TODO: Shutdown in reverse order
       catch error
-        @log.error "Error in extension #{extension.name}. Message: #{error.message}"
+        @log.error? "Error shutdown in extension #{extension.name}", error : error
 
 
 

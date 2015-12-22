@@ -1,5 +1,5 @@
 {Status} = require '../CrawlRequest'
-{Extension, ExtensionDescriptor} = require '../Extension'
+{Extension} = require '../Extension'
 fs = require 'fs-extra'
 
 
@@ -31,7 +31,7 @@ class OfflineServer extends Extension
 
   constructor: (opts = {}) ->
     super INITIAL : @apply
-    @opts = Extension.mergeOptions OfflineServer.defaultOpts, opts
+    @opts = @merge OfflineServer.defaultOpts, opts
 
   initialize: (context) ->
     super context

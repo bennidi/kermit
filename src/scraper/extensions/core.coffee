@@ -67,15 +67,23 @@ class Cleanup extends Extension
   # @nodoc
   constructor: () ->
     super
-      COMPLETE : @apply
-      CANCELED : @apply
-      ERROR : @apply
+      COMPLETE : @complete
+      CANCELED : @canceled
+      ERROR : @error
 
   # Do cleanup work to prevent memory leaks
-  apply: (request) ->
+  complete: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
     @context.queue.completed(request) # Remove from
-    delete request.response
+    #delete request.response
+
+  # Do cleanup work to prevent memory leaks
+  error: (request) ->
+    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
+
+  # Do cleanup work to prevent memory leaks
+  canceled: (request) ->
+    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
 
 
 module.exports = {

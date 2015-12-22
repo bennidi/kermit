@@ -15,6 +15,7 @@ describe  'Queueing extension',  ->
       TestRequest.spool()
       expect(mockCtx.queue.initial().length).to.equal(0)
       expect(mockCtx.queue.spooled().length).to.equal(1)
+      QueueConnector.shutdown()
 
 
 

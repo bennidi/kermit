@@ -1,4 +1,4 @@
-merge = require 'merge'
+_ = require 'lodash'
 
 ###
 {Extension}s are the core abstraction for adding actual request processing functionality
@@ -28,11 +28,6 @@ and respective {ExtensionPoint}s.
 ###
 class Extension
 
-  # Merge two objects recursively.
-  # This is used to combine user specified options with default options
-  @mergeOptions : (a,b) ->
-    merge.recursive a,b
-
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
   # @param handlers [Object] A mapping of {RequestStatus} values
@@ -52,9 +47,14 @@ class Extension
     if !context
       throw new Error "Initialization of an extension requires a context object"
 
+  # Merge two objects recursively.
+  # This is used to combine user specified options with default options
+  merge : (a,b) ->
+    _.merge a , b , (a,b) -> if _.isArray a then b
+
   # Run shutdown logic of this extension (if any)
   # @abstract
-  destroy : () ->
+  shutdown : () ->
 
   # Get all {RequestStatus} values handled by this extension
   targets: () ->

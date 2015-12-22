@@ -1,5 +1,6 @@
 {Status} = require './CrawlRequest'
 lokijs = require 'lokijs'
+_ = require 'lodash'
 
 # Provides access to a queue like system that allows to access {CrawlRequest}s by their
 # status.
@@ -12,6 +13,8 @@ class QueueManager
   # Construct a new QueueManager with its own data file
   constructor: (@file) ->
     @store =  new lokijs @file
+    @counters = total : {}
+    @counters.total[status] = 0 for status in Status.ALL
     @initialize()
 
   inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
@@ -31,15 +34,26 @@ class QueueManager
              .applyWhere (request) ->
                 request.status is Status.SPOOLED
 
+  statistics: () ->
+   stats =  _.merge {}, @counters, {current: @requestsByStatus()}
+   stats.total.ACCEPTED = stats.total.INITIAL - stats.total.CANCELED
+   stats
+
+
+  requestsByStatus : () ->
+    @requests.mapReduce ((request) -> request.status) ,  _.countBy
+
   # Insert a request into the queue
   # @param request {CrawlRequest} The request to be inserted
   insert: (request) ->
     @requests.insert(request.state)
+    @counters.all[request.state.status]++
 
   # Update a known request
   # @param request {CrawlRequest} The request to be updated
   update: (request) ->
     @requests.update(request.state)
+    @counters.all[request.state.status]++
 
   # Check whether the given url has already been processed or
   # is on its way to being processed
@@ -73,11 +87,13 @@ class QueueManager
   initial: () ->
     @requests.getDynamicView(Status.INITIAL).data()
 
+
   # Retrieve the next batch of {RequestStatus.SPOOLED} requests
   # @param batchSize {Number} The maximum number of requests to be returned
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->
     @requests.getDynamicView(Status.SPOOLED).branchResultset().simplesort('tsSPOOLED', true).limit(batchSize).data()
+
 
 module.exports = {
   QueueManager
