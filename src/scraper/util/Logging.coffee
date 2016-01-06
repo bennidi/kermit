@@ -2,33 +2,47 @@
 fs = require 'fs-extra'
 _ = require 'lodash'
 
-class LogFormats
-
-  extractTags = (data) ->
-    tags = if data?.tags then " [#{data.tags}]" else ""
-    delete data?.tags
-    tags
-
-  @llog : (newline = true) ->
-      (lvl, msg, data) ->
-        tags = extractTags data
-        data = if _.isEmpty data then "" else "(#{JSON.stringify data})"
-        entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{msg} #{data}"
-        if newline then entry + "\n" else entry
-
-
-
 class LogEntry
-  emptyArray = []
 
   constructor: (@lvl, @msg, @data) ->
+    @tags = @data?.tags
+    delete @data.tags
 
-  tags: () ->
-    @data?.tags or emptyArray
+# @abstract
+class Formatter
+
+  constructor : (@newline = true) ->
+
+  #@abstract
+  fromString: (lvl, msg) ->
+
+  #@abstract
+  fromEntry: (lvl, entry) ->
+
+class DefaultFormatter extends Formatter
+
+  constructor : (@newline = true) -> super @newline
+
+  extractTags = (tags) ->
+    if _.isEmpty tags then "" else " [#{tags}]"
+
+  fromString : (lvl, msg) ->
+    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()} - #{msg}"
+    if @newline then entry + "\n" else entry
+
+  fromEntry : (lvl, entry) ->
+    tags = extractTags entry.tags
+    data = if _.isEmpty entry.data then "" else "(#{JSON.stringify entry.data})"
+    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}"
+    if @newline then entry + "\n" else entry
+
+class LogFormats
+
+  @llog : (newline = true) -> new DefaultFormatter newline
 
 class LogAppender
 
-  constructor: (@sink, @formatter = LogFormats.default) ->
+  constructor: (@sink, @formatter = LogFormats.llog()) ->
 
   # @private
   # @abstract
@@ -37,7 +51,6 @@ class LogAppender
 class FileAppender extends LogAppender
 
   constructor: (@filename, @formatter = LogFormats.llog()) ->
-    #super new FileLogStream @filename, @formatter
     super null, @formatter
 
   initialize : () ->
@@ -56,14 +69,14 @@ class ConsoleAppender extends LogAppender
 
 class LogFormatter extends Transform
 
-  constructor : (@formatter = format, @level) ->
+  constructor : (@formatter, @level) ->
     super objectMode : true
 
   _transform: (chunk, enc, next) ->
     msg = switch
-      when chunk.constructor is String then @formatter @level, chunk
-      when chunk instanceof Buffer then @formatter @level, chunk.toString()
-      when chunk instanceof LogEntry then @formatter @level, chunk.msg, chunk.data
+      when chunk.constructor is String then @formatter.fromString @level, chunk
+      when chunk instanceof Buffer then @formatter.fromString @level, chunk.toString()
+      when chunk instanceof LogEntry then @formatter.fromEntry @level, chunk
       else "Unexpected type of log message #{chunk}"
     @push msg
     next()

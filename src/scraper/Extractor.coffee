@@ -1,6 +1,6 @@
 htmlToJson = require 'html-to-json'
 
-# Wrapper around html-to-json library. Allows to compose {Extractor}s and run them against
+# Wrapper around html-to-json library. Allows to compose extractors and run them against
 # any piece of valid html code.
 #
 class HtmlExtractor

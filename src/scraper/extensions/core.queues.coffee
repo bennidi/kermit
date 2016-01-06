@@ -3,6 +3,7 @@ storage = require '../QueueManager'
 {Extension} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
 {RandomId} = require '../util/utils.coffee'
+_ = require 'lodash'
 
 # The Queue Connector establishes a system of queues where each state
 # of the CrawlRequest state machine is represented in its own queue.
@@ -25,16 +26,25 @@ class QueueConnector extends Extension
     super context
     @queue = new storage.QueueManager "#{context.config.basePath()}/#{@opts.dbfile}"
     context.share "queue", @queue
-    @stats = setInterval @logStats, @opts.statistics.interval
+    statsLogger = () =>
+      try
+        @log.debug? "#{JSON.stringify @queue.statistics()}", tags : ['Statistics']
+      catch error
+        @log.error? "Error during computation of statistics", error:error
+    if @opts.statistics.interval > 0
+      @log.debug? "Statistics enabled at interval #{@opts.statistics.interval}"
+      @stats = setInterval statsLogger, @opts.statistics.interval
+      @stats.unref()
+    ###
+    shutdownWatchdog = () =>
+      @context.crawler.shutdown() if not @queue.requestsUnfinished()
+    @watchdog =  setInterval shutdownWatchdog, 5000
+    ###
 
+  # @nodoc
   shutdown:() ->
     clearInterval @stats
-
-  logStats: =>
-    try
-      @log.debug? "#{JSON.stringify @queue.statistics()}", tags : ['Statistics']
-    catch error
-      @log.error? "Error during computation of statistics #{error}"
+    #clearInterval @watchdog
 
   # Enrich each request with methods that propagate its
   # state transitions to the queue system
@@ -47,24 +57,27 @@ class QueueConnector extends Extension
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
-  @defaultOpts =
+  @defaultOpts = () ->
     limits : [
-        domain : ".*"
+        pattern : ".*"
         to : 5
         per : 'second'
+        max : 5
     ]
 
   # https://www.npmjs.com/package/simple-rate-limiter
   constructor: (opts = {}) ->
     super SPOOLED : @spool
-    @opts = @merge QueueWorker.defaultOpts, opts
+    @opts = _.merge QueueWorker.defaultOpts(), opts, (a, b) -> b.concat a if _.isArray a
+
+
     # 'second', 'minute', 'day', or a number of milliseconds
 
   initialize: (context) ->
     super context
     @queue = context.queue
     @requests = context.requests
-    @limits = new RateLimits @opts.limits, @context.log
+    @limits = new RateLimits @opts.limits, @context.log, @queue
     @spooler = setInterval @processRequests, 1000
 
   # @private
@@ -72,10 +85,9 @@ class QueueWorker extends Extension
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
     @spool @requests[request.id] for request in @queue.spooled()
 
-
   spool : (request) ->
     @log.debug? "Scheduling #{request.url()}"
-    if @limits.isAllowed request.url()
+    if @limits.isAllowed request.url() , @queue
       request.ready()
     else
       request.state["tsSPOOLED"] = new Date().getTime()
@@ -86,20 +98,25 @@ class QueueWorker extends Extension
 
 class RateLimits
 
-  constructor: (limits =[], @log) ->
-    @limits = ({
-      pattern : new RegExp(limit.domain,"g")
-      limiter: new RateLimiter(limit.to , limit.per)
-      to: limit.to
-      per:limit.per} for limit in limits)
+  constructor: (limits =[], @log, queue) ->
+    @limits = (new Limit limitDef, queue for limitDef in limits)
 
   isAllowed : (url) ->
     for limit in @limits
-      if url.match limit.pattern
-        #@log.debug? "#{url} has limit of #{limit.to} per #{limit.per}, #{limit.limiter.getTokensRemaining()} remaining"
-        return limit.limiter.tryRemoveTokens 1
-    true
+      return limit.isAllowed() if limit.matches url
+    throw new Error "No limit matched #{url}"
 
+class Limit
+
+  constructor: (@def, @queue) ->
+    @regex = new RegExp(@def.pattern,"g")
+    @limiter = new RateLimiter @def.to , @def.per
+
+  isAllowed: ->
+    @limiter.tryRemoveTokens(1) and @queue.requestsReady(@regex) < @def.max
+
+  matches: (url) ->
+    url.match @regex
 # Export a function to create the core plugin with default extensions
 module.exports = {
   QueueConnector

@@ -3,28 +3,38 @@
 {OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
 {ResourceDiscovery} = require './scraper/extensions/ext.resource.discovery.coffee'
 {Extension} = require './scraper/Extension.coffee'
-{WithinDomain, MimeTypes} = require './scraper/extensions/core.filter.coffee'
+{WithinDomain, MimeTypes, ByUrl} = require './scraper/extensions/core.filter.coffee'
 
 # opts: rateLimit, request depth
 Crawler = new Crawler
   name: "testicle"
   extensions : [
     new OfflineStorage
-    #new OfflineServer
-    #  basedir : ""
     new  ResourceDiscovery
-      scripts:false
-      links:false]
+  ]
   options:
     Queueing:
       limits : [
-        domain : ".*jimmycuadra.com.*",
-        to : 5,
-        per : 'second'
+        {
+          pattern : ".*jimmycuadra.com.*"
+          to : 10
+          per : 'second'
+          max : 10
+        }
+        {
+          pattern : "https.*github.*"
+          to : 10
+          per : 'second'
+          max : 10
+        }
       ]
     Filtering:
       allow : [
         WithinDomain "jimmycuadra"
+      ]
+      deny : [
+        ByUrl 'login'
+        #ByUrl 'https'
       ]
 
 Crawler.enqueue("http://jimmycuadra.com")

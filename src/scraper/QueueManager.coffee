@@ -19,6 +19,7 @@ class QueueManager
 
   inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
   waiting = [Status.INITIAL, Status.SPOOLED]
+  unfinished = [Status.INITIAL, Status.SPOOLED, Status.READY, Status.FETCHING, Status.FETCHED]
 
   # Initialize this queue manager
   initialize: () ->
@@ -47,13 +48,13 @@ class QueueManager
   # @param request {CrawlRequest} The request to be inserted
   insert: (request) ->
     @requests.insert(request.state)
-    @counters.all[request.state.status]++
+    @counters.total[request.state.status]++
 
   # Update a known request
   # @param request {CrawlRequest} The request to be updated
   update: (request) ->
     @requests.update(request.state)
-    @counters.all[request.state.status]++
+    @counters.total[request.state.status]++
 
   # Check whether the given url has already been processed or
   # is on its way to being processed
@@ -79,9 +80,20 @@ class QueueManager
     @requests.remove(request.state)
 
   # Determines whether there are requests left for Spooling
-  requestsRemaining: ->
-    unfinished = @requests.find status : $in: waiting
+  requestsWaiting: ->
+    waiting = @requests.find status : $in: waiting
+    waiting.length > 0
+
+  requestsUnfinished: ->
+    unfinished = @requests.find status : $in: unfinished
     unfinished.length > 0
+
+  requestsReady: (pattern) ->
+    ready = @requests.find $and: [
+      {url : $regex: pattern},
+      {status : 'READY'}
+    ]
+    ready.length
 
   # Get all {CrawlRequest}s with status {RequestStatus.INITIAL}
   initial: () ->

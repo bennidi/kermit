@@ -34,10 +34,9 @@ class ExtensionPoint
         if request.isCanceled()
           return false
         else
-          @log.debug "#{extension.name}.#{@phase}()"
           extension.handlers[@phase].call(extension, request)
       catch error
-        @log.error "Error in extension #{extension.name}: #{JSON.stringify error}"
+        @log.error "Error in extension #{extension.name}", { msg: error.toString(), error:error , trace: error.stack}
         request.error(error)
         return false
     true
@@ -209,7 +208,7 @@ class CrawlerConfig
     basedir   : "/tmp/sloth"
     extensions: [] # Clients can add extensions
     options   : # Options of each core extension can be customized here
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 
@@ -353,10 +352,10 @@ class Crawler
       new RequestFilter @config.options.Filtering
       new ExtensionPointConnector
       new RequestLookup
-      new QueueConnector @config.options.Queue
-      new QueueWorker @config.options.Queue
+      new QueueConnector @config.options.Queueing
+      new QueueWorker @config.options.Queueing
       new DuplicatesFilter
-      new RequestStreamer @config.options.Streamer]
+      new RequestStreamer @config.options.Streaming]
     # Add client extensions
     @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}"
     addExtensions this, @config.extensions

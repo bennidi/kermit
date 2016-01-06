@@ -64,6 +64,7 @@ class Extension
   # actual request processing starts
   # @throw Error if the configuration is invalid in any way
   verify: () ->
+    @log.debug? "Configuration of #{@name}", @opts
     if !@name
       throw new Error "An extension requires a name"
     if !@context

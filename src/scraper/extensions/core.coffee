@@ -48,7 +48,8 @@ class RequestLookup extends Extension
 
   # @nodoc
   constructor: () ->
-    super INITIAL : @apply
+    super
+      INITIAL : @apply
 
   # Expose a map that allows to lookup a {CrawlRequest} object by id
   initialize: (context) ->
@@ -75,16 +76,17 @@ class Cleanup extends Extension
   complete: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
     @context.queue.completed(request) # Remove from
-    #delete request.response
+    delete request.response
 
   # Do cleanup work to prevent memory leaks
   error: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
+    delete request.response
 
   # Do cleanup work to prevent memory leaks
   canceled: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-
+    delete request.response
 
 module.exports = {
   ExtensionPointConnector

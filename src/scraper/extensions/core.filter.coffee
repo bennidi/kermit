@@ -2,6 +2,9 @@
 {Extension} = require '../Extension'
 
 # Predefined filters for convenient configuration of {RequestFilter}
+#
+# @see http://elijahmanor.com/regular-expressions-in-coffeescript-are-awesome/ Regex in coffeescript
+# @see https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings CS Cookbook: Seaching for substrings
 class Filters
 
   @ByUrl: (pattern) ->
@@ -16,8 +19,13 @@ class Filters
     PDF : Filters.ByUrl /.*\.pdf/g
   @AllUrls : Filters.ByUrl /.*/g
 
+  @match : (request, filters) ->
+    for filter in filters
+      return true if filter(request)
+    false
 
-# Filter newly created {RequestStatus.INITIAL} requests based on a flexible set of filter functions.
+
+# Filter newly created requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
   @defaultOpts : () ->
@@ -29,20 +37,14 @@ class RequestFilter extends Extension
     super INITIAL : @apply
     @opts = @merge RequestFilter.defaultOpts(), opts
 
-
-  match = (request, filters) ->
-      for filter in filters
-        return true if filter(request)
-      false
-
   # Apply defined filters
   # Cancels the request if it is not whitelisted or blacklisted
   # @param request {CrawlRequest} The request to filter
   apply: (request) ->
-    if not match(request, @opts.allow)
+    if not Filters.match(request, @opts.allow)
       @log.trace? "FILTERED: #{request.url()} not on whitelist"
       return request.cancel()
-    if match(request, @opts.deny)
+    if Filters.match(request, @opts.deny)
       @log.trace? "FILTERED: #{request.url()} on blacklist"
       return request.cancel()
 

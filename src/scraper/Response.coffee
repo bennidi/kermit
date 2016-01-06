@@ -25,7 +25,7 @@ class Response
     @headers["content-type"]?.indexOf 'html' > 0
 
   content : ->
-    @data.join()
+    if @data.length > 1 then @data.join "" else @data[0]
 
 module.exports = {
   Response

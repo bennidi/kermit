@@ -31,7 +31,7 @@ Kermit in a Nutshell:
 
 ### Setup
     
-	$ npm install -g open-medicine-initiative/codo gulpjs/gulp-cli#4.0
+	$ npm install -g gulpjs/gulp-cli#4.0
 	$ npm install
 	$ npm test
 

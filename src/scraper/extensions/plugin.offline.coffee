@@ -3,10 +3,13 @@
 fs = require 'fs-extra'
 
 
-toLocalPath = (basedir = "", uri) ->
-  uri = uri.clone()
-  !uri.filename("index.html") if !uri.suffix()
-  basedir + uri.tld() + "/" + uri.hostname() + uri.pathname()
+toLocalPath = (basedir = "", request) ->
+  uri = request.uri().clone()
+  uri.normalize()
+  normalizedPath =  if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
+  uri.path normalizedPath
+  uri.suffix("html") if !uri.suffix()
+  path = basedir + uri.tld() + "/" + uri.domain() + uri.path()
 
 # Store request results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
@@ -15,9 +18,10 @@ class OfflineStorage extends Extension
     super
       FETCHED: (request) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-        path = toLocalPath @basedir , request.uri()
-        #@log.debug? "Storing #{request.body.length} bytes to #{path}"
-        fs.outputFileSync path, request.response.content()
+        path = toLocalPath @basedir , request
+        content = request.response.content()
+        @log.debug? "Storing #{content.length} bytes to #{path} (#{request.url()})"
+        fs.outputFileSync path, content
 
   initialize: (context) ->
     super context
