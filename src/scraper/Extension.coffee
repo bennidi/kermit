@@ -1,5 +1,6 @@
 _ = require 'lodash'
 
+
 ###
 {Extension}s are the core abstraction for adding actual request processing functionality
 to the {Crawler}. In fact, **all** of the available **request processing functionality** like filtering,
@@ -50,7 +51,8 @@ class Extension
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
   merge : (a,b) ->
-    _.merge a , b , (a,b) -> if _.isArray a then b
+    {objects} = require './util/utils.coffee'
+    objects.merge a,b
 
   # Run shutdown logic of this extension (if any)
   # @abstract

@@ -5,6 +5,7 @@ https = require 'https'
 http = require 'http'
 socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
+{LogStream} = require '../util/utils.coffee'
 
 
 # Execute the request and retrieve the result for further processing.
@@ -22,7 +23,7 @@ class RequestStreamer extends Extension
 
   # Create a new Streamer
   constructor: (opts = {}) ->
-    super READY:@apply
+    super READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
     if @opts.Tor.enabled
       agentOptions =
@@ -32,34 +33,23 @@ class RequestStreamer extends Extension
       @opts.agents.http = new socks5Http agentOptions
     else
       agentOptions =
-        maxSockets: 10
+        maxSockets: 5
         ciphers: "AES128-SHA"
       @opts.agents.http = new http.Agent agentOptions
       @opts.agents.https = new https.Agent agentOptions
 
-
   initialize: (context) ->
     super context
-
-    @log.debug? "Configured agents #{JSON.stringify @agents}"
-
 
   apply: (crawlRequest) ->
     url = crawlRequest.url()
     @log.debug? "Executing request #{url}"
     options =
       agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
-    #httpRequest.get url, (chunk, error)
     httpRequest.get url, options
       .on 'response', (response) ->
-        crawlRequest.fetching()
-        crawlRequest.response.import response
-      .on 'error', (error) =>
-        @log.error "Error while streaming", error:error
-        crawlRequest.error(error)
-      .on 'end', ->
-        crawlRequest.fetched()
-      .pipe(crawlRequest.response.incoming)
+        crawlRequest.fetching response
+
 
 # Export a function to create the core plugin with default extensions
 module.exports = {

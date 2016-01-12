@@ -9,7 +9,7 @@
 Crawler = new Crawler
   name: "testicle"
   extensions : [
-    new OfflineStorage
+    #new OfflineStorage
     new  ResourceDiscovery
   ]
   options:
@@ -30,10 +30,10 @@ Crawler = new Crawler
       ]
     Filtering:
       allow : [
-        WithinDomain "jimmycuadra"
+        /.*jimmycuadra.*/g
       ]
       deny : [
-        ByUrl 'login'
+        /.*login.*/g
         #ByUrl 'https'
       ]
 

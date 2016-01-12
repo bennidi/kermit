@@ -6,15 +6,18 @@
 class ExtensionPointConnector extends Extension
 
   # @nodoc
-  constructor: (@context) ->
-    super INITIAL : @apply , @context
+  constructor: () ->
+    super INITIAL : @apply
+
+  executePhase: (request) =>
+    @context.execute request.status(), request
 
   # Add listener to the request such that status change will trigger
   # execution of corresponding {ExtensionPoint}
   apply: (request) ->
     request.context = @context
-    request.onChange 'status', (request) ->
-      request.context.execute request.status(), request
+    request.onChange 'status', @executePhase
+
 
 # Handle status transition CREATED -> SPOOLED
 class Spooler extends Extension

@@ -131,10 +131,20 @@ class CrawlRequest
   # Change the requests status to FETCHING
   # @return {CrawlRequest} This request
   # @throw Error if request does have other status than READY
-  fetching: ->
-    if @isReady()
-      @status(RequestStatus.FETCHING);this
+  fetching: (incomingMessage) ->
+    if @isReady() then @status(RequestStatus.FETCHING)
     else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
+    @response.import incomingMessage
+    incomingMessage
+      .on 'error', (error) =>
+        @log.error "Error while streaming", error:error
+        @error(error)
+      .on 'end', =>
+        @fetched()
+      .pipe @response.incoming
+    this
+
+
 
   # Change the requests status to FETCHED
   # @return {CrawlRequest} This request
@@ -189,10 +199,7 @@ class CrawlRequest
   # @return {Boolean} True if status is ERROR, false otherwise
   isError: () -> @state.status is RequestStatus.ERROR
 
-  # Create a new request and schedule its processing.
-  # The new request is considered a successor of this request
-  # @param url [String] The url for the new request
-  # @return {CrawlRequest} The newly created request
+
   enqueue: (url) ->
     @context.execute RequestStatus.INITIAL, @subrequest url
 
@@ -205,7 +212,7 @@ class CrawlRequest
 
   # A request might have been created by another request (its predecessor).
   # That predecessor might in turn have been created by another request and so on.
-  # @return [BigDecimal] The number of predecessors of this request
+  # @return {Number} The number of predecessors of this request
   predecessors: () -> @state.predecessors
 
 module.exports = {

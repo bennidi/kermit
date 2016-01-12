@@ -2,10 +2,12 @@
 {ExtensionPointConnector, RequestLookup, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues.coffee'
 {RequestStreamer} = require './extensions/core.streaming.coffee'
-{RequestFilter, DuplicatesFilter} = require './extensions/core.filter.coffee'
-{Status, CrawlRequest, Status} = require './CrawlRequest'
+{QueueManager} = require './QueueManager.coffee'
+{RequestFilter, UrlFilter} = require './extensions/core.filter.coffee'
+{Status, CrawlRequest} = require './CrawlRequest'
 {LogHub, LogAppender, FileAppender, ConsoleAppender} = require './util/Logging.coffee'
 _ = require 'lodash'
+{RandomId} = require './util/utils.coffee'
 
 # An extension point provides a mechanism to add functionality to the extension point provider.
 # Extension points act as containers for {Extension} - the objects providing the actual extension
@@ -43,7 +45,7 @@ class ExtensionPoint
 
   # Execute all extensions for the given request
   # @param request [CrawlRequest] The request to be processed
-  apply: (request) ->
+  apply: (request) =>
     @callExtensions(request)
     request
 
@@ -152,6 +154,7 @@ class CrawlerContext
     @execute = config.execute
     @log = config.log
     @config = config.crawler.config
+    @queue = config.queue
 
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts
@@ -170,23 +173,32 @@ class CrawlerConfig
     levels : ['trace', 'info', 'error', 'debug', 'warn']
     destinations: [
       {
-        appender: new ConsoleAppender
+        appender:
+          type : 'console'
         levels : ['trace', 'error', 'info', 'debug', 'warn']
       },
       {
-        appender : new FileAppender "#{basedir}/logs/full.log"
+        appender :
+          type : 'file'
+          filename : "#{basedir}/full.log"
         levels: ['trace', 'error', 'info', 'debug']
       },
       {
-        appender : new FileAppender "#{basedir}/logs/error.log"
+        appender :
+          type : 'file'
+          filename : "#{basedir}/error.log"
         levels: ['error', 'warn']
       },
       {
-        appender : new FileAppender "#{basedir}/logs/info.log"
-        levels: ['info', 'warn']
+        appender :
+          type : 'file'
+          filename : "#{basedir}/debug.log"
+        levels: ['debug']
       },
       {
-        appender : new FileAppender "#{basedir}/logs/trace.log"
+        appender :
+          type : 'file'
+          filename : "#{basedir}/trace.log"
         levels: ['trace']
       }
     ]
@@ -208,7 +220,7 @@ class CrawlerConfig
     basedir   : "/tmp/sloth"
     extensions: [] # Clients can add extensions
     options   : # Options of each core extension can be customized here
-      Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Queueing   : {dbfile : "#{RandomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 
@@ -225,7 +237,7 @@ class CrawlerConfig
     @basedir = config.basedir
     @extensions = config.extensions
     @options = config.options
-    @options.Logging = logconfig(@basePath())
+    @options.Logging = logconfig("#{@basePath()}/logs")
 
   # @return [String] The configured base path of this crawler
   basePath: () -> "#{@basedir}/#{@name}"
@@ -322,8 +334,7 @@ class Crawler
       throw new Error "Extension point #{phase} does not exists"
     crawler.extpoints[phase]
   execute = (crawler, phase, request) ->
-    process.nextTick ->
-      extpoint(crawler, phase).apply request
+    process.nextTick extpoint(crawler, phase).apply, request
     request
 
 
@@ -334,6 +345,7 @@ class Crawler
     # Use default options where no user defined options are given
     @config = new CrawlerConfig config
     @log = new LogHub(@config.options.Logging).logger()
+    @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.dbfile}"
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
@@ -341,11 +353,25 @@ class Crawler
       execute: (phase, request) =>
         execute(@, phase, request)
       log    : @log
+      queue : @queue
 
     # Create and add extension points
     @extpoints = {}
     @extpoints[ExtensionPoint.phase] = new ExtensionPoint @context for name, ExtensionPoint of ExtensionPoints
     @_extensions = []
+
+    urlFilter = new UrlFilter
+      allow : _.collect @config.options.Filtering.allow, _.isRegExp
+      deny : _.collect @config.options.Filtering.deny, _.isRegExp
+      isDuplicate : (url) => @queue.contains url
+
+    # Create a new request and schedule its processing.
+    # The new request is considered a successor of this request
+    # @param url [String] The url for the new request
+    # @return {CrawlRequest} The newly created request
+    @context['schedule'] = (request, url) =>
+      if urlFilter.isAllowed url
+        execute @, Status.INITIAL, request.subrequest url
 
     # Core extensions that need to run BEFORE user extensions
     addExtensions this, [
@@ -354,7 +380,6 @@ class Crawler
       new RequestLookup
       new QueueConnector @config.options.Queueing
       new QueueWorker @config.options.Queueing
-      new DuplicatesFilter
       new RequestStreamer @config.options.Streaming]
     # Add client extensions
     @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}"

@@ -90,8 +90,8 @@ class QueueManager
 
   requestsReady: (pattern) ->
     ready = @requests.find $and: [
-      {url : $regex: pattern},
-      {status : 'READY'}
+      {status : 'READY'},
+      {url : $regex: pattern}
     ]
     ready.length
 

@@ -1,6 +1,7 @@
 {Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
 fs = require 'fs-extra'
+{byExtension} = require '../util/mimetypes.coffee'
 
 
 toLocalPath = (basedir = "", request) ->
@@ -8,7 +9,7 @@ toLocalPath = (basedir = "", request) ->
   uri.normalize()
   normalizedPath =  if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
   uri.path normalizedPath
-  uri.suffix("html") if !uri.suffix()
+  uri.suffix("html") if (!uri.suffix() or not byExtension[uri.suffix()])
   path = basedir + uri.tld() + "/" + uri.domain() + uri.path()
 
 # Store request results in local repository for future serving from filesystem

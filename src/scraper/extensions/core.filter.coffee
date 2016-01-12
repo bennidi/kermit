@@ -1,5 +1,6 @@
 {Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
+_ = require 'lodash'
 
 # Predefined filters for convenient configuration of {RequestFilter}
 #
@@ -24,6 +25,35 @@ class Filters
       return true if filter(request)
     false
 
+  @matchUrl : (url, patterns) ->
+    for pattern in patterns
+      return true if url.matches pattern
+    false
+
+class UrlFilter
+
+  @defaultOpts : () ->
+    allow : [/.*/g] # allow all by default
+    deny : []
+
+  # @nodoc
+  constructor: (opts = {}) ->
+    {objects} = require '../util/utils.coffee'
+    @opts = objects.merge UrlFilter.defaultOpts(), opts
+
+  # Check the given URL matching entries in blacklist/whitelist
+  # @param url {String} The request to filter
+  # @return {Boolean} True
+  isAllowed: (url) ->
+    if not Filters.matchUrl url, @opts.allow
+      @log.trace? "#{url} not on whitelist", tags:['UrlFilter']
+      return false
+    if Filters.matchUrl  url, @opts.deny
+      @log.trace? "#{url} on blacklist", tags:['UrlFilter']
+      return false
+    if @opts.isDuplicate url
+      @log.trace? "#{url} is duplicate", tags:['UrlFilter']
+      return false
 
 # Filter newly created requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
@@ -36,6 +66,8 @@ class RequestFilter extends Extension
   constructor: (opts = {} ) ->
     super INITIAL : @apply
     @opts = @merge RequestFilter.defaultOpts(), opts
+    @opts.allow = _.map @opts.allow, (filter) -> if _.isRegExp filter then Filters.ByUrl filter else filter
+    @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByUrl filter else filter
 
   # Apply defined filters
   # Cancels the request if it is not whitelisted or blacklisted
@@ -48,29 +80,8 @@ class RequestFilter extends Extension
       @log.trace? "FILTERED: #{request.url()} on blacklist"
       return request.cancel()
 
-
-# Filter out duplicate requests (requests to the same url)
-class DuplicatesFilter extends Extension
-
-  # @nodoc
-  constructor: (@opts = {} ) ->
-    super INITIAL : @apply
-
-  # Initialize with {QueueManager} from context
-  initialize: (context) ->
-    super context
-    @queue = context.queue
-
-  # Filter out all requests with a url already fetched
-  # or in progress of fetching
-  apply: (request) ->
-    url = request.url()
-    if @queue.contains(url)
-      @log.trace? "FILTERED: #{url} is duplicate"
-      request.cancel()
-
 module.exports = {
-  DuplicatesFilter
+  UrlFilter
   RequestFilter
   Filters
   ByUrl : Filters.ByUrl

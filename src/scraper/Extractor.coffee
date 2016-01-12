@@ -25,7 +25,10 @@ class HtmlExtractor
       @extractors.push {selector, processor}
 
   process: (input) ->
-    htmlToJson.batch(input, htmlToJson.createParser selectors @extractors).done processors @extractors
+    try
+      htmlToJson.batch(input, htmlToJson.createParser selectors @extractors).done processors @extractors
+    catch error
+      console.log error
 
 module.exports = {
   HtmlExtractor

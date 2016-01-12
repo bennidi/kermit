@@ -1,5 +1,6 @@
 {Extension} = require '../Extension.coffee'
 stream = require 'stream'
+_ = require 'lodash'
 
 class LogStream extends stream.Writable
 
@@ -54,6 +55,9 @@ module.exports = {
   ResponseStreamLogger
   CountingStream
   LogStream
+  objects :
+    merge : (a,b) ->
+      _.merge a , b , (a,b) -> if _.isArray a then b
   RandomId : (length=8) ->
     id = ""
     id += Math.random().toString(36).substr(2) while id.length < length

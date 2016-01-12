@@ -12,7 +12,6 @@ _ = require 'lodash'
 class QueueConnector extends Extension
 
   @defaultOpts : () ->
-    dbfile : "#{RandomId()}-queue.json"
     statistics:
       interval : 2000
 
@@ -24,8 +23,7 @@ class QueueConnector extends Extension
   # Create a queue system and re-expose in context
   initialize: (context) ->
     super context
-    @queue = new storage.QueueManager "#{context.config.basePath()}/#{@opts.dbfile}"
-    context.share "queue", @queue
+    @queue = context.queue
     statsLogger = () =>
       try
         @log.debug? "#{JSON.stringify @queue.statistics()}", tags : ['Statistics']
@@ -46,12 +44,14 @@ class QueueConnector extends Extension
     clearInterval @stats
     #clearInterval @watchdog
 
+  updateQueue : (request) =>
+    @queue.update(request)
+
   # Enrich each request with methods that propagate its
   # state transitions to the queue system
   apply: (request) ->
     @queue.insert request
-    request.onChange 'status', (request) =>
-      @queue.update(request)
+    request.onChange 'status', @updateQueue
 
 # Process requests that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
@@ -69,7 +69,6 @@ class QueueWorker extends Extension
   constructor: (opts = {}) ->
     super SPOOLED : @spool
     @opts = _.merge QueueWorker.defaultOpts(), opts, (a, b) -> b.concat a if _.isArray a
-
 
     # 'second', 'minute', 'day', or a number of milliseconds
 

@@ -2,16 +2,18 @@
 fs = require 'fs-extra'
 _ = require 'lodash'
 
+# Aggregates log message and additional (meta-)data. Constructed whenever
+# the log() method of {LogHub} is called with more than just the message.
+# @private
 class LogEntry
 
-  constructor: (@lvl, @msg, @data) ->
+  constructor: (@msg, @data) ->
     @tags = @data?.tags
     delete @data.tags
 
+# Format log messages
 # @abstract
 class Formatter
-
-  constructor : (@newline = true) ->
 
   #@abstract
   fromString: (lvl, msg) ->
@@ -21,28 +23,25 @@ class Formatter
 
 class DefaultFormatter extends Formatter
 
-  constructor : (@newline = true) -> super @newline
-
   extractTags = (tags) ->
     if _.isEmpty tags then "" else " [#{tags}]"
 
   fromString : (lvl, msg) ->
-    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()} - #{msg}"
-    if @newline then entry + "\n" else entry
+    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()} - #{msg}\n"
 
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
     data = if _.isEmpty entry.data then "" else "(#{JSON.stringify entry.data})"
-    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}"
-    if @newline then entry + "\n" else entry
+    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
 
 class LogFormats
 
-  @llog : (newline = true) -> new DefaultFormatter newline
+  @llog : () -> new DefaultFormatter
 
 class LogAppender
 
-  constructor: (@sink, @formatter = LogFormats.llog()) ->
+  constructor: (params) ->
+    @sink = params?.sink
 
   # @private
   # @abstract
@@ -50,24 +49,13 @@ class LogAppender
 
 class FileAppender extends LogAppender
 
-  constructor: (@filename, @formatter = LogFormats.llog()) ->
-    super null, @formatter
-
-  initialize : () ->
-    @sink = fs.createWriteStream(@filename, flags : 'a')
-
-class ConsoleLogStream extends Writable
-
-  _write: (chunk, enc, next) ->
-    console.log chunk.toString()
-    next()
+  constructor: (params) -> super sink : fs.createWriteStream(params.filename, flags : 'a')
 
 class ConsoleAppender extends LogAppender
 
-  constructor: (@formatter = LogFormats.llog false) ->
-    super new ConsoleLogStream, @formatter
+  constructor: () -> super sink : process.stdout
 
-class LogFormatter extends Transform
+class LogFormatHandler extends Transform
 
   constructor : (@formatter, @level) ->
     super objectMode : true
@@ -81,14 +69,38 @@ class LogFormatter extends Transform
     @push msg
     next()
 
+class Appenders
+
+  instance = null
+
+  @get: () ->
+    instance ?= new Appenders
+
+  # @private
+  constructor: (@registry = {}) ->
+    @register 'console', ConsoleAppender
+    @register 'file', FileAppender
+
+  register : (alias, factory) ->
+    @registry[alias] = factory
+
+  create : (def) ->
+    new @registry[def.type] def
 
 class LogHub
 
   @defaultOpts : () ->
-    basedir : "/tmp/loghub"
+    appenders : Appenders.get()
     destinations : [
       {
-        appender: new ConsoleAppender
+        appender:
+          type : 'console'
+        levels: ['info', 'warn', 'error', 'debug']
+      },
+      {
+        appender:
+          type : 'file'
+          filename : '/tmp/all.log'
         levels: ['info', 'warn', 'error', 'debug']
       }
     ]
@@ -96,10 +108,11 @@ class LogHub
 
   constructor : (opts = {}) ->
     @opts = _.merge {}, LogHub.defaultOpts(), opts, (a,b) -> if _.isArray a then b
-    @_initialize()
+    @initialize()
 
-  _initialize: () ->
-    fs.mkdirsSync "#{@opts.basedir}/logs"
+  #@private
+  initialize: () ->
+    fs.mkdirsSync @opts.basedir if @opts.basedir
     @dispatcher = {}
     for level in @opts.levels
       connector = new PassThrough(objectMode : true)
@@ -108,22 +121,26 @@ class LogHub
     @addDestination destination for destination in @opts.destinations
 
   addDestination: (destination) ->
-    destination.appender.initialize()
+    appender = switch
+      when destination.appender.type.constructor is String then @opts.appenders.create destination.appender
+      when destination.appender.type instanceof Function then new destination.appender.type destination.appender
+      else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
       if not @dispatcher[level] then throw new Error "Log level #{level} not defined"
-      formatter = destination.appender.formatter or LogFormats.llog()
+      formatter = destination.formatter or LogFormats.llog()
       @dispatcher[level]
-        .pipe new LogFormatter formatter, level
-        .pipe destination.appender.sink
+        .pipe new LogFormatHandler formatter, level
+        .pipe appender.sink
 
   log : (lvl, msg, data) ->
     if data
-      @dispatcher[lvl]?.push new LogEntry lvl, msg, data
+      @dispatcher[lvl]?.push new LogEntry msg, data
     else
       @dispatcher[lvl]?.push msg
 
   logger: () -> new Logger @opts.levels, @
 
+# Wrapper around {LogHub} that provides a method for each available log level
 class Logger
 
   logHandler = (lvl, hub) -> (msg, data) -> hub.log lvl, msg, data

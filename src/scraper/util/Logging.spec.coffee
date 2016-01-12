@@ -11,10 +11,23 @@ describe  'LogHub',  ->
       warn = new CountingStream
       debug = new CountingStream
       hub = new LogHub destinations : [
-        {appender: new LogAppender(info), levels : ['info']}
-        {appender: new LogAppender(error), levels : ['error']}
-        {appender: new LogAppender(warn), levels : ['warn']}
-        {appender: new LogAppender(debug), levels : ['debug']}
+        {appender:
+          type : LogAppender
+          sink : info
+        levels : ['info']}
+        {appender:
+          type : LogAppender
+          sink : error
+        levels : ['error']}
+        {appender:
+          type : LogAppender
+          sink : warn
+        levels : ['warn']}
+        {appender:
+          type : LogAppender
+          sink : debug
+        levels : ['debug']}
+
       ]
       hub.log "info", "Some message"
       hub.log "warn", "Some message"
@@ -28,7 +41,10 @@ describe  'LogHub',  ->
     it '# different log levels can be aggregated', () ->
       all = new CountingStream
       hub = new LogHub destinations : [
-        {appender: new LogAppender(all), levels : ['info', 'warn', 'debug', 'error']}
+        {appender:
+          type : LogAppender
+          sink : all
+        levels : ['info', 'warn', 'debug', 'error']}
       ]
       hub.log "info", "Some message"
       hub.log "warn", "Some message"
@@ -41,7 +57,9 @@ describe  'LogHub',  ->
       all = new CountingStream
       hub = new LogHub destinations : [
         {
-          appender: new LogAppender all
+          appender:
+            type : LogAppender
+            sink: all
           levels : ['info', 'warn', 'debug', 'error']
         }
       ]
