@@ -396,13 +396,14 @@ class Crawler
     for extension in @_extensions
       extension.initialize(@context.fork())
       extension.verify()
+      @log.info? extension.toString()
 
   # Run shutdown logic on all extensions
   shutdown: () ->
-    for extension in @_extensions
+    for extension in _(@_extensions).reverse().value()
       try
         @log.debug? "Calling shutdown on #{extension.name}"
-        extension.shutdown?() # TODO: Shutdown in reverse order
+        extension.shutdown?()
       catch error
         @log.error? "Error shutdown in extension #{extension.name}", error : error
 

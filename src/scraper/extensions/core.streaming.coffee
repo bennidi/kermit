@@ -38,9 +38,6 @@ class RequestStreamer extends Extension
       @opts.agents.http = new http.Agent agentOptions
       @opts.agents.https = new https.Agent agentOptions
 
-  initialize: (context) ->
-    super context
-
   apply: (crawlRequest) ->
     url = crawlRequest.url()
     @log.debug? "Executing request #{url}"

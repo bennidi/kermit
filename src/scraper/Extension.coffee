@@ -44,7 +44,6 @@ class Extension
   initialize: (context) ->
     @context = context
     @log = context.log
-    #TODO: Initialize log from context
     if !context
       throw new Error "Initialization of an extension requires a context object"
 
@@ -66,12 +65,15 @@ class Extension
   # actual request processing starts
   # @throw Error if the configuration is invalid in any way
   verify: () ->
-    @log.debug? "Configuration of #{@name}", @opts
     if !@name
       throw new Error "An extension requires a name"
     if !@context
       throw new Error "An extension requires a context object"
 
+
+  toString: () ->
+    handles = (key for key of @handlers)
+    "#{@name} [#{handles}] => #{JSON.stringify @opts}"
 
 module.exports = {
   Extension
