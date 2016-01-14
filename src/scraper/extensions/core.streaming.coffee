@@ -5,7 +5,7 @@ https = require 'https'
 http = require 'http'
 socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
-{LogStream} = require '../util/utils.coffee'
+{LogStream} = require '../util/tools.coffee'
 
 
 # Execute the request and retrieve the result for further processing.

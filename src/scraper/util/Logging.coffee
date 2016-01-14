@@ -1,6 +1,7 @@
 {PassThrough, Transform, Writable} = require 'stream'
 fs = require 'fs-extra'
 _ = require 'lodash'
+{obj} = require './tools.coffee'
 
 # Aggregates log message and additional (meta-)data. Constructed whenever
 # the log() method of {LogHub} is called with more than just the message.
@@ -31,7 +32,7 @@ class DefaultFormatter extends Formatter
 
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
-    data = if _.isEmpty entry.data then "" else "(#{JSON.stringify entry.data})"
+    data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 2, false})"
     entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
 
 class LogFormats
@@ -59,6 +60,7 @@ class LogFormatHandler extends Transform
 
   constructor : (@formatter, @level) ->
     super objectMode : true
+    @setMaxListeners 100
 
   _transform: (chunk, enc, next) ->
     msg = switch

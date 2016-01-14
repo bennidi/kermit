@@ -1,6 +1,6 @@
 URI = require 'urijs'
-{Response} = require './Response.coffee'
-{RandomId} = require './util/utils.coffee'
+{Pipeline} = require './Pipeline.coffee'
+{obj} = require './util/tools.coffee'
 
 
 # At any time, each request has a status value equal to one of the values
@@ -49,17 +49,17 @@ class CrawlRequest
       request.changeListeners[property] = []
     request.changeListeners[property]  
 
-  constructor: (url, context, predecessors = 0) ->
+  constructor: (url, context, parents = 0) ->
     @_uri = URI(url)
     @state =
       url:  @_uri.toString()
-      tsLastModified: new Date().getTime()
-      id : RandomId(20)
-      predecessors : predecessors
+      stamps:
+        created : new Date().getTime()
+      id : obj.randomId(20)
+      parents : parents
     @changeListeners = {}
     @context = context
     @log = context.log
-    @response = new Response
     @status RequestStatus.INITIAL
 
 
@@ -99,10 +99,19 @@ class CrawlRequest
   # @private
   status: (status) ->
     if status?
-      @log.trace? "#{status} [#{@url()}]"
+      @stamp(status)
       @state.status = status
       notify this, "status"
     else @state.status
+
+  # Add a new timestamp to the collection of timestamps
+  # for the given tag. Timestamps are useful to keep track of processing durations.
+  stamp: (tag) ->
+    @stamps(tag).push new Date().getTime();this
+
+  # Get all timestamps stored for the given tag  
+  stamps : (tag) ->
+    @state.stamps[tag] ?= []
 
   # Register a change listener for a specific value of the status property
   # @param status [String] The status value that will trigger invocation of the listener
@@ -134,16 +143,14 @@ class CrawlRequest
   fetching: (incomingMessage) ->
     if @isReady() then @status(RequestStatus.FETCHING)
     else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
-    @response.import incomingMessage
     incomingMessage
       .on 'error', (error) =>
-        @log.error "Error while streaming", error:error
+        @log.error? "Error while streaming", error:error
         @error(error)
       .on 'end', =>
         @fetched()
-      .pipe @response.incoming
+    @channels().import incomingMessage
     this
-
 
 
   # Change the requests status to FETCHED
@@ -164,8 +171,9 @@ class CrawlRequest
 
   # Change the requests status to ERROR
   # @return {CrawlRequest} This request
-  error: ->
+  error: (error) ->
     @state.status = RequestStatus.ERROR
+    @errors ?= [];@errors.push error
     notify this, "status"
 
   # Change the requests status to CANCELED
@@ -199,21 +207,23 @@ class CrawlRequest
   # @return {Boolean} True if status is ERROR, false otherwise
   isError: () -> @state.status is RequestStatus.ERROR
 
-
-  enqueue: (url) ->
-    @context.execute RequestStatus.INITIAL, @subrequest url
-
-  # Create a new request
-  # The new request is considered a successor of this request
+  # Create a new request.
+  # The new request is considered a successor of this request.
   # @param url [String] The url for the new request
   # @return {CrawlRequest} The newly created request
   subrequest: (url) ->
-    new CrawlRequest url, @context, @state.predecessors + 1
+    new CrawlRequest url, @context, @state.parents + 1
 
-  # A request might have been created by another request (its predecessor).
-  # That predecessor might in turn have been created by another request and so on.
-  # @return {Number} The number of predecessors of this request
-  predecessors: () -> @state.predecessors
+  enqueue: (url) ->
+    @context.schedule @, url
+
+  channels: () ->
+    @pipeline ?= new Pipeline @log
+
+  # A request might have been created by another request (its parent).
+  # That parent might in turn have been created by another request and so on.
+  # @return {Number} The number of parents of this request
+  parents: () -> @state.parents
 
 module.exports = {
   CrawlRequest

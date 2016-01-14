@@ -1,6 +1,6 @@
 {Crawler} = require './Crawler'
 {RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils.coffee'
-{ResponseStreamLogger} = require './util/utils.coffee'
+{ResponseStreamLogger} = require './util/spec.utils.coffee'
 {Status} = require './CrawlRequest.coffee'
 {WithinDomain} = require './extensions/core.filter.coffee'
 

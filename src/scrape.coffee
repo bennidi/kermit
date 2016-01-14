@@ -9,20 +9,20 @@
 Crawler = new Crawler
   name: "testicle"
   extensions : [
-    #new OfflineStorage
+    new OfflineStorage
     new  ResourceDiscovery
   ]
   options:
     Queueing:
       limits : [
         {
-          pattern : ".*jimmycuadra.com.*"
+          pattern : /.*jimmycuadra.com.*/
           to : 10
           per : 'second'
           max : 10
         }
         {
-          pattern : "https.*github.*"
+          pattern : /https.*github.*/
           to : 10
           per : 'second'
           max : 10
@@ -30,11 +30,10 @@ Crawler = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra.*/g
+        /.*jimmycuadra.*/
       ]
       deny : [
-        /.*login.*/g
-        #ByUrl 'https'
+        /.*login.*/
       ]
 
 Crawler.enqueue("http://jimmycuadra.com")

@@ -7,7 +7,7 @@
 {Status, CrawlRequest} = require './CrawlRequest'
 {LogHub, LogAppender, FileAppender, ConsoleAppender} = require './util/Logging.coffee'
 _ = require 'lodash'
-{RandomId} = require './util/utils.coffee'
+{obj} = require './util/tools.coffee'
 
 # An extension point provides a mechanism to add functionality to the extension point provider.
 # Extension points act as containers for {Extension} - the objects providing the actual extension
@@ -15,10 +15,23 @@ _ = require 'lodash'
 # @abstract (An extension point should be subclassed)
 class ExtensionPoint
 
+  @addExtensions : (crawler, extensions = []) ->
+    for extension in extensions
+      ExtensionPoint.extpoint(crawler, point).addExtension(extension) for point in extension.targets()
+      crawler._extensions.push extension
+  @extpoint : (crawler, phase) ->
+    if !crawler.extpoints[phase]?
+      throw new Error "Extension point #{phase} does not exists"
+    crawler.extpoints[phase]
+  @execute : (crawler, phase, request) ->
+    process.nextTick ExtensionPoint.extpoint(crawler, phase).apply, request
+    request
+
   # Construct an extension point
   # @param phase [String] The phase that corresponds to the respective value of {RequestStatus}
-  constructor: (@phase, @context) ->
-    throw new Error("Please provide phase and description") if !@phase
+  constructor: (@context) ->
+    @phase = @constructor.phase
+    throw new Error("Please provide phase and description") if !@constructor.phase
     @log = @context.log
     @extensions = []
 
@@ -55,9 +68,6 @@ This ExtensionPoint runs: Filtering, Connect to {QueueManager Queueing System}, 
 ###
 class INITIAL extends ExtensionPoint
   @phase = Status.INITIAL
-  # @nodoc
-  constructor: (@context) ->
-    super Status.INITIAL, @context
 
 ###
 Process requests with status "SPOOLED".
@@ -66,10 +76,6 @@ This ExtensionPoint runs: User extensions, {QueueManager}
 ###
 class SPOOLED extends ExtensionPoint
   @phase = Status.SPOOLED
-  # @nodoc
-  constructor: (@context) ->
-    super Status.SPOOLED, @context
-
 
 ###
 Process requests with status "READY".
@@ -78,9 +84,6 @@ This ExtensionPoint runs: User extensions.
 ###
 class READY extends ExtensionPoint
   @phase = Status.READY
-  # @nodoc
-  constructor: (@context) ->
-    super Status.READY, @context
 
 ###
 Process requests with status "FETCHING".
@@ -89,9 +92,6 @@ This ExtensionPoint runs: {RequestStreamer}, User extensions.
 ###
 class FETCHING extends ExtensionPoint
   @phase = Status.FETCHING
-  # @nodoc
-  constructor: (@context) ->
-    super Status.FETCHING, @context
 
 ###
 Process requests with status "FETCHED".
@@ -100,9 +100,6 @@ This ExtensionPoint runs: User extensions.
 ###
 class FETCHED extends ExtensionPoint
   @phase = Status.FETCHED
-  # @nodoc
-  constructor: (@context) ->
-    super Status.FETCHED, @context
 
 ###
 Process requests with status "COMPLETE".
@@ -111,9 +108,6 @@ request. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class COMPLETE extends ExtensionPoint
   @phase = Status.COMPLETE
-  # @nodoc
-  constructor: (@context) ->
-    super Status.COMPLETE, @context
 
 ###
 Process requests with status "ERROR".
@@ -122,8 +116,6 @@ This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class ERROR extends ExtensionPoint
   @phase = Status.ERROR
-  constructor: (@context) ->
-    super Status.ERROR, @context
 
 ###
 Process requests with status "CANCELED".
@@ -132,9 +124,6 @@ and will be cleaned up. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class CANCELED extends ExtensionPoint
   @phase = Status.CANCELED
-  # @nodoc
-  constructor: (@context) ->
-    super Status.CANCELED, @context
 
 # A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
 # of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
@@ -151,10 +140,29 @@ class CrawlerContext
   # @option config [bunyan.Logger] log A logger to handle log messages
   constructor: (config) ->
     @crawler = config.crawler
-    @execute = config.execute
     @log = config.log
     @config = config.crawler.config
     @queue = config.queue
+    filterOpts =
+      allow : _.filter @config.options.Filtering.allow, _.isRegExp
+      deny : _.filter @config.options.Filtering.deny, _.isRegExp
+      log: @log
+      isDuplicate : (url) => @queue.contains url
+    delete filterOpts.allow if _.isEmpty filterOpts.allow
+    delete filterOpts.deny if _.isEmpty filterOpts.deny
+    @urlFilter = new UrlFilter filterOpts
+
+
+  # Create a new request and schedule its processing.
+  # The new request is considered a successor of this request
+  # @param url [String] The url for the new request
+  # @return {CrawlRequest} The newly created request
+  schedule : (request, url) =>
+    if @urlFilter.isAllowed url
+      ExtensionPoint.execute @crawler, Status.INITIAL, request.subrequest url
+
+  execute : (request) =>
+    ExtensionPoint.execute @crawler, request.status(), request
 
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts
@@ -220,7 +228,7 @@ class CrawlerConfig
     basedir   : "/tmp/sloth"
     extensions: [] # Clients can add extensions
     options   : # Options of each core extension can be customized here
-      Queueing   : {dbfile : "#{RandomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Queueing   : {dbfile : "#{obj.randomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 
@@ -325,17 +333,6 @@ class Crawler
 
   fse = require 'fs-extra'
 
-  addExtensions = (crawler, extensions = []) ->
-    for extension in extensions
-      extpoint(crawler, point).addExtension(extension) for point in extension.targets()
-      crawler._extensions.push extension
-  extpoint = (crawler, phase) ->
-    if !crawler.extpoints[phase]?
-      throw new Error "Extension point #{phase} does not exists"
-    crawler.extpoints[phase]
-  execute = (crawler, phase, request) ->
-    process.nextTick extpoint(crawler, phase).apply, request
-    request
 
 
   # Create a new crawler with the given options
@@ -349,9 +346,7 @@ class Crawler
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
-      crawler: this # re-expose this crawler
-      execute: (phase, request) =>
-        execute(@, phase, request)
+      crawler: @ # re-expose this crawler
       log    : @log
       queue : @queue
 
@@ -360,21 +355,8 @@ class Crawler
     @extpoints[ExtensionPoint.phase] = new ExtensionPoint @context for name, ExtensionPoint of ExtensionPoints
     @_extensions = []
 
-    urlFilter = new UrlFilter
-      allow : _.collect @config.options.Filtering.allow, _.isRegExp
-      deny : _.collect @config.options.Filtering.deny, _.isRegExp
-      isDuplicate : (url) => @queue.contains url
-
-    # Create a new request and schedule its processing.
-    # The new request is considered a successor of this request
-    # @param url [String] The url for the new request
-    # @return {CrawlRequest} The newly created request
-    @context['schedule'] = (request, url) =>
-      if urlFilter.isAllowed url
-        execute @, Status.INITIAL, request.subrequest url
-
     # Core extensions that need to run BEFORE user extensions
-    addExtensions this, [
+    ExtensionPoint.addExtensions this, [
       new RequestFilter @config.options.Filtering
       new ExtensionPointConnector
       new RequestLookup
@@ -383,10 +365,12 @@ class Crawler
       new RequestStreamer @config.options.Streaming]
     # Add client extensions
     @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}"
-    addExtensions this, @config.extensions
+    ExtensionPoint.addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
-    addExtensions this, [new Spooler, new Completer, new Cleanup]
+    ExtensionPoint.addExtensions this, [new Spooler, new Completer, new Cleanup]
     @initialize()
+    process.on 'uncaughtException', (error) =>
+      @log.error? "Sever error!Please check log for details", {tags:['Uncaught'], error:error}
 
 
   # Initializes this extension point with the given context. Initialization cascades
@@ -413,7 +397,7 @@ class Crawler
   # @return [CrawlRequest] The created request
   enqueue: (url) ->
     request = new CrawlRequest url, @context
-    execute @, INITIAL.phase, request
+    ExtensionPoint.execute @, INITIAL.phase, request
 
   # Pretty print this crawler
   toString: () ->

@@ -1,5 +1,5 @@
 _ = require 'lodash'
-
+{obj} = require './util/tools.coffee'
 
 ###
 {Extension}s are the core abstraction for adding actual request processing functionality
@@ -50,8 +50,8 @@ class Extension
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
   merge : (a,b) ->
-    {objects} = require './util/utils.coffee'
-    objects.merge a,b
+    {obj} = require './util/tools.coffee'
+    obj.overlay a,b
 
   # Run shutdown logic of this extension (if any)
   # @abstract
@@ -70,10 +70,10 @@ class Extension
     if !@context
       throw new Error "An extension requires a context object"
 
-
+  # @return {String} Human readable description of this extension
   toString: () ->
-    handles = (key for key of @handlers)
-    "#{@name} [#{handles}] => #{JSON.stringify @opts}"
+    phases = (key for key of @handlers)
+    "#{@name} [#{phases}] => #{obj.print @opts}"
 
 module.exports = {
   Extension

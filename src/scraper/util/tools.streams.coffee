@@ -1,6 +1,8 @@
 {Extension} = require '../Extension.coffee'
 stream = require 'stream'
 _ = require 'lodash'
+util = require 'util'
+
 
 class LogStream extends stream.Writable
 
@@ -9,12 +11,6 @@ class LogStream extends stream.Writable
   _write: (chunk, enc, next) ->
     console.log chunk.toString() if @shouldLog
     next()
-
-class ResponseStreamLogger extends Extension
-
-  constructor: (shouldLog = false) ->
-    super INITIAL: (request) ->
-      request.response.incoming.pipe new LogStream shouldLog
 
 
 # https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/
@@ -52,14 +48,6 @@ class CountingStream extends stream.Transform
 module.exports = {
   CharStream
   MemoryStream
-  ResponseStreamLogger
   CountingStream
   LogStream
-  objects :
-    merge : (a,b) ->
-      _.merge a , b , (a,b) -> if _.isArray a then b
-  RandomId : (length=8) ->
-    id = ""
-    id += Math.random().toString(36).substr(2) while id.length < length
-    id.substr 0, length
 }

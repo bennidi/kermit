@@ -1,5 +1,6 @@
-{Status} = require('../CrawlRequest')
+{Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
+{ExtensionPoint} = require '../Crawler'
 
 # Adds listeners to the requests such that each status transition will
 # trigger execution of the respective {ExtensionPoint}
@@ -10,7 +11,7 @@ class ExtensionPointConnector extends Extension
     super INITIAL : @apply
 
   executePhase: (request) =>
-    @context.execute request.status(), request
+    @context.execute request
 
   # Add listener to the request such that status change will trigger
   # execution of corresponding {ExtensionPoint}

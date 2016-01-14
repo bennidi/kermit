@@ -88,9 +88,9 @@ class QueueManager
     unfinished = @requests.find status : $in: unfinished
     unfinished.length > 0
 
-  requestsReady: (pattern) ->
+  requestsProcessing: (pattern) ->
     ready = @requests.find $and: [
-      {status : 'READY'},
+      {status : 'FETCHING'},
       {url : $regex: pattern}
     ]
     ready.length
@@ -104,7 +104,7 @@ class QueueManager
   # @param batchSize {Number} The maximum number of requests to be returned
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->
-    @requests.getDynamicView(Status.SPOOLED).branchResultset().simplesort('tsSPOOLED', true).limit(batchSize).data()
+    @requests.getDynamicView(Status.SPOOLED).branchResultset().simplesort('stamps.SPOOLED', true).limit(batchSize).data()
 
 
 module.exports = {

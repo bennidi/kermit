@@ -3,6 +3,8 @@
 {QueueManager} = require '../QueueManager.coffee'
 through = require 'through2'
 stream = require 'stream'
+{Mimetypes} = require('../Pipeline.coffee')
+{LogStream} = require './tools.streams.coffee'
 
 # Record status transitions of all requests and assert the a specified series of
 # transitions has been made
@@ -46,7 +48,8 @@ class RejectingExtension extends Extension
     request.cancel("Rejected by RejectingExtension")
 
 class MockContext
-  execute: (state, request) -> request
+  execute: (request) -> request
+  schedule: (request, url) -> request.subrequest url
   config:
     basePath : () -> "somepath"
   queue: new QueueManager
@@ -61,8 +64,15 @@ class MockContext
     trace : (msg) -> console.log msg
     log : (level, msg) -> console.log msg
 
+class ResponseStreamLogger extends Extension
+
+  constructor: (shouldLog = false) ->
+    super INITIAL: (request) ->
+      request.channels().stream Mimetypes([/.*/]), new LogStream shouldLog
+
 module.exports = {
   RejectingExtension
   TransitionRecorder
   MockContext
+  ResponseStreamLogger
 }

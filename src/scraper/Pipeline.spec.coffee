@@ -1,25 +1,25 @@
-{Response} = require './Response.coffee'
-{CharStream} = require './util/utils.coffee'
+{Pipeline} = require './Pipeline.coffee'
+{CharStream} = require './util/tools.streams.coffee'
 through = require 'through2'
 
-describe  'Pipeline',  ->
+describe  'Channels',  ->
   describe 'can be used to connect streams', ->
 
     it '# can feed an incoming stream to multiple outgoing', (done) ->
       input = new CharStream 'abcd'
-      response = new Response
+      Channels = new Pipeline
       received = []
-      response.incoming.pipe(through( (chunk, enc, next) ->
+      Channels.incoming.pipe(through( (chunk, enc, next) ->
         received.push chunk
         this.push(chunk)
         next()
       ))
-      response.incoming.pipe(through( (chunk, enc, next) ->
+      Channels.incoming.pipe(through( (chunk, enc, next) ->
         received.push chunk
         this.push(chunk)
         next()
       ))
-      input.pipe(response.incoming)
+      input.pipe(Channels.incoming)
       input.on 'end', =>
         expect(received.length).to.equal(8)
         done()

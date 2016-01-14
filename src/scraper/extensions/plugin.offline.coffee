@@ -1,32 +1,33 @@
 {Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
-fs = require 'fs-extra'
+fse = require 'fs-extra'
 {byExtension} = require '../util/mimetypes.coffee'
+{Mimetypes} = require('../Response.coffee')
 
 
 toLocalPath = (basedir = "", request) ->
   uri = request.uri().clone()
   uri.normalize()
-  normalizedPath =  if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
-  uri.path normalizedPath
-  uri.suffix("html") if (!uri.suffix() or not byExtension[uri.suffix()])
-  path = basedir + uri.tld() + "/" + uri.domain() + uri.path()
+  #normalizedPath = if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
+  #uri.path normalizedPath
+  uri.filename("index.html") (!uri.suffix() or not byExtension[uri.suffix()])
+  domainWithoutTld = uri.domain().replace ".#{uri.tld()}", ''
+  "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{uri.path()}"
 
 # Store request results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
 
   constructor: (opts = {}) ->
     super
-      FETCHED: (request) =>
+      READY: (request) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = toLocalPath @basedir , request
-        content = request.response.content()
-        @log.debug? "Storing #{content.length} bytes to #{path} (#{request.url()})"
-        fs.outputFileSync path, content
+        @log.debug? "Storing to #{path} (#{request.url()})"
+        request.response.stream Mimetypes([/.*/g]), fse.createOutputStream path
 
   initialize: (context) ->
     super context
-    @basedir = context.config.basePath() + "/"
+    @basedir = context.config.basePath()
 
 
 class OfflineServer extends Extension

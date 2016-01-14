@@ -11,7 +11,7 @@ describe  'Requests',  ->
       TestRequest = new CrawlRequest 'localhost', new MockContext
       expect(TestRequest).not.to.be.null()
       expect(TestRequest.status()).to.equal(Status.INITIAL)
-      expect(TestRequest.predecessors()).to.equal(0)
+      expect(TestRequest.parents()).to.equal(0)
 
     it '# should notify state listeners when changes occurr', ->
       receivedStatusChanges = []
@@ -34,7 +34,7 @@ describe  'Requests',  ->
       someFile = request.subrequest('some/file.txt')
       expect(someFile).not.to.be.null()
       expect(someFile.status()).to.equal(Status.INITIAL)
-      expect(someFile.predecessors()).to.equal(1)
+      expect(someFile.parents()).to.equal(1)
 
     it '# can change its uri', ->
       request = new CrawlRequest('localhost', new MockContext)

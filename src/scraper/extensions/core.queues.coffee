@@ -2,7 +2,7 @@
 storage = require '../QueueManager'
 {Extension} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
-{RandomId} = require '../util/utils.coffee'
+{obj} = require '../util/tools.coffee'
 _ = require 'lodash'
 
 # The Queue Connector establishes a system of queues where each state
@@ -89,7 +89,7 @@ class QueueWorker extends Extension
     if @limits.isAllowed request.url() , @queue
       request.ready()
     else
-      request.state["tsSPOOLED"] = new Date().getTime()
+      request.stamp Status.SPOOLED
 
   shutdown: ->
     clearInterval @spooler
@@ -108,11 +108,11 @@ class RateLimits
 class Limit
 
   constructor: (@def, @queue) ->
-    @regex = new RegExp(@def.pattern,"g")
+    @regex = @def.pattern
     @limiter = new RateLimiter @def.to , @def.per
 
   isAllowed: ->
-    @limiter.tryRemoveTokens(1) and @queue.requestsReady(@regex) < @def.max
+    @limiter.tryRemoveTokens(1) and @queue.requestsProcessing(@regex) < @def.max
 
   matches: (url) ->
     url.match @regex

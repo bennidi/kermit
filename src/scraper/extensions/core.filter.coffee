@@ -9,10 +9,10 @@ _ = require 'lodash'
 class Filters
 
   @ByUrl: (pattern) ->
-    (request) -> request.url().match pattern
+    (request) -> pattern.test request.url()
 
   @WithinDomain : (domain) ->
-    Filters.ByUrl new RegExp(".*#{domain}\..*", "g")
+    Filters.ByUrl new RegExp(".*#{domain}\..*")
 
   @MimeTypes:
     CSS : Filters.ByUrl /.*\.css/g
@@ -27,7 +27,7 @@ class Filters
 
   @matchUrl : (url, patterns) ->
     for pattern in patterns
-      return true if url.matches pattern
+      return true if pattern.test url
     false
 
 class UrlFilter
@@ -38,23 +38,25 @@ class UrlFilter
 
   # @nodoc
   constructor: (opts = {}) ->
-    {objects} = require '../util/utils.coffee'
-    @opts = objects.merge UrlFilter.defaultOpts(), opts
+    {obj} = require '../util/tools.coffee'
+    @opts = obj.overlay UrlFilter.defaultOpts(), opts
+    @log = @opts.log
+    @log.debug? "", @opts
 
   # Check the given URL matching entries in blacklist/whitelist
   # @param url {String} The request to filter
   # @return {Boolean} True
   isAllowed: (url) ->
     if not Filters.matchUrl url, @opts.allow
-      @log.trace? "#{url} not on whitelist", tags:['UrlFilter']
+      @log.debug? "#{url} not on whitelist", tags:['UrlFilter']
       return false
     if Filters.matchUrl  url, @opts.deny
-      @log.trace? "#{url} on blacklist", tags:['UrlFilter']
+      @log.debug? "#{url} on blacklist", tags:['UrlFilter']
       return false
     if @opts.isDuplicate url
-      @log.trace? "#{url} is duplicate", tags:['UrlFilter']
+      @log.debug? "#{url} is duplicate", tags:['UrlFilter']
       return false
-
+    true
 # Filter newly created requests based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
