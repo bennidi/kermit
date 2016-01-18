@@ -2,7 +2,7 @@
 {RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils.coffee'
 {ResponseStreamLogger} = require './util/spec.utils.coffee'
 {Status} = require './CrawlRequest.coffee'
-{WithinDomain} = require './extensions/core.filter.coffee'
+{ByPattern} = require './extensions/core.filter.coffee'
 
 describe  'Crawler',  ->
   @timeout 6000
@@ -19,13 +19,13 @@ describe  'Crawler',  ->
         options:
           Queueing:
             limits : [
-              domain : ".*jimmycuadra.com.*",
+              pattern : /.*jimmycuadra.com.*/,
               to : 1,
               per : 'minute'
             ]
           Filtering:
             allow : [
-              WithinDomain "jimmycuadra"
+              ByPattern /.*jimmycuadra.*/
             ]
       Kermit.shutdown()  
       

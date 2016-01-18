@@ -11,38 +11,15 @@ _ = require 'lodash'
 # are propagated to the queuing system automatically.
 class QueueConnector extends Extension
 
-  @defaultOpts : () ->
-    statistics:
-      interval : 2000
-
   # @nodoc
-  constructor: (opts = {}) ->
+  constructor: () ->
     super INITIAL : @apply
-    @opts = @merge QueueConnector.defaultOpts(), opts
 
   # Create a queue system and re-expose in context
   initialize: (context) ->
     super context
     @queue = context.queue
-    statsLogger = () =>
-      try
-        @log.debug? "#{JSON.stringify @queue.statistics()}", tags : ['Statistics']
-      catch error
-        @log.error? "Error during computation of statistics", error:error
-    if @opts.statistics.interval > 0
-      @log.debug? "Statistics enabled at interval #{@opts.statistics.interval}"
-      @stats = setInterval statsLogger, @opts.statistics.interval
-      @stats.unref()
-    ###
-    shutdownWatchdog = () =>
-      @context.crawler.shutdown() if not @queue.requestsUnfinished()
-    @watchdog =  setInterval shutdownWatchdog, 5000
-    ###
 
-  # @nodoc
-  shutdown:() ->
-    clearInterval @stats
-    #clearInterval @watchdog
 
   updateQueue : (request) =>
     @queue.update(request)
@@ -67,29 +44,30 @@ class QueueWorker extends Extension
 
   # https://www.npmjs.com/package/simple-rate-limiter
   constructor: (opts = {}) ->
-    super SPOOLED : @spool
-    @opts = _.merge QueueWorker.defaultOpts(), opts, (a, b) -> b.concat a if _.isArray a
+    super {}
+    @opts = obj.merge QueueWorker.defaultOpts(), opts
 
     # 'second', 'minute', 'day', or a number of milliseconds
 
   initialize: (context) ->
     super context
-    @queue = context.queue
-    @requests = context.requests
-    @limits = new RateLimits @opts.limits, @context.log, @queue
-    @spooler = setInterval @processRequests, 1000
+    @queue = context.queue # Request state is fetched from the queue
+    @requests = context.requests # Request object is resolved from shared request map
+    @limits = new RateLimits @opts.limits, @context.log, @queue # Rate limiting is applied here
+    @spooler = setInterval @processRequests, 100 # Request spooling runs regularly
+    @batch = [] # Local batch of requests to be put into READY state
 
   # @private
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
-    @spool @requests[request.id] for request in @queue.spooled()
+    @proceed @requests[request.id] for request in @localBatch()
 
-  spool : (request) ->
-    @log.debug? "Scheduling #{request.url()}"
-    if @limits.isAllowed request.url() , @queue
-      request.ready()
-    else
-      request.stamp Status.SPOOLED
+  localBatch: () ->
+    currentBatch = _.filter @batch, (request) -> request.status is 'SPOOLED'
+    if not _.isEmpty currentBatch then currentBatch else @batch = @queue.spooled(100)
+
+  proceed : (request) ->
+    request.ready() if @limits.isAllowed request.url()
 
   shutdown: ->
     clearInterval @spooler

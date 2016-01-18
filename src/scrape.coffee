@@ -1,7 +1,8 @@
 {Crawler} = require './scraper/Crawler.coffee'
 {Status} = require './scraper/CrawlRequest.coffee'
-{OfflineStorage, OfflineServer} = require './scraper/extensions/plugin.offline.coffee'
-{ResourceDiscovery} = require './scraper/extensions/ext.resource.discovery.coffee'
+{OfflineStorage, OfflineServer} = require './scraper/extensions/ext.offline.coffee'
+{ResourceDiscovery} = require './scraper/extensions/ext.discovery.coffee'
+{Statistics} = require './scraper/extensions/ext.statistics.coffee'
 {Extension} = require './scraper/Extension.coffee'
 {WithinDomain, MimeTypes, ByUrl} = require './scraper/extensions/core.filter.coffee'
 
@@ -9,20 +10,15 @@
 Crawler = new Crawler
   name: "testicle"
   extensions : [
+    #new Statistics
     new OfflineStorage
-    new  ResourceDiscovery
+    new ResourceDiscovery
   ]
   options:
     Queueing:
       limits : [
         {
-          pattern : /.*jimmycuadra.com.*/
-          to : 10
-          per : 'second'
-          max : 10
-        }
-        {
-          pattern : /https.*github.*/
+          pattern : /.*webmd\.com*/
           to : 10
           per : 'second'
           max : 10
@@ -30,12 +26,9 @@ Crawler = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra.*/
-      ]
-      deny : [
-        /.*login.*/
+        /.*webmd\.com*/
       ]
 
-Crawler.enqueue("http://jimmycuadra.com")
+Crawler.enqueue("http://www.webmd.com/a-to-z-guides/health-topics/default.htm")
 
 

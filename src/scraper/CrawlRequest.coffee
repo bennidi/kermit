@@ -217,6 +217,10 @@ class CrawlRequest
   enqueue: (url) ->
     @context.schedule @, url
 
+  cleanup: () ->
+    @pipeline?.cleanup()
+    delete @pipeline
+
   channels: () ->
     @pipeline ?= new Pipeline @log
 

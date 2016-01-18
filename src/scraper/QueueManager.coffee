@@ -13,8 +13,6 @@ class QueueManager
   # Construct a new QueueManager with its own data file
   constructor: (@file) ->
     @store =  new lokijs @file
-    @counters = total : {}
-    @counters.total[status] = 0 for status in Status.ALL
     @initialize()
 
   inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
@@ -26,35 +24,26 @@ class QueueManager
     # One collection for all requests and dynamic views for various request status
     @requests = @store.addCollection 'requests'
     @visited = @store.addCollection 'visited'#, unique: ['url']
-    # Fresh requests
-    @requests.addDynamicView(Status.INITIAL)
-             .applyWhere (request) ->
-                request.status is Status.INITIAL
-    # Requests that have been SPOOLED, aka ready to be processed
-    @requests.addDynamicView(Status.SPOOLED)
-             .applyWhere (request) ->
-                request.status is Status.SPOOLED
+    # One view per distinct status value
+    addView = (status) =>
+      @requests.addDynamicView status
+        .applyWhere (request) ->
+          request.status is status
+    addView status for status in Status.ALL
 
-  statistics: () ->
-   stats =  _.merge {}, @counters, {current: @requestsByStatus()}
-   stats.total.ACCEPTED = stats.total.INITIAL - stats.total.CANCELED
-   stats
-
-
-  requestsByStatus : () ->
-    @requests.mapReduce ((request) -> request.status) ,  _.countBy
+  requestsByStatus : (statuses = Status.ALL, result = {}) ->
+    result[status] = @requests.getDynamicView(status).data().length for status in statuses
+    result
 
   # Insert a request into the queue
   # @param request {CrawlRequest} The request to be inserted
   insert: (request) ->
     @requests.insert(request.state)
-    @counters.total[request.state.status]++
 
   # Update a known request
   # @param request {CrawlRequest} The request to be updated
   update: (request) ->
     @requests.update(request.state)
-    @counters.total[request.state.status]++
 
   # Check whether the given url has already been processed or
   # is on its way to being processed
@@ -99,8 +88,7 @@ class QueueManager
   initial: () ->
     @requests.getDynamicView(Status.INITIAL).data()
 
-
-  # Retrieve the next batch of {RequestStatus.SPOOLED} requests
+# Retrieve the next batch of {RequestStatus.SPOOLED} requests
   # @param batchSize {Number} The maximum number of requests to be returned
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->

@@ -1,5 +1,5 @@
 {Status} = require('../CrawlRequest')
-{MemoryStream} = require('../util/tools.coffee')
+{MemoryStream} = require('../util/tools.streams.coffee')
 {Mimetypes} = require('../Pipeline.coffee')
 {Extension} = require '../Extension'
 URI = require 'urijs'
@@ -26,7 +26,7 @@ class ResourceDiscovery extends Extension
     super
       READY : (request) =>
         target = @content[request.id()] = []
-        request.response.stream Mimetypes( [/.*html.*/g] ), new MemoryStream target
+        request.channels().stream Mimetypes( [/.*html.*/g] ), new MemoryStream target
       FETCHED : (request) =>
         input = @contents request
         selectors =
@@ -61,7 +61,6 @@ class ResourceDiscovery extends Extension
       cleaned = URI(url).absoluteTo(base.toString()).toString() if cleaned.startsWith "/"
       # Drop in-page anchors, i.e. #info or self references, i.e. "/"
       cleaned = "" if url.startsWith("#") or url is "/"
-      @log.debug? "#{url} -> #{cleaned} in #{base}", tags:['Discovery']
     else
       @log.debug? "Invalid url in #{base}", tags:['Discovery']
       cleaned = ""

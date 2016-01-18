@@ -2,7 +2,7 @@
 {Extension} = require '../Extension'
 fse = require 'fs-extra'
 {byExtension} = require '../util/mimetypes.coffee'
-{Mimetypes} = require('../Response.coffee')
+{Mimetypes} = require('../Pipeline.coffee')
 
 
 toLocalPath = (basedir = "", request) ->
@@ -10,7 +10,7 @@ toLocalPath = (basedir = "", request) ->
   uri.normalize()
   #normalizedPath = if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
   #uri.path normalizedPath
-  uri.filename("index.html") (!uri.suffix() or not byExtension[uri.suffix()])
+  uri.filename("index.html") if (!uri.suffix() or not byExtension[uri.suffix()])
   domainWithoutTld = uri.domain().replace ".#{uri.tld()}", ''
   "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{uri.path()}"
 
@@ -22,8 +22,8 @@ class OfflineStorage extends Extension
       READY: (request) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = toLocalPath @basedir , request
-        @log.debug? "Storing to #{path} (#{request.url()})"
-        request.response.stream Mimetypes([/.*/g]), fse.createOutputStream path
+        @log.debug? "Storing #{request.url()} to #{path}"
+        request.channels().stream Mimetypes([/.*/g]), fse.createOutputStream path
 
   initialize: (context) ->
     super context

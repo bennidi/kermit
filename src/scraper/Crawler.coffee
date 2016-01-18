@@ -369,8 +369,10 @@ class Crawler
     # Core extensions that need to run AFTER client extensions
     ExtensionPoint.addExtensions this, [new Spooler, new Completer, new Cleanup]
     @initialize()
+    # Usually this handler is considered back practice but in case of processing errors
+    # of single requests, operation should continue.
     process.on 'uncaughtException', (error) =>
-      @log.error? "Sever error!Please check log for details", {tags:['Uncaught'], error:error}
+      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString()}
 
 
   # Initializes this extension point with the given context. Initialization cascades
@@ -380,16 +382,16 @@ class Crawler
     for extension in @_extensions
       extension.initialize(@context.fork())
       extension.verify()
-      @log.info? extension.toString()
+      @log.info? extension.toString(), tags: ['Configuration']
 
   # Run shutdown logic on all extensions
   shutdown: () ->
     for extension in _(@_extensions).reverse().value()
       try
-        @log.debug? "Calling shutdown on #{extension.name}"
+        @log.info? "Calling shutdown on #{extension.name}"
         extension.shutdown?()
       catch error
-        @log.error? "Error shutdown in extension #{extension.name}", error : error
+        @log.error? "Error shutdown in extension #{extension.name}", error : error.toString()
 
 
 

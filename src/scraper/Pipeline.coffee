@@ -12,7 +12,6 @@ class Pipeline
     @incoming = new PassThrough() # stream.PassThrough serves as connector
     @downstreams = {} # map downstream listeners using regex on mimetype
     @matchers = {}
-    @data = []
 
   stream: (matcher, stream) ->
     throw new Error "Matcher is expected to be of type Function but was #{matcher}" unless _.isFunction matcher
@@ -26,10 +25,15 @@ class Pipeline
     # Connect downstreams
     for id, matcher of @matchers
       @incoming.pipe @downstreams[id] if matcher incomingMessage
-      @log.debug? "Attaching downstream #{@downstreams[id]}"
+      @log.debug? "Attaching #{@downstreams[id].constructor.name}", tags:['Pipeline']
     # Start streaming
     incomingMessage.pipe @incoming
 
+  cleanup: () ->
+    delete @matchers
+    delete @downstreams
+    delete @data
+    delete @headers
 
 module.exports = {
   Pipeline

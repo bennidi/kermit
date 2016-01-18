@@ -40,7 +40,6 @@ class RequestStreamer extends Extension
 
   apply: (crawlRequest) ->
     url = crawlRequest.url()
-    @log.debug? "Executing request #{url}"
     options =
       agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
     httpRequest.get url, options

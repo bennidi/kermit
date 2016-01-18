@@ -1,4 +1,4 @@
-{RequestFilter, ByUrl, WithinDomain, MimeTypes} = require './core.filter.coffee'
+{RequestFilter, ByPattern, MimeTypes} = require './core.filter.coffee'
 {CrawlRequest} = require '../CrawlRequest.coffee'
 {MockContext} =  require '../util/spec.utils.coffee'
 
@@ -7,11 +7,11 @@ describe  'Request filter',  ->
 
     it '# allows filtering by Url patterns', ->
       filter = new RequestFilter
-        allow : [WithinDomain "shouldBeAllowed"]
+        allow : [ByPattern /.*shouldBeAllowed.*/]
         deny : [
-          ByUrl /.*shouldBeDenied.*/g,
+          ByPattern /.*shouldBeDenied.*/g,
           MimeTypes.CSS,
-          (request) -> request.predecessors() >= 1 and not WithinDomain("shouldBeAllowed")(request)
+          (request) -> request.predecessors() >= 1 and not WithinDomain(/.*shouldBeAllowed.*/)(request)
         ]
       filter.initialize(new MockContext)
 

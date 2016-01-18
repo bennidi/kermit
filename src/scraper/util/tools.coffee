@@ -3,8 +3,8 @@ util = require 'util'
 
 module.exports =
   obj :
-    print : (object) ->
-      util.inspect object, 2, false
+    print : (object, depth = 2, colorize = false) ->
+      util.inspect object, false, depth, colorize
     merge : (a,b) ->
       _.merge a , b
     overlay : (a,b) ->

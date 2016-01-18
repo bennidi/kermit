@@ -32,7 +32,7 @@ class DefaultFormatter extends Formatter
 
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
-    data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 2, false})"
+    data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 3})"
     entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
 
 class LogFormats

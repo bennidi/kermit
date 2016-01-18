@@ -8,17 +8,14 @@ _ = require 'lodash'
 # @see https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings CS Cookbook: Seaching for substrings
 class Filters
 
-  @ByUrl: (pattern) ->
+  @ByPattern: (pattern) ->
     (request) -> pattern.test request.url()
 
-  @WithinDomain : (domain) ->
-    Filters.ByUrl new RegExp(".*#{domain}\..*")
-
   @MimeTypes:
-    CSS : Filters.ByUrl /.*\.css/g
-    JS : Filters.ByUrl /.*\.js/g
-    PDF : Filters.ByUrl /.*\.pdf/g
-  @AllUrls : Filters.ByUrl /.*/g
+    CSS : Filters.ByPattern /.*\.css/g
+    JS : Filters.ByPattern /.*\.js/g
+    PDF : Filters.ByPattern /.*\.pdf/g
+  @AllUrls : Filters.ByPattern /.*/g
 
   @match : (request, filters) ->
     for filter in filters
@@ -61,32 +58,31 @@ class UrlFilter
 class RequestFilter extends Extension
 
   @defaultOpts : () ->
-    allow : [Filters.ByUrl(/.*/g)] # allow all by default
+    allow : [()->true] # allow all by default
     deny : []
 
   # @nodoc
   constructor: (opts = {} ) ->
     super INITIAL : @apply
     @opts = @merge RequestFilter.defaultOpts(), opts
-    @opts.allow = _.map @opts.allow, (filter) -> if _.isRegExp filter then Filters.ByUrl filter else filter
-    @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByUrl filter else filter
+    @opts.allow = _.map @opts.allow, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
+    @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
 
   # Apply defined filters
   # Cancels the request if it is not whitelisted or blacklisted
   # @param request {CrawlRequest} The request to filter
   apply: (request) ->
     if not Filters.match(request, @opts.allow)
-      @log.trace? "FILTERED: #{request.url()} not on whitelist"
+      @log.trace? "#{request.url()} not on whitelist", tags: ['RequestFilter']
       return request.cancel()
     if Filters.match(request, @opts.deny)
-      @log.trace? "FILTERED: #{request.url()} on blacklist"
+      @log.trace? "#{request.url()} on blacklist", tags: ['RequestFilter']
       return request.cancel()
 
 module.exports = {
   UrlFilter
   RequestFilter
   Filters
-  ByUrl : Filters.ByUrl
-  WithinDomain : Filters.WithinDomain
+  ByPattern : Filters.ByPattern
   MimeTypes : Filters.MimeTypes
 }

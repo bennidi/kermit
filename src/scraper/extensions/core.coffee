@@ -30,7 +30,6 @@ class Spooler extends Extension
   # Handle status transition CREATED -> SPOOLED
   # @return [CrawlRequest] The processed request
   apply: (request) ->
-    request["tsLastSpool"] = new Date().getTime()
     request.spool()
 
 # Handle status transition FETCHED -> COMPLETE
