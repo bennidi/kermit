@@ -1,6 +1,7 @@
 URI = require 'urijs'
 {Pipeline} = require './Pipeline.coffee'
-{obj} = require './util/tools.coffee'
+{obj, uri} = require './util/tools.coffee'
+_ = require 'lodash'
 
 
 # At any time, each request has a status value equal to one of the values
@@ -29,10 +30,9 @@ class RequestStatus
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
 # The crawl request is the central object of processing. It is not to be confused with an Http(s) request
-# (which might be created during the processing of its corresponding crawl request).
+# (which might be created in the lifespan of a crawl request).
 # Each crawl request has a lifecycle determined by the state diagram as defined by the {Crawler}
 # and its {ExtensionPoint}s.
-# A crawl request encapsulates all of the state associated with the processing of a single request.
 # During its lifecycle the request is enriched with listeners and properties by the {Extension}s
 # that take care of its processing.
 # Any information necessary for request processing is usually to the request in order
@@ -47,21 +47,22 @@ class CrawlRequest
   listeners = (request, property) ->
     if !request.changeListeners[property]?
       request.changeListeners[property] = []
-    request.changeListeners[property]  
+    request.changeListeners[property]
 
-  constructor: (url, context, parents = 0) ->
-    @_uri = URI(url)
-    @state =
-      url:  @_uri.toString()
-      stamps:
-        created : new Date().getTime()
-      id : obj.randomId(20)
-      parents : parents
+  @stampsToString : (stamps) ->
+    _.mapValues stamps, (stamps) ->
+      first = "(#{stamps[0]})"
+      rest = _.map _.tail(stamps), (value, index) -> (value - stamps[index]) + "ms"
+      "#{first}#{rest}"
+
+  constructor: (url, meta = {parents : 0} , @log) ->
     @changeListeners = {}
-    @context = context
-    @log = context.log
+    @state =
+      id : obj.randomId(20)
+      stamps: {} # collect timestamps for tracking of meaningful state changes
+      meta : meta
     @status RequestStatus.INITIAL
-
+    @url url
 
   # Register a listener {Function} to be invoked whenever the
   # specified property value is changed
@@ -72,25 +73,17 @@ class CrawlRequest
   onChange: (property, listener) ->
     listeners(this, property).push listener; this
 
-  # Get or set the URI of this request
-  # @param uri [String] The uri to set or null if current value is to be read
-  # @return {URI} The current value of this requests uri
-  uri: (uri) ->
-    if uri
-      @_uri = URI(uri)
-      @state.url = @_uri.toString()
-    @_uri
-
   # Get the string representation of the uri
   # @return [String] The URI as string
-  url: () -> @state.url
+  url: (url) ->
+    if url then @state.url = uri.normalize url else @state.url
 
   # @return [String] The synthetic id of this request
   id: () -> @state.id
 
   # Check whether https should be used to fetch this request  
   useSSL: () ->
-    @uri().protocol() is "https"
+    @url().startsWith 'https'
 
   # Change the status and notify subscribed listeners
   # or retrieve the current status value
@@ -207,19 +200,10 @@ class CrawlRequest
   # @return {Boolean} True if status is ERROR, false otherwise
   isError: () -> @state.status is RequestStatus.ERROR
 
-  # Create a new request.
-  # The new request is considered a successor of this request.
-  # @param url [String] The url for the new request
-  # @return {CrawlRequest} The newly created request
-  subrequest: (url) ->
-    new CrawlRequest url, @context, @state.parents + 1
-
-  enqueue: (url) ->
-    @context.schedule @, url
-
+  # Clean all request data that potentially occupies much memory
   cleanup: () ->
     @pipeline?.cleanup()
-    delete @pipeline
+    delete @changeListeners
 
   channels: () ->
     @pipeline ?= new Pipeline @log
@@ -227,7 +211,18 @@ class CrawlRequest
   # A request might have been created by another request (its parent).
   # That parent might in turn have been created by another request and so on.
   # @return {Number} The number of parents of this request
-  parents: () -> @state.parents
+  parents: () -> 0
+
+  # Generate a human readable representation of this request
+  toString: () ->
+    pretty = switch @state.status
+        when 'INITIAL','SPOOLED','READY'
+          """#{@state.status} => GET #{@state.url}:
+            #{obj.print CrawlRequest.stampsToString @state.stamps}"""
+        when 'COMPLETE'
+          """COMPLETE => GET #{@state.url}(status=#{@pipeline?.status}):
+          #{obj.print CrawlRequest.stampsToString @state.stamps}"""
+        else "Unknown statu"
 
 module.exports = {
   CrawlRequest

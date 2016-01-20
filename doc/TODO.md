@@ -1,14 +1,11 @@
-  + Add local storage resolution mechanism using mitm.js
-  + implement rest-api for remote control (request submission, pause/resume, shutdown)
+  + Implement rest-api for remote control (request submission, pause/resume, shutdown)
   + Reorder classes
   + Add more coffeedoc (Pipeline)
   + Add tests for
     + rate limiting
-  + Performance
-   + Queueing: Instead of querying at intervals, checkout a local batch and feed 
-   from that batch until empty. This will reduce amount of queries and prepare for remote queuing 
-   backend
-   + Filtering is currently done twice
+  + Logging: Add new log levels at runtime. Use this for adding log.request with request.log
+  in Completer
   + Design interface for queue that is local/remote agnostic
   + Design nice request.toString() method
   + Add request to trace.log when removed from queue
+  + Improve statistics to show subcategories (like http/https) per status. Use Regex as general approach

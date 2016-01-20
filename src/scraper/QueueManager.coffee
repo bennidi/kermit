@@ -23,13 +23,22 @@ class QueueManager
   initialize: () ->
     # One collection for all requests and dynamic views for various request status
     @requests = @store.addCollection 'requests'
-    @visited = @store.addCollection 'visited'#, unique: ['url']
+    @urls = @store.addCollection 'urls'#, unique: ['url']
     # One view per distinct status value
-    addView = (status) =>
+    addRequestView = (status) =>
       @requests.addDynamicView status
-        .applyWhere (request) ->
-          request.status is status
-    addView status for status in Status.ALL
+        .applyFind status: status
+        .applySimpleSort "stamps.#{status}", true
+    addRequestView status for status in Status.ALL
+    @urls.addDynamicView 'visited'
+      .applyFind status: 'visited'
+      .applySimpleSort 'tsModified', true
+    @urls.addDynamicView 'scheduled'
+      .applyFind status: 'scheduled'
+      .applySimpleSort 'tsModified', true
+    @urls.addDynamicView 'processing'
+      .applyFind status: 'processing'
+      .applySimpleSort 'tsModified', true
 
   requestsByStatus : (statuses = Status.ALL, result = {}) ->
     result[status] = @requests.getDynamicView(status).data().length for status in statuses
@@ -39,8 +48,27 @@ class QueueManager
   # @param request {CrawlRequest} The request to be inserted
   insert: (request) ->
     @requests.insert(request.state)
+    @updateUrl request.url(), 'processing', rId: request.id()
 
-  # Update a known request
+  updateUrl: (url, status, meta) ->
+    record = @urls.getDynamicView('scheduled').branchResultset().find(url : url).data()
+    if not _.isEmpty record
+      record[0].status = status
+      record[0].meta ?= {}
+      record[0].meta[key] = value for key, value of meta
+      record[0].meta['tsModified'] = new Date().getTime()
+      @urls.update record
+
+  schedule: (url, meta) ->
+    meta ?= {}
+    meta.tsModified = new Date().getTime()
+    @urls.insert {url: url, meta:meta, status: "scheduled"}
+
+  nextUrlBatch: (size = 100) ->
+    @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
+
+
+# Update a known request
   # @param request {CrawlRequest} The request to be updated
   update: (request) ->
     @requests.update(request.state)
@@ -49,22 +77,21 @@ class QueueManager
   # is on its way to being processed
   # @param request {CrawlRequest} The request to be inserted
   # @return {Boolean} True, if the url was found, false otherwise
-  contains: (url) ->
-    alreadyVisited = @visited.find("url":url).length
-    return true if alreadyVisited > 0
-    # Either in processing
-    inProgress = @requests.find $and: [
-      {url : url},
-      {status : {$in: inProgress}}
-    ]
-    inProgress.length > 0
+  hasUrl: (url, status) ->
+    @urls.find({ url:url, status: status}).length > 0
+
+  isVisited: (url) -> @hasUrl url, 'visited'
+  isScheduled: (url) -> @hasUrl url, 'scheduled'
+  isProcessing: (url) -> @hasUrl url, 'processing'
+  isKnown: (url) ->
+    @urls.find( url:url ).length > 0
 
   # Handle a request that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
   # @param request {CrawlRequest} The request to be inserted
   completed: (request) ->
     # remember that url has been processed successfully
-    @visited.insert({url: request.url(), rId: request.id()})
+    @updateUrl request.url(), status:'visited'
     # remove request data from storage
     @requests.remove(request.state)
 
@@ -88,11 +115,11 @@ class QueueManager
   initial: () ->
     @requests.getDynamicView(Status.INITIAL).data()
 
-# Retrieve the next batch of {RequestStatus.SPOOLED} requests
+  # Retrieve the next batch of {RequestStatus.SPOOLED} requests
   # @param batchSize {Number} The maximum number of requests to be returned
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->
-    @requests.getDynamicView(Status.SPOOLED).branchResultset().simplesort('stamps.SPOOLED', true).limit(batchSize).data()
+    @requests.getDynamicView(Status.SPOOLED).branchResultset().limit(batchSize).data()
 
 
 module.exports = {

@@ -34,10 +34,9 @@ class UrlFilter
     deny : []
 
   # @nodoc
-  constructor: (opts = {}) ->
+  constructor: (opts = {}, @log) ->
     {obj} = require '../util/tools.coffee'
     @opts = obj.overlay UrlFilter.defaultOpts(), opts
-    @log = @opts.log
     @log.debug? "", @opts
 
   # Check the given URL matching entries in blacklist/whitelist
@@ -49,9 +48,6 @@ class UrlFilter
       return false
     if Filters.matchUrl  url, @opts.deny
       @log.debug? "#{url} on blacklist", tags:['UrlFilter']
-      return false
-    if @opts.isDuplicate url
-      @log.debug? "#{url} is duplicate", tags:['UrlFilter']
       return false
     true
 # Filter newly created requests based on a flexible set of filter functions.

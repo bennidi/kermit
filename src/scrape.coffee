@@ -10,25 +10,28 @@
 Crawler = new Crawler
   name: "testicle"
   extensions : [
-    #new Statistics
+    new Statistics
     new OfflineStorage
+    #new OfflineServer
     new ResourceDiscovery
   ]
   options:
     Queueing:
       limits : [
         {
-          pattern : /.*webmd\.com*/
-          to : 10
+          pattern : /.*jimmycuadra\.com*/
+          to : 20
           per : 'second'
-          max : 10
+          max : 20
         }
       ]
     Filtering:
       allow : [
-        /.*webmd\.com*/
+        /.*jimmycuadra*/
+      ]
+      deny : [
       ]
 
-Crawler.enqueue("http://www.webmd.com/a-to-z-guides/health-topics/default.htm")
+Crawler.schedule("http://www.jimmycuadra.com")
 
 

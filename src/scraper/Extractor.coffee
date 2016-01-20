@@ -5,28 +5,16 @@ htmlToJson = require 'html-to-json'
 #
 class HtmlExtractor
 
-  # combine the selectors of all extractors
-  selectors = (extractors) ->
-    combined = {}
-    combined[key] = value for key,value of extractor.selector for extractor in extractors
-    combined
-
-  # build function that calls all processors
-  processors = (extractors) ->
-    (result) ->
-      extractor.processor result.filter for extractor in extractors
-
   # Create a new HtmlExtractor
-  constructor: () ->
-    @extractors = []
-
-  extract: (selector) ->
-    then : (processor) =>
-      @extractors.push {selector, processor}
+  constructor: (config) ->
+    @name = config.name or throw new Error "An extractor can not be unnamed"
+    @selectors = config.select or throw new Error "An extractor needs selectors"
+    @onResult = config.onResult or throw new Error "An extractor needs a handler to process the result"
+    @parser = htmlToJson.createParser @selectors
 
   process: (input) ->
     try
-      htmlToJson.batch(input, htmlToJson.createParser selectors @extractors).done processors @extractors
+      htmlToJson.batch input, @parser, (error,results) => @onResult results.filter unless error
     catch error
       console.log error
 

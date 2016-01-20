@@ -8,6 +8,7 @@
 {LogHub, LogAppender, FileAppender, ConsoleAppender} = require './util/Logging.coffee'
 _ = require 'lodash'
 {obj} = require './util/tools.coffee'
+fse = require 'fs-extra'
 
 # An extension point provides a mechanism to add functionality to the extension point provider.
 # Extension points act as containers for {Extension} - the objects providing the actual extension
@@ -143,25 +144,18 @@ class CrawlerContext
     @log = config.log
     @config = config.crawler.config
     @queue = config.queue
-    filterOpts =
-      allow : _.filter @config.options.Filtering.allow, _.isRegExp
-      deny : _.filter @config.options.Filtering.deny, _.isRegExp
-      log: @log
-      isDuplicate : (url) => @queue.contains url
-    delete filterOpts.allow if _.isEmpty filterOpts.allow
-    delete filterOpts.deny if _.isEmpty filterOpts.deny
-    @urlFilter = new UrlFilter filterOpts
-
 
   # Create a new request and schedule its processing.
   # The new request is considered a successor of this request
   # @param url [String] The url for the new request
   # @return {CrawlRequest} The newly created request
-  schedule : (request, url) =>
-    if @urlFilter.isAllowed url
-      ExtensionPoint.execute @crawler, Status.INITIAL, request.subrequest url
+  schedule : (url, meta) ->
+    @crawler.schedule url, meta
 
-  execute : (request) =>
+  execute : (url, meta) =>
+    @crawler.execute url, meta
+
+  executeRequest : (request) ->
     ExtensionPoint.execute @crawler, request.status(), request
 
   # Create a child context that shares all properties with its parent context.
@@ -331,10 +325,6 @@ diagram below.
 ###
 class Crawler
 
-  fse = require 'fs-extra'
-
-
-
   # Create a new crawler with the given options
   # @param config [Object] The configuration for this crawler. See {CrawlerConfig}
   # @see CrawlerConfig.defaultOpts
@@ -343,12 +333,14 @@ class Crawler
     @config = new CrawlerConfig config
     @log = new LogHub(@config.options.Logging).logger()
     @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.dbfile}"
+    @scheduler = new Scheduler this, @queue, @config
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
       crawler: @ # re-expose this crawler
       log    : @log
       queue : @queue
+      scheduler: @scheduler
 
     # Create and add extension points
     @extpoints = {}
@@ -372,13 +364,14 @@ class Crawler
     # Usually this handler is considered back practice but in case of processing errors
     # of single requests, operation should continue.
     process.on 'uncaughtException', (error) =>
-      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString()}
+      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
 
   # Initializes this extension point with the given context. Initialization cascades
   # to all contained extensions
   # @private
   initialize: () ->
+    @scheduler.start()
     for extension in @_extensions
       extension.initialize(@context.fork())
       extension.verify()
@@ -386,24 +379,60 @@ class Crawler
 
   # Run shutdown logic on all extensions
   shutdown: () ->
+    @scheduler.shutdown()
     for extension in _(@_extensions).reverse().value()
       try
         @log.info? "Calling shutdown on #{extension.name}"
         extension.shutdown?()
       catch error
-        @log.error? "Error shutdown in extension #{extension.name}", error : error.toString()
-
-
+        @log.error? "Error shutdown in extension #{extension.name}", {error : error.toString() stack: error.stack()}
 
   # Create a new {CrawlRequest} and start its processing
   # @return [CrawlRequest] The created request
-  enqueue: (url) ->
-    request = new CrawlRequest url, @context
+  execute: (url, meta) ->
+    @log.debug? "Executing #{url}"
+    request = new CrawlRequest url, meta, @log
     ExtensionPoint.execute @, INITIAL.phase, request
+
+  schedule: (url, meta) ->
+    @log.debug? "Scheduling #{url}"
+    @scheduler.schedule url, meta
 
   # Pretty print this crawler
   toString: () ->
     "Crawler: " # TODO: List extension points and content
+
+
+class Scheduler
+
+  threshold = 200
+
+  constructor: (@crawler, @queue, @config) ->
+    filterOpts =
+      allow : _.filter @config.options.Filtering.allow, _.isRegExp
+      deny : _.filter @config.options.Filtering.deny, _.isRegExp
+    delete filterOpts.allow if _.isEmpty filterOpts.allow
+    delete filterOpts.deny if _.isEmpty filterOpts.deny
+    @urlFilter = new UrlFilter filterOpts, @crawler.log
+
+  schedule: (url, meta) ->
+    return if not @urlFilter.isAllowed(url) or @queue.isKnown url
+    if @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length < threshold
+      @crawler.execute url, meta
+    else
+      @queue.schedule url, meta
+
+  start: () ->
+    pushUrls = () =>
+      if @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length < threshold
+        urls = @queue.nextUrlBatch()
+        @crawler.log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
+        @crawler.execute entry.url, entry.meta for entry in urls
+    @executor = setInterval pushUrls, 5000
+    @executor.unref()
+
+  shutdown: () ->
+    clearInterval @executor
 
 module.exports = {
   Crawler

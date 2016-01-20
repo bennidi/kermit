@@ -16,13 +16,13 @@ export class LocalHttpServer{
     console.log(`LocalStorageServer listening on port ${this.port} and basedir ${this.basedir}`);
   }
 
+  canServe(url){
+    return false;
+  }
+
   stop(){
     this.server.close();
     console.log(`LocalStorageServer closed`);
-  }
-
-  get(url){
-    request.get
   }
 
 

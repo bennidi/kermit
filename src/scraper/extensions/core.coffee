@@ -11,7 +11,7 @@ class ExtensionPointConnector extends Extension
     super INITIAL : @apply
 
   executePhase: (request) =>
-    @context.execute request
+    @context.executeRequest request
 
   # Add listener to the request such that status change will trigger
   # execution of corresponding {ExtensionPoint}
@@ -79,17 +79,18 @@ class Cleanup extends Extension
   complete: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
     @context.queue.completed(request) # Remove from
-    delete request.response
+    request.cleanup()
+    @log.trace? request.toString()
 
   # Do cleanup work to prevent memory leaks
   error: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    delete request.response
+    request.cleanup()
 
   # Do cleanup work to prevent memory leaks
   canceled: (request) ->
     delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    delete request.response
+    request.cleanup()
 
 module.exports = {
   ExtensionPointConnector

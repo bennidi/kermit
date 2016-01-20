@@ -34,7 +34,7 @@ describe  'Crawler',  ->
       Recorder.validate("http://www.google.com/", [Status.INITIAL,Status.SPOOLED, Status.READY,
         Status.FETCHING, Status.FETCHED, Status.COMPLETE])
       Kermit = new Crawler extensions : [Recorder, new ResponseStreamLogger]
-      Kermit.enqueue("http://www.google.com")
+      Kermit.execute("http://www.google.com")
 
 
     it '# extensions can prevent a request from being processed', (done)->
@@ -42,19 +42,8 @@ describe  'Crawler',  ->
       Recorder.validate("http://www.google.com/", [Status.INITIAL])
       Recorder.validate("http://www.github.com/", [Status.INITIAL])
       Kermit = new Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
-      Kermit.enqueue("http://www.google.com")
-      Kermit.enqueue("http://www.github.com")
-
-
-    it '# allows to schedule follow-up requests', (done) ->
-      Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
-      Recorder.validate("http://www.google.com/", [Status.INITIAL,Status.SPOOLED, Status.READY,
-        Status.FETCHING, Status.FETCHED, Status.COMPLETE])
-      Recorder.validate("http://www.wikipedia.org/", [Status.INITIAL,Status.SPOOLED, Status.READY,
-        Status.FETCHING, Status.FETCHED, Status.COMPLETE])
-      Kermit = new Crawler
-          extensions : [Recorder, new ResponseStreamLogger]
-      Kermit.enqueue("http://www.google.com/").enqueue("http://www.wikipedia.org/")
+      Kermit.execute("http://www.google.com")
+      Kermit.execute("http://www.github.com")
 
 
 

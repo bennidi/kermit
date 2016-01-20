@@ -17,13 +17,11 @@ describe  'Request filter',  ->
 
       shouldBeAllowed = new CrawlRequest "www.shouldBeAllowed.org/some/path/with?query=true", new MockContext
       allowed = [
-        shouldBeAllowed,
-        shouldBeAllowed.enqueue "www.shouldBeAllowed.org/some/other/path/with?query=true"
+        shouldBeAllowed
       ]
       denied = [
         new CrawlRequest "www.shouldBeDenied.org/some/path/with?query=true", new MockContext
         new CrawlRequest "www.shouldBeDenied.org/some/path/denied.css", new MockContext
-        shouldBeAllowed.enqueue "www.oneLevel.org/some/path/with?query=true"
       ]
 
       expect(request.isInitial()).to.be.true() for request in allowed

@@ -10,7 +10,7 @@ _ = require 'lodash'
 class Statistics extends Extension
 
   @defaultOpts: () ->
-    interval : 2000
+    interval : 10000
     enabled : true
 
   constructor: (opts) ->
@@ -33,9 +33,13 @@ class Statistics extends Extension
     @queue = @context.queue
     statsLogger = () =>
       try
+        start = new Date().getTime()
         stats =  _.merge {}, @counters, {current: @queue.requestsByStatus(['READY', 'FETCHING'])}
         stats.total.ACCEPTED = stats.total.INITIAL - stats.total.CANCELED
-        @log.info? "READY:#{stats.current.READY}, FETCHING:#{stats.current.FETCHING}, COMPLETED:#{stats.total.COMPLETE}", tags : ['Statistics']
+        waiting = @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length
+        scheduled = @queue.urls.getDynamicView('scheduled').data().length
+        duration = start - new Date().getTime()
+        @log.info? "(#{duration}ms) SCHEDULED: #{scheduled}, WAITING: #{waiting}, READY:#{stats.current.READY}, FETCHING:#{stats.current.FETCHING}, COMPLETED:#{stats.total.COMPLETE}", tags : ['Statistics']
       catch error
         @log.error? "Error during computation of statistics", error:error
     if @opts.enabled

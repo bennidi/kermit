@@ -20,8 +20,9 @@ class Pipeline
     @downstreams[id] = stream
 
   import: (incomingMessage)   ->
-    @log.debug? "Received #{incomingMessage.statusCode} #{obj.print incomingMessage.headers}"
+    @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
+    @log.debug? "Received #{@status} #{obj.print @headers}"
     # Connect downstreams
     for id, matcher of @matchers
       @incoming.pipe @downstreams[id] if matcher incomingMessage
@@ -33,7 +34,6 @@ class Pipeline
     delete @matchers
     delete @downstreams
     delete @data
-    delete @headers
 
 module.exports = {
   Pipeline

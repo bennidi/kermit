@@ -36,7 +36,7 @@ class QueueWorker extends Extension
 
   @defaultOpts = () ->
     limits : [
-        pattern : ".*"
+        pattern : /.*/
         to : 5
         per : 'second'
         max : 5
