@@ -12,7 +12,7 @@ Crawler = new Crawler
   extensions : [
     new Statistics
     new OfflineStorage
-    #new OfflineServer
+    new OfflineServer
     new ResourceDiscovery
   ]
   options:

@@ -22,11 +22,13 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "Received #{@status} #{obj.print @headers}"
+    @log.debug? "Received #{@status} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}"
     # Connect downstreams
+    streams = []
     for id, matcher of @matchers
       @incoming.pipe @downstreams[id] if matcher incomingMessage
-      @log.debug? "Attaching #{@downstreams[id].constructor.name}", tags:['Pipeline']
+      streams.push @downstreams[id].constructor.name
+    @log.debug? "Attached #{streams}", tags:['Pipeline']
     # Start streaming
     incomingMessage.pipe @incoming
 
