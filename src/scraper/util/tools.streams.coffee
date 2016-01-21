@@ -35,6 +35,10 @@ class MemoryStream extends stream.Writable
     @target.push chunk
     next()
 
+class DevNull extends stream.Writable
+
+  _write: (chunk, enc, next) -> next()
+
 class CountingStream extends stream.Transform
 
   constructor: (@cnt = 0) -> super
@@ -50,4 +54,5 @@ module.exports = {
   MemoryStream
   CountingStream
   LogStream
+  DevNull
 }

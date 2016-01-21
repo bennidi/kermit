@@ -3,9 +3,6 @@
 {obj} = require('../util/tools.coffee')
 {Mimetypes} = require('../Pipeline.coffee')
 {Extension} = require '../Extension'
-URI = require 'urijs'
-validUrl = require 'valid-url'
-url = require 'url'
 _ = require 'lodash'
 htmlToJson = require 'html-to-json'
 
@@ -20,11 +17,10 @@ class HtmlProcessor extends Extension
     @extractors[extractor.name] = extractor for extractor in extractors
     @combinedSelectors = {}
     @combinedSelectors[name] = extractor.parser for name, extractor of @extractors
-    console.log obj.print @combinedSelectors
     super
       READY : (request) =>
         target = @content[request.id()] = []
-        request.channels().stream Mimetypes( [/.*htm.*/g] ), new MemoryStream target
+        request.pipeline().stream Mimetypes( [/.*html.*/g] ), new MemoryStream target
       FETCHED : (request) =>
         input = @contents request
         handler =  (error,results) =>

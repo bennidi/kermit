@@ -1,14 +1,14 @@
 through = require 'through2'
 {PassThrough} = require 'stream'
 {HtmlExtractor} = require './Extractor.coffee'
-{MemoryStream} = require './util/tools.coffee'
+{DevNull} = require './util/tools.streams.coffee'
 _ = require 'lodash'
 {obj} = require('./util/tools.coffee')
 
 
 class Pipeline
 
-  constructor : (@log) ->
+  constructor : (@log, @crawlRequest) ->
     @incoming = new PassThrough() # stream.PassThrough serves as connector
     @downstreams = {} # map downstream listeners using regex on mimetype
     @matchers = {}
@@ -22,15 +22,26 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "Received #{@status} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}"
+    @log.debug? "Received #{@status} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}", tags:['Pipeline']
     # Connect downstreams
     streams = []
     for id, matcher of @matchers
-      @incoming.pipe @downstreams[id] if matcher incomingMessage
-      streams.push @downstreams[id].constructor.name
-    @log.debug? "Attached #{streams}", tags:['Pipeline']
-    # Start streaming
-    incomingMessage.pipe @incoming
+      if matcher incomingMessage
+        @incoming.pipe @downstreams[id]
+        streams.push @downstreams[id].constructor.name
+    if _.isEmpty streams
+      @log.debug? "No matching downstreams found. Skipping.", tags:['Pipeline']
+      @crawlRequest.fetched()
+    else
+      @log.debug? "Attached #{streams}", tags:['Pipeline']
+      incomingMessage
+        .on 'error', (error) =>
+          @log.error? "Error while streaming", error:error
+          @crawlRequest.error(error)
+        .on 'end', =>
+          @crawlRequest.fetched()
+      # Start streaming
+      incomingMessage.pipe @incoming
 
   cleanup: () ->
     delete @matchers

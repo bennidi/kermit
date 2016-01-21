@@ -136,13 +136,7 @@ class CrawlRequest
   fetching: (incomingMessage) ->
     if @isReady() then @status(RequestStatus.FETCHING)
     else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
-    incomingMessage
-      .on 'error', (error) =>
-        @log.error? "Error while streaming", error:error
-        @error(error)
-      .on 'end', =>
-        @fetched()
-    @channels().import incomingMessage
+    @pipeline().import incomingMessage
     this
 
 
@@ -202,11 +196,11 @@ class CrawlRequest
 
   # Clean all request data that potentially occupies much memory
   cleanup: () ->
-    @pipeline?.cleanup()
+    @_pipeline?.cleanup()
     delete @changeListeners
 
-  channels: () ->
-    @pipeline ?= new Pipeline @log
+  pipeline: () ->
+    @_pipeline ?= new Pipeline @log, @
 
   # A request might have been created by another request (its parent).
   # That parent might in turn have been created by another request and so on.
@@ -222,7 +216,7 @@ class CrawlRequest
         when 'COMPLETE'
           """COMPLETE => GET #{@state.url}(status=#{@pipeline?.status}):
           #{obj.print CrawlRequest.stampsToString @state.stamps}"""
-        else "Unknown statu"
+        else "Unknown status"
 
 module.exports = {
   CrawlRequest

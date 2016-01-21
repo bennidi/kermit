@@ -1,32 +1,34 @@
 {Status} = require '../CrawlRequest'
 {Extension} = require '../Extension'
-fse = require 'fs-extra'
 {byExtension} = require '../util/mimetypes.coffee'
 {Mimetypes} = require('../Pipeline.coffee')
+fse = require 'fs-extra'
+fs = require 'fs'
 Mitm = require 'mitm'
 URI = require 'urijs'
-URL = require('url');
-util = require 'util'
-fs = require 'fs'
+_ = require 'lodash'
 
 fileExists = (path) ->
   try
-    console.log "CHECKING #{path}"
     stats = fs.statSync path
-    console.log "STATS #{stats}"
     stats?
   catch err
     false
 
 
 toLocalPath = (basedir = "", url) ->
+  url = url.replace 'www', ''
   uri = URI(url)
   uri.normalize()
   #normalizedPath = if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
   #uri.path normalizedPath
   uri.filename("index.html") if (!uri.suffix() or not byExtension[uri.suffix()])
   domainWithoutTld = uri.domain().replace ".#{uri.tld()}", ''
-  "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{uri.path()}"
+  subdomain = uri.subdomain()
+  subdomain = "/#{subdomain}" if not _.isEmpty subdomain
+  lastDot = uri.path().lastIndexOf '.'
+  augmentedPath = [uri.path().slice(0, lastDot), uri.query(), uri.path().slice(lastDot)].join('');
+  "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
 
 # Store request results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
@@ -40,8 +42,9 @@ class OfflineStorage extends Extension
       READY: (request) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = toLocalPath @basedir , request.url()
-        @log.debug? "Storing #{request.url()} to #{path}"
-        request.channels().stream Mimetypes([/.*/g]), fse.createOutputStream path if @shouldStore path
+        if @shouldStore path
+          @log.debug? "Storing #{request.url()} to #{path}", tags: ['OfflineStorage']
+          request.pipeline().stream Mimetypes([/.*/g]), fse.createOutputStream path
 
   shouldStore: (path) ->
     @opts.ifFileExists is 'update' or not fileExists path
@@ -71,7 +74,6 @@ class OfflineServer extends Extension
     # Don't intercept connections to localstorage
     @mitm.on 'connect', (socket, opts) =>
       url = opts.uri?.href
-      #console.log util.inspect opts
       localFilePath = toLocalPath @opts.basedir, url
       return socket.bypass() if opts.host is 'localhost'
       if not fileExists localFilePath

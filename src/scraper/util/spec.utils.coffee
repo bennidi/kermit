@@ -68,7 +68,7 @@ class ResponseStreamLogger extends Extension
 
   constructor: (shouldLog = false) ->
     super INITIAL: (request) ->
-      request.channels().stream Mimetypes([/.*/]), new LogStream shouldLog
+      request.pipeline().stream Mimetypes([/.*/]), new LogStream shouldLog
 
 module.exports = {
   RejectingExtension

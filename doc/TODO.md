@@ -2,8 +2,7 @@
   + Reorder classes
   + Add more coffeedoc (Pipeline)
   + Offline Storage
-    + Handle query params
-    + Implement detection of existing files (what to do if file exists)
+    + Handle se
   + Add tests for
     + rate limiting
     + QueueManager
