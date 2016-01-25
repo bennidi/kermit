@@ -52,7 +52,7 @@ class ExtensionPoint
         else
           extension.handlers[@phase].call(extension, request)
       catch error
-        @log.error "Error in extension #{extension.name}", { msg: error.toString(), error:error , trace: error.stack}
+        @log.error error.toString(), { trace: error.stack, tags: [extension.name]}
         request.error(error)
         return false
     true

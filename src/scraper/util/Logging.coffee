@@ -2,6 +2,7 @@
 fs = require 'fs-extra'
 _ = require 'lodash'
 {obj} = require './tools.coffee'
+dateFormat = require 'dateformat'
 
 # Aggregates log message and additional (meta-)data. Constructed whenever
 # the log() method of {LogHub} is called with more than just the message.
@@ -28,12 +29,14 @@ class DefaultFormatter extends Formatter
     if _.isEmpty tags then "" else " [#{tags}]"
 
   fromString : (lvl, msg) ->
-    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()} - #{msg}\n"
+    time = dateFormat new Date(), "d/mm HH:MM:ss.l"
+    entry = "[#{time}] #{lvl.toUpperCase()} - #{msg}\n"
 
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
     data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 3})"
-    entry = "[#{new Date().toISOString()}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
+    time = dateFormat new Date(), "d/mm HH:MM:ss.l"
+    entry = "[#{time}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
 
 class LogFormats
 

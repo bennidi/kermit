@@ -29,6 +29,30 @@ class RequestStatus
   # @property [Array<String>] Collection of all defined status'
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
+  @follower : (status) ->
+    switch status
+      when 'INITIAL' then 'SPOOLED'
+      when 'SPOOLED' then 'READY'
+      when 'READY' then 'FETCHING'
+      when 'FETCHING' then 'FETCHED'
+      when 'FETCHED' then 'COMPLETE'
+      when 'COMPLETE' then 'COMPLETE'
+      when 'CANCELED' then 'CANCELED'
+      when 'ERROR' then 'ERROR'
+      else throw new Error "Unknown status #{status} has no follower"
+
+  @predecessor : (status) ->
+    switch status
+      when 'INITIAL' then 'INITIAL'
+      when 'SPOOLED' then 'INITIAL'
+      when 'READY' then 'SPOOLED'
+      when 'FETCHING' then 'READY'
+      when 'FETCHED' then 'FETCHING'
+      when 'COMPLETE' then 'FETCHED'
+      when 'CANCELED' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHED']
+      when 'ERROR' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
+      else throw new Error "Unknown status #{status} has no predecessor"
+
 # The crawl request is the central object of processing. It is not to be confused with an Http(s) request
 # (which might be created in the lifespan of a crawl request).
 # Each crawl request has a lifecycle determined by the state diagram as defined by the {Crawler}
@@ -105,6 +129,14 @@ class CrawlRequest
   # Get all timestamps stored for the given tag  
   stamps : (tag) ->
     @state.stamps[tag] ?= []
+
+  durationOf : (status) ->
+    follower = RequestStatus.follower status
+    try
+      @stamps(follower)[0] - @stamps(status)[0]
+    catch error
+      # This error occurs if a stamp did not exist
+      -1
 
   # Register a change listener for a specific value of the status property
   # @param status [String] The status value that will trigger invocation of the listener

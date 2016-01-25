@@ -47,7 +47,8 @@ class OfflineStorage extends Extension
           request.pipeline().stream Mimetypes([/.*/g]), fse.createOutputStream path
 
   shouldStore: (path) ->
-    @opts.ifFileExists is 'update' or not fileExists path
+    @log.debug? "#{path} already exists" if exists = fileExists path
+    @opts.ifFileExists is 'update' or not exists
 
   initialize: (context) ->
     super context
