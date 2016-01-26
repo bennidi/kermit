@@ -56,8 +56,6 @@ diagram below.
  | Ready for   |-------->| Request     |--------->| Content   |
  | fetching    |         | streaming   |          | received  |
  '-------------'         '-------------'          '-----------'
-
-
 ```
 ###
 class Crawler
@@ -66,7 +64,7 @@ class Crawler
   # @param config [Object] The configuration for this crawler.
   # @see CrawlerConfig
   constructor: (config = {}) ->
-# Use default options where no user defined options are given
+    # Use default options where no user defined options are given
     @config = new CrawlerConfig config
     @log = new LogHub(@config.options.Logging).logger()
     @log.info? "#{obj.print @config}", tags: ['Config']
@@ -106,13 +104,13 @@ class Crawler
     # Usually this handler is considered back practice but in case of processing errors
     # of single requests, operation should continue.
     process.on 'uncaughtException', (error) =>
-# TODO: Keep track of error rate (errs/sec) and define threshold that will eventually allow the process to exit
+    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually allow the process to exit
       @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
 
-# Initializes this extension point with the given context. Initialization cascades
-# to all contained extensions
-# @private
+  # Initializes this extension point with the given context. Initialization cascades
+  # to all contained extensions
+  # @private
   initialize: () ->
     @scheduler.start()
     for extension in @extensions
@@ -120,7 +118,7 @@ class Crawler
       extension.verify()
       @log.info? extension.toString(), tags: ['Config']
 
-# Run shutdown logic on all extensions
+  # Run shutdown logic on all extensions
   shutdown: () ->
     @scheduler.shutdown()
     for extension in _(@extensions).reverse().value()
@@ -130,8 +128,8 @@ class Crawler
       catch error
         @log.error? "Error shutdown in extension #{extension.name}", {error : error.toString() stack: error.stack()}
 
-# Create a new {CrawlRequest} and start its processing
-# @return [CrawlRequest] The created request
+  # Create a new {CrawlRequest} and start its processing
+  # @return [CrawlRequest] The created request
   execute: (url, meta) ->
     @log.debug? "Executing #{url}"
     request = new CrawlRequest url, meta, @log
@@ -141,7 +139,7 @@ class Crawler
     @log.debug? "Scheduling #{url}"
     @scheduler.schedule url, meta
 
-# Pretty print this crawler
+  # Pretty print this crawler
   toString: () ->
     "Crawler: " # TODO: List extension points and content
 

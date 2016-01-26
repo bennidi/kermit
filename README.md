@@ -38,7 +38,7 @@ and run your local copy.
 
 ### Setup
     
-	$ npm install -g gulpjs/gulp-cli#4.0
+	$ npm install -g gulpjs/gulp-cli#4.0 -g
 	$ npm install
 	$ npm test
 

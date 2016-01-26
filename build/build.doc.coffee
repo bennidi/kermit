@@ -8,12 +8,13 @@ gulp.task  'doc:clean', ->
 		.pipe  clean force : true
 
 gencodo = () ->
-	gulp.src ['src/**/*.coffee', '!src/**/*spec.*.coffee'], read: false
+	gulp.src ['src/**/*.coffee', '!src/**/*.spec*.coffee'], read: false
 		.pipe codo
 			dir: 'target/coffeedoc/main'
 			name: 'Kermit the Sloth (main)'
 			title: 'Kermit the Sloth (main)'
 			readme: 'doc/codo.main.readme.md'
+			verbose : true
 			extra: ['LICENSE.md']
 gencodo.description = 'Generate main coffee documentation'
 

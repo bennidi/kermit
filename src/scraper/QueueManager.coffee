@@ -2,12 +2,13 @@
 lokijs = require 'lokijs'
 _ = require 'lodash'
 
-# Provides access to a queue like system that allows to access {CrawlRequest}s by their
-# status.
-#
-# Currently implemented on top of beautiful [http://lokijs.org lokijs]
-# => Queues are emulated with dynamic views on a single request collection.
-#
+###
+ Provides access to a queue like system that allows to access {CrawlRequest}s by their
+ status.
+
+ Currently implemented on top of beautiful [http://lokijs.org lokijs]
+ => Queues are emulated with dynamic views on a single request collection.
+###
 class QueueManager
 
   # Construct a new QueueManager with its own data file
@@ -68,7 +69,7 @@ class QueueManager
     @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
 
 
-# Update a known request
+  # Update a known request
   # @param request {CrawlRequest} The request to be updated
   update: (request) ->
     @requests.update(request.state)

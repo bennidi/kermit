@@ -146,7 +146,6 @@ class LogHub
     else
       @dispatcher[lvl]?.push msg
 
-  #
   logger: () -> new Logger @opts.levels, @
 
 ###

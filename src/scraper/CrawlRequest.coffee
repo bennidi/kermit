@@ -237,11 +237,9 @@ class CrawlRequest
   toString: () ->
     pretty = switch @state.status
         when 'INITIAL','SPOOLED','READY'
-          """#{@state.status} => GET #{@state.url}:
-            #{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """#{@state.status} => GET #{@state.url}:#{obj.print CrawlRequest.stampsToString @state.stamps}"""
         when 'COMPLETE'
-          """COMPLETE => GET #{@state.url}(status=#{@pipeline?.status}):
-          #{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """COMPLETE => GET #{@state.url}(status=#{@_pipeline?.status}):#{obj.print CrawlRequest.stampsToString @state.stamps}"""
         else "Unknown status"
 
 module.exports = {
