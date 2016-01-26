@@ -5,7 +5,7 @@
 {ByPattern} = require './extensions/core.filter.coffee'
 
 describe  'Crawler',  ->
-  @timeout 6000
+  @timeout 3000
   describe 'package', ->
     Kermit = null
     it '# can be instantiated without any options', ()->

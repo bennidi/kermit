@@ -116,7 +116,7 @@ class CrawlRequest
   # @private
   status: (status) ->
     if status?
-      @stamp(status)
+      @stamp status
       @state.status = status
       notify this, "status"
     else @state.status
@@ -150,42 +150,36 @@ class CrawlRequest
   # @return {CrawlRequest} This request
   # @throw Error if request does have other status than INITIAL
   spool: ->
-    if @isInitial()
-      @status(RequestStatus.SPOOLED);this
+    if @isInitial() then @status(RequestStatus.SPOOLED);this
     else throw new Error "Transition from #{@state.status} to SPOOLED not allowed"
 
   # Change the requests status to READY
   # @return {CrawlRequest} This request
   # @throw Error if request does have other status than SPOOLED
   ready: ->
-    if @isSPOOLED()
-      @status(RequestStatus.READY);this
+    if @isSPOOLED() then @status(RequestStatus.READY);this
     else throw new Error "Transition from #{@state.status} to READY not allowed"
 
   # Change the requests status to FETCHING
   # @return {CrawlRequest} This request
   # @throw Error if request does have other status than READY
-  fetching: (incomingMessage) ->
-    if @isReady() then @status(RequestStatus.FETCHING)
+  fetching: () ->
+    if @isReady() then @status(RequestStatus.FETCHING);this
     else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
-    @pipeline().import incomingMessage
-    this
 
 
   # Change the requests status to FETCHED
   # @return {CrawlRequest} This request
   # @throw Error if request request does have other status than FETCHING
   fetched: () ->
-    if @isFetching()
-      @status(RequestStatus.FETCHED);this
+    if @isFetching() then @status(RequestStatus.FETCHED);this
     else throw new Error "Transition from #{@state.status} to FETCHED not allowed"
 
   # Change the requests status to COMPLETE
   # @return {CrawlRequest} This request
   # @throw Error if request does have other status than FETCHED
   complete: ->
-    if @isFetched()
-      @status(RequestStatus.COMPLETE);this
+    if @isFetched() then @status(RequestStatus.COMPLETE);this
     else throw new Error "Transition from #{@state.status} to COMPLETE not allowed"
 
   # Change the requests status to ERROR

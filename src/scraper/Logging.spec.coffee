@@ -1,5 +1,5 @@
 {LogHub, LogAppender} = require './Logging.coffee'
-{CountingStream, LogStream} = require './tools.streams.coffee'
+{CountingStream, LogStream} = require './util/tools.streams.coffee'
 through = require 'through2'
 
 describe  'LogHub',  ->

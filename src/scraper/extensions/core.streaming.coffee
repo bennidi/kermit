@@ -33,7 +33,7 @@ class RequestStreamer extends Extension
       @opts.agents.http = new socks5Http agentOptions
     else
       agentOptions =
-        maxSockets: 5
+        maxSockets: 20
         ciphers: "AES128-SHA"
       @opts.agents.http = new http.Agent agentOptions
       @opts.agents.https = new https.Agent agentOptions
@@ -42,9 +42,10 @@ class RequestStreamer extends Extension
     url = crawlRequest.url()
     options =
       agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
+    crawlRequest.fetching()
     httpRequest.get url, options
       .on 'response', (response) ->
-        crawlRequest.fetching response
+        crawlRequest.pipeline().import response
 
 
 # Export a function to create the core plugin with default extensions

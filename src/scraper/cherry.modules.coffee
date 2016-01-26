@@ -1,12 +1,12 @@
-cherry =
-  requests: {}
-  extensions: {}
-  storage: {}
-cherry.requests.Request = require('./CrawlRequest')
-cherry.requests.Status = require('./CrawlRequest').Status
-cherry.storage.Queue = require('./QueueManager').QueueManager
-cherry.extensions.Extension = require('./Extension').Extension
-cherry.extensions.OfflineStorage = require('./extensions/plugin.offline.coffee').OfflineStorage
-cherry.Crawler = require('./Crawler').Crawler
+{obj} = require './util/tools.coffee'
+kermit = require './Crawler'
+kermit = obj.merge kermit, require './CrawlRequest'
+kermit = obj.merge kermit, require './Extension'
+kermit = obj.merge kermit, require './Crawler.ExtensionPoints.coffee'
+kermit.filters = require './extensions/core.filter.coffee'
+kermit.ext = obj.merge {}, require './extensions/ext.discovery.coffee'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.htmlprocessor.coffee'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.offline.coffee'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.statistics.coffee'
 
-module.exports = cherry
+module.exports = kermit

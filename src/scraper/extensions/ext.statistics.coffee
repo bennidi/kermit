@@ -37,12 +37,12 @@ class Statistics extends Extension
     statsLogger = () =>
       try
         start = new Date()
-        stats =  _.merge {}, @counters, {current: @queue.requestsByStatus(['READY', 'FETCHING'])}
+        stats =  _.merge {}, @counters, {current: FETCHING: @queue.requests.getDynamicView('FETCHING').data().length}
         stats.requests.ACCEPTED = stats.requests.INITIAL - stats.requests.CANCELED
         waiting = @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length
         scheduled = @queue.urls.getDynamicView('scheduled').data().length
         duration = new Date() - start
-        @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} READY:#{stats.current.READY} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.requests.COMPLETE}", tags : ['Stats', 'Count']
+        @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.requests.COMPLETE}", tags : ['Stats', 'Count']
         durations = ("#{status}(#{times.min},#{times.max},#{times.avg})" for status,times of stats.durations)
         @log.info? "Status(min,max,avg): #{durations}", tags : ['Stats', 'Duration']
       catch error
@@ -55,13 +55,20 @@ class Statistics extends Extension
     clearInterval @stats
 
   track: (request) ->
-    @counters.requests[request.status()]++
+    count = @counters.requests[request.status()]++
     if not (request.isInitial() or request.isError() or request.isCanceled())
       preceedingStatus = Status.predecessor request.status()
-      @counters.durations[preceedingStatus].total += request.durationOf preceedingStatus
-      @counters.durations[preceedingStatus].min = Math.min @counters.durations[preceedingStatus].min, request.durationOf preceedingStatus
-      @counters.durations[preceedingStatus].max = Math.max @counters.durations[preceedingStatus].max, request.durationOf preceedingStatus
-      @counters.durations[preceedingStatus].avg = Math.floor(@counters.durations[preceedingStatus].total / @counters.requests[preceedingStatus])
+      duration = request.durationOf preceedingStatus
+      if count % 500 is 0 # reset counters to emulate sliding window
+        @counters.durations[preceedingStatus].total = duration
+        @counters.durations[preceedingStatus].min = duration
+        @counters.durations[preceedingStatus].max = duration
+        @counters.durations[preceedingStatus].avg = (@counters.durations[preceedingStatus].avg + duration) / 2
+      else
+        @counters.durations[preceedingStatus].total += duration
+        @counters.durations[preceedingStatus].min = Math.min @counters.durations[preceedingStatus].min, duration
+        @counters.durations[preceedingStatus].max = Math.max @counters.durations[preceedingStatus].max, duration
+        @counters.durations[preceedingStatus].avg = Math.floor(@counters.durations[preceedingStatus].total / @counters.requests[preceedingStatus])
 
 module.exports = {
   Statistics

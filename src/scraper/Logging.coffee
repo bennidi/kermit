@@ -1,7 +1,7 @@
+{obj} = require './util/tools.coffee'
 {PassThrough, Transform, Writable} = require 'stream'
 fs = require 'fs-extra'
 _ = require 'lodash'
-{obj} = require './tools.coffee'
 dateFormat = require 'dateformat'
 
 # Aggregates log message and additional (meta-)data. Constructed whenever
@@ -44,8 +44,8 @@ class LogFormats
 
 class LogAppender
 
-  constructor: (params) ->
-    @sink = params?.sink
+  constructor: (opts) ->
+    @sink = opts?.sink
 
   # @private
   # @abstract
@@ -53,7 +53,7 @@ class LogAppender
 
 class FileAppender extends LogAppender
 
-  constructor: (params) -> super sink : fs.createWriteStream(params.filename, flags : 'a')
+  constructor: (opts) -> super sink : fs.createWriteStream(opts.filename, flags : 'a')
 
 class ConsoleAppender extends LogAppender
 
@@ -112,7 +112,7 @@ class LogHub
     levels : ['info', 'warn', 'error', 'debug']
 
   constructor : (opts = {}) ->
-    @opts = _.merge {}, LogHub.defaultOpts(), opts, (a,b) -> if _.isArray a then b
+    @opts = obj.overlay LogHub.defaultOpts(), opts
     @initialize()
 
   #@private
@@ -131,23 +131,35 @@ class LogHub
       when destination.appender.type instanceof Function then new destination.appender.type destination.appender
       else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
-      if not @dispatcher[level] then throw new Error "Log level #{level} not defined"
+      if not @dispatcher[level] then console.log "Log level #{level} not defined"
       formatter = destination.formatter or LogFormats.llog()
       @dispatcher[level]
         .pipe new LogFormatHandler formatter, level
         .pipe appender.sink
 
+  # Canonical method for logging messages to all available appenders matching
+  # the given log level. If a log level does not exist the message will be silently
+  # ignored.
   log : (lvl, msg, data) ->
     if data
       @dispatcher[lvl]?.push new LogEntry msg, data
     else
       @dispatcher[lvl]?.push msg
 
+  #
   logger: () -> new Logger @opts.levels, @
 
-# Wrapper around {LogHub} that provides a method for each available log level
+###
+  Wrapper around {LogHub} that provides a method for each available log level.
+  This allows for convenient use of the existential operator to guard log statements from
+  ever being executed.
+  Note: Using the existential operator does not only prevent the log message from being sent
+  to the appenders but actually prevents the message from being constructed! This allows to make
+  heavy use of debug logging without introducing any GC overhead into production code.
+###
 class Logger
 
+  # Wrap calls to the underlying {LogHub}
   logHandler = (lvl, hub) -> (msg, data) -> hub.log lvl, msg, data
 
   constructor: (levels = [], @hub) ->
@@ -160,4 +172,5 @@ module.exports = {
   LogAppender
   FileAppender
   ConsoleAppender
+  LogConfig : require './Logging.conf.coffee'
 }
