@@ -37,6 +37,7 @@ class ResourceDiscovery extends HtmlProcessor
     ]
 
   cleanUrl: (request, url)  =>
+    return "" if not url
     base = URI request.url()
     cleaned = url
     if cleaned
@@ -45,10 +46,7 @@ class ResourceDiscovery extends HtmlProcessor
       # Handle relative urls with leading slash, i.e. /wiki/Hauptseite
       cleaned = URI(url).absoluteTo(base).toString() if cleaned.startsWith "/"
       # Drop in-page anchors, i.e. #info or self references, i.e. "/"
-      cleaned = "" if url.startsWith("#") or url is "/" or url.startsWith("mailto")
-    else
-      @log.debug? "Invalid url in #{base}", tags:['Discovery']
-      cleaned = ""
+      cleaned = "" if (url.startsWith "#") or url is "/" or (url.startsWith "mailto") or (url.startsWith "javascript")
     tools.uri.normalize cleaned
 
 module.exports = {ResourceDiscovery}

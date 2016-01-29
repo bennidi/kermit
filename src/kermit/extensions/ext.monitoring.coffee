@@ -7,7 +7,7 @@ _ = require 'lodash'
   Generate and log runtime statistics on queueing system and
   request processing.
 ###
-class Statistics extends Extension
+class Monitoring extends Extension
 
   @defaultOpts: () ->
     interval : 10000
@@ -28,7 +28,7 @@ class Statistics extends Extension
       durations: {}
     @counters.requests[status] = 0 for status in Status.ALL
     @counters.durations[status] = {total:0,min:100000,max:0,avg:0} for status in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
-    @opts = @merge Statistics.defaultOpts(), opts
+    @opts = @merge Monitoring.defaultOpts(), opts
 
 
   initialize: (context) ->
@@ -44,7 +44,7 @@ class Statistics extends Extension
         duration = new Date() - start
         @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.requests.COMPLETE}", tags : ['Stats', 'Count']
         durations = ("#{status}(#{times.min},#{times.max},#{times.avg})" for status,times of stats.durations)
-        @log.info? "Status(min,max,avg): #{durations}", tags : ['Stats', 'Duration']
+        @log.info? "#{durations}", tags : ['Stats', 'Duration']
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack
     if @opts.enabled
@@ -71,5 +71,5 @@ class Statistics extends Extension
         @counters.durations[preceedingStatus].avg = Math.floor(@counters.durations[preceedingStatus].total / @counters.requests[preceedingStatus])
 
 module.exports = {
-  Statistics
+  Monitoring
 }

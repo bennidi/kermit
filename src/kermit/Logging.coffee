@@ -3,6 +3,7 @@
 fs = require 'fs-extra'
 _ = require 'lodash'
 dateFormat = require 'dateformat'
+{basic} = require './Logging.conf.coffee'
 
 # Aggregates log message and additional (meta-)data. Constructed whenever
 # the log() method of {LogHub} is called with more than just the message.
@@ -74,10 +75,10 @@ class LogFormatHandler extends Transform
     @push msg
     next()
 
+# Registry for all known appender aliases
 class Appenders
 
   instance = null
-
   @get: () ->
     instance ?= new Appenders
 
@@ -86,14 +87,18 @@ class Appenders
     @register 'console', ConsoleAppender
     @register 'file', FileAppender
 
+  # Associate an alias with a factory method used to create an
+  # instance of the aliased {Appender}
   register : (alias, factory) ->
     @registry[alias] = factory
 
+  # Instantiate an appender
   create : (def) ->
     new @registry[def.type] def
 
 class LogHub
 
+  # Get a default configuration of this log
   @defaultOpts : () ->
     appenders : Appenders.get()
     destinations : [
@@ -101,16 +106,11 @@ class LogHub
         appender:
           type : 'console'
         levels: ['info', 'warn', 'error', 'debug']
-      },
-      {
-        appender:
-          type : 'file'
-          filename : '/tmp/all.log'
-        levels: ['info', 'warn', 'error', 'debug']
       }
     ]
     levels : ['info', 'warn', 'error', 'debug']
 
+  # @nodoc
   constructor : (opts = {}) ->
     @opts = obj.overlay LogHub.defaultOpts(), opts
     @initialize()
@@ -125,6 +125,7 @@ class LogHub
       @dispatcher[level] = connector
     @addDestination destination for destination in @opts.destinations
 
+  # Add a new log message destination to this hub
   addDestination: (destination) ->
     appender = switch
       when destination.appender.type.constructor is String then @opts.appenders.create destination.appender
@@ -146,6 +147,7 @@ class LogHub
     else
       @dispatcher[lvl]?.push msg
 
+  # Create a new {Logger} that logs to this hub
   logger: () -> new Logger @opts.levels, @
 
 ###

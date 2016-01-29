@@ -256,7 +256,8 @@ class Scheduler
 
   # @private
   schedule: (url, meta) ->
-    return if not @urlFilter.isAllowed(url) or @queue.isKnown url
+    if not @urlFilter.isAllowed(url) or @queue.isKnown url
+      return
     if @queue.requestsWaiting().length < threshold
       @crawler.execute url, meta
     else

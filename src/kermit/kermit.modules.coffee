@@ -7,6 +7,6 @@ kermit.filters = require './extensions/core.filter.coffee'
 kermit.ext = obj.merge {}, require './extensions/ext.discovery.coffee'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.htmlprocessor.coffee'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.offline.coffee'
-kermit.ext = obj.merge kermit.ext, require './extensions/ext.statistics.coffee'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.monitoring.coffee'
 
 module.exports = kermit

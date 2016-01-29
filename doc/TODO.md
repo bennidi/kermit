@@ -9,6 +9,8 @@ IDEAS / FEATURES
  + Implement rest-api for remote control (request submission, pause/resume, shutdown)
  + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
  + Add event bus (pub/sub) to context such that extensions can communicate via events
+ + Count computation time in Monitoring and add in separate log entry
+ + Add overall request timings to Monitoring
 
 TASKS
  + Reorder classes

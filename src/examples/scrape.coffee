@@ -1,11 +1,11 @@
-{Status, Crawler, Extension, ext} = require '../kermit/cherry.modules.coffee'
-{ResourceDiscovery, Statistics, OfflineStorage, OfflineServer} = ext
+{Status, Crawler, Extension, ext} = require '../kermit/kermit.modules.coffee'
+{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer} = ext
 
 # opts: rateLimit, request depth
 Kermit = new Crawler
   name: "testicle"
   extensions : [
-    new Statistics
+    new Monitoring
     new OfflineStorage
     # new OfflineServer
     new ResourceDiscovery
@@ -14,7 +14,7 @@ Kermit = new Crawler
     Queueing:
       limits : [
         {
-          pattern : /.*jimmycuadra\.com*/
+          pattern : /.*jimmycuadra\.com.*/
           to : 20
           per : 'second'
           max : 10
@@ -28,10 +28,9 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra*/
+        /.*jimmycuadra.*/
       ]
-      deny : [
-      ]
+      deny : []
 
 Kermit.schedule("http://www.jimmycuadra.com")
 

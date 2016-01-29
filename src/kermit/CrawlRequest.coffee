@@ -29,6 +29,7 @@ class RequestStatus
   # @property [Array<String>] Collection of all defined status'
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
+  # Retrieve the expected succeeding status for the given status
   @follower : (status) ->
     switch status
       when 'INITIAL' then 'SPOOLED'
@@ -41,6 +42,7 @@ class RequestStatus
       when 'ERROR' then 'ERROR'
       else throw new Error "Unknown status #{status} has no follower"
 
+  # Retrieve the preceeding status for the given status
   @predecessor : (status) ->
     switch status
       when 'INITIAL' then 'INITIAL'
@@ -73,11 +75,13 @@ class CrawlRequest
       request.changeListeners[property] = []
     request.changeListeners[property]
 
+  # @nodoc
   @stampsToString : (stamps) ->
     _.mapValues stamps, (stamps) ->
       first = "(#{stamps[0]})"
       rest = _.map _.tail(stamps), (value, index) -> (value - stamps[index]) + "ms"
       "#{first}#{rest}"
+
 
   constructor: (url, meta = {parents : 0} , @log) ->
     @changeListeners = {}
@@ -130,10 +134,21 @@ class CrawlRequest
   stamps : (tag) ->
     @state.stamps[tag] ?= []
 
+  # Compute the duration of a phase
+  # @return [Number] The duration of the respective phase in ms or -1 if phase not completed
   durationOf : (status) ->
     follower = RequestStatus.follower status
     try
       @stamps(follower)[0] - @stamps(status)[0]
+    catch error
+      # This error occurs if a stamp did not exist
+      -1
+
+  # Calculate processing time from INITIAL to COMPLETE
+  timeToComplete : () ->
+    return -1 if not @isComplete()
+    try
+      @stamps('INITIAL')[0] - @stamps('COMPLETE')[0]
     catch error
       # This error occurs if a stamp did not exist
       -1
@@ -212,7 +227,7 @@ class CrawlRequest
   isFetched: () -> @state.status is RequestStatus.FETCHED
   # Check whether this request has status COMPLETE
   # @return {Boolean} True if status is COMPLETE, false otherwise
-  isCompleted: () -> @state.status is RequestStatus.COMPLETE
+  isComplete: () -> @state.status is RequestStatus.COMPLETE
   # Check whether this request has status CANCELED
   # @return {Boolean} True if status is CANCELED, false otherwise
   isCanceled: () -> @state.status is RequestStatus.CANCELED
@@ -225,6 +240,7 @@ class CrawlRequest
     @_pipeline?.cleanup()
     delete @changeListeners
 
+  # Access the {Pipeline} of this request
   pipeline: () ->
     @_pipeline ?= new Pipeline @log, @
 
@@ -237,9 +253,9 @@ class CrawlRequest
   toString: () ->
     pretty = switch @state.status
         when 'INITIAL','SPOOLED','READY'
-          """#{@state.status} => GET #{@state.url}:#{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """#{@state.status} => GET #{@state.url} :#{obj.print CrawlRequest.stampsToString @state.stamps}"""
         when 'COMPLETE'
-          """COMPLETE => GET #{@state.url}(status=#{@_pipeline?.status}):#{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """COMPLETE => GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
         else "Unknown status"
 
 module.exports = {

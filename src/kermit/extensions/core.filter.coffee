@@ -30,8 +30,8 @@ class Filters
 class UrlFilter
 
   @defaultOpts : () ->
-    allow : [/.*/g] # allow all by default
-    deny : []
+    allow : [] # allows all by default
+    deny : [] # denies none by default
 
   # @nodoc
   constructor: (opts = {}, @log) ->
@@ -43,7 +43,7 @@ class UrlFilter
   # @param url {String} The request to filter
   # @return {Boolean} True
   isAllowed: (url) ->
-    if not Filters.matchUrl url, @opts.allow
+    if (not _.isEmpty @opts.allow) and not Filters.matchUrl url, @opts.allow
       @log.debug? "#{url} not on whitelist", tags:['UrlFilter']
       return false
     if Filters.matchUrl  url, @opts.deny

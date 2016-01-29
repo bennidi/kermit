@@ -1,6 +1,12 @@
 {HtmlExtractor} = require './Extractor.coffee'
 {LocalHttpServer} = require './util/httpserver'
 
+process = (extractor, input) ->
+  try
+    htmlToJson.batch input, extractor.parser, (error,results) -> extractor.onResult results.filter unless error
+  catch error
+    console.log error
+
 describe  'Html parser',  ->
   fixtures = new LocalHttpServer
   before ->
@@ -32,4 +38,4 @@ describe  'Html parser',  ->
             expect(results.links.length).to.equal 1
             expect(results.links[0].href).to.equal "anAnchor"
             expect(results.links[0].text).to.equal "jsand"
-        parser.process testHtml
+        process parser, testHtml

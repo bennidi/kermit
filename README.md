@@ -32,27 +32,65 @@ Kermit in a nutshell
   * Thoroughly documented using [codo](https://github.com/coffeedoc/codo): Read the [api-docs](https://open-medicine-initiative.github.io/kermit) 
 
 
-## Installation
+# Installation
     
 Currently not available as npm library because it is still in alpha state. Use the github repository code to install
 and run your local copy. It is planned to release an npm version soon(ish) but I am still waiting for
 user feedback.
     
-### Prerequisites
+## Prerequisites
     
   * Running version Node.js
     > Recommendation: Use nvm and install 5.3 (not tested on versions below 5.0)
   * (optional) Installation of Tor  (if you want to collect data anonymously...and slowly, of course :)
 
-### Setup
+## Setup
     
 	$ npm install -g gulpjs/gulp-cli#4.0 -g
 	$ npm install
 	$ npm test
 
-## Documentation
+# Usage
 
-### 
+First of all, have a look at the [examples](./src/examples).
+
+## Instantiation
+[Coming soon]
+
+### Options
+[Coming soon]
+
+### Log configuration
+[Coming soon]
+
+## Scheduling of URLs
+[Coming soon]
+
+## Monitoring
+[Coming soon]
+
+## Scenario: Offline Crawling
+[Coming soon]
+
+## Scenario: Collecting data from parsed html
+[Coming soon]
+
+## Custom Extensions
+[Coming soon]
+
+# Documentation
+
+The code ships with a lot of documentation and it is highly recommended to have a look at
+the sources as well as the generated [API docs](https://open-medicine-initiative.github.io/kermit).
+
+
+# Contribute
+
+Because the program is currently in alpha the most important contribution is feedback
+on functionality/bugs. Please provide log excerpts when submitting bug reports.
+Another welcome contribution are ideas for custom extensions. Create a gist of your extension
+code and link it in the wiki page for [Extensions](https://github.com/open-medicine-initiative/kermit/wiki/Extensions)
+
 
 ##License
 For fun and personal enjoyment of rebellious acts, the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)

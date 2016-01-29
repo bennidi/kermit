@@ -7,14 +7,17 @@
 ###  
 class ExtensionPoint
 
+  # Add list of extensions to the given provider
   @addExtensions : (provider, extensions = []) ->
     for extension in extensions
       ExtensionPoint.extpoint(provider, point).addExtension(extension) for point in extension.targets()
       provider.extensions.push extension
+  # Retrieve the {ExtensionPoint} for a given phase from the provider
   @extpoint : (provider, phase) ->
     if !provider.extpoints[phase]?
       throw new Error "Extension point #{phase} does not exists"
     provider.extpoints[phase]
+  # Schedule execution of an {ExtensionPoint} for the given request
   @execute : (provider, phase, request) ->
     process.nextTick ExtensionPoint.extpoint(provider, phase).apply, request
     request
