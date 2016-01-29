@@ -19,8 +19,8 @@ Kermit in a nutshell
     * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for syntax friendly dom traversals
     * [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
     * [must](https://www.npmjs.com/package/must) for testing done right - well, I admit that code base currently lacks testing very much  :-/
-  * Handles response data using streams. Provides simple [Pipeline]() abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) for specific response types
-  * Provides composable abstraction to simplify extension with custom features. See [Extension]()
+  * Handles response data using streams. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) for specific response types
+  * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
   * Comprehensive set of standard extensions for
     * Configurable **request filtering** (blacklist/whitelist) based on regular expressions for URLs or custom filters
     * Queueing system with configurable **rate limits** (regex on URLs)
@@ -40,19 +40,21 @@ user feedback.
     
 ## Prerequisites
     
-  * Running version Node.js
+  * Running installation of Node.js and git
     > Recommendation: Use nvm and install 5.3 (not tested on versions below 5.0)
   * (optional) Installation of Tor  (if you want to collect data anonymously...and slowly, of course :)
 
 ## Setup
     
 	$ npm install -g gulpjs/gulp-cli#4.0 -g
+	$ git clone https://github.com/open-medicine-initiative/kermit.git
+	$ cd kermit
 	$ npm install
 	$ npm test
 
 # Usage
 
-First of all, have a look at the [examples](./src/examples).
+Until the tutorial documentation is finished, have a look at the [examples](./src/examples). 
 
 ## Instantiation
 [Coming soon]
@@ -93,7 +95,7 @@ code and link it in the wiki page for [Extensions](https://github.com/open-medic
 
 
 ##License
-For fun and personal enjoyment of rebellious acts, the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)
+For fun and personal enjoyment of rebellious acts the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)
 (Do What The Fuck You Want To Public License). See the [License.md](License.md)
     
 
