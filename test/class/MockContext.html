@@ -30,11 +30,23 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;util&#47;spec.utils.coffee</td>
+          <td>src&#47;kermit&#47;util&#47;spec.utils.coffee</td>
         </tr>
       </table>
       <h2>Variables Summary</h2>
       <dl class='constants'>
+  <dt id='config-variable'>
+    config
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>{
+  basePath: function() {
+    return &quot;somepath&quot;;
+  }
+}</code></pre>
+    
+  </dd>
   <dt id='crawler-variable'>
     crawler
     =
@@ -79,7 +91,18 @@
       <a href='#execute-dynamic'>
         #
 (void)
-<b>execute</b><span>(state, request)</span>
+<b>execute</b><span>(request)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#schedule-dynamic'>
+        #
+(void)
+<b>schedule</b><span>(request, url)</span>
       </a>
     </span>
     <span class='desc'>
@@ -104,7 +127,16 @@
     <p class='signature' id='execute-dynamic'>
       #
 (void)
-<b>execute</b><span>(state, request)</span>
+<b>execute</b><span>(request)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='schedule-dynamic'>
+      #
+(void)
+<b>schedule</b><span>(request, url)</span>
       <br>
     </p>
     
@@ -122,7 +154,7 @@
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:27 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

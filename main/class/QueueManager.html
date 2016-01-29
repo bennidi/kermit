@@ -30,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;QueueManager.coffee</td>
+          <td>src&#47;kermit&#47;QueueManager.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -57,6 +57,17 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
   </li>
   <li>
     <span class='signature'>
+      <a href='#requestsByStatus-dynamic'>
+        #
+(void)
+<b>requestsByStatus</b><span>(statuses = Status.ALL, result = {})</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#insert-dynamic'>
         #
 (void)
@@ -65,6 +76,39 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
     </span>
     <span class='desc'>
       Insert a request into the queue 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#updateUrl-dynamic'>
+        #
+(void)
+<b>updateUrl</b><span>(url, status, meta)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#schedule-dynamic'>
+        #
+(void)
+<b>schedule</b><span>(url, meta)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#nextUrlBatch-dynamic'>
+        #
+(void)
+<b>nextUrlBatch</b><span>(size = 100)</span>
+      </a>
+    </span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -81,15 +125,59 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
   </li>
   <li>
     <span class='signature'>
-      <a href='#contains-dynamic'>
+      <a href='#hasUrl-dynamic'>
         #
 (Boolean)
-<b>contains</b><span>(url)</span>
+<b>hasUrl</b><span>(url, status)</span>
       </a>
     </span>
     <span class='desc'>
       Check whether the given url has already been processed or is on its way to being processed
 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#isVisited-dynamic'>
+        #
+(void)
+<b>isVisited</b><span>(url)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#isScheduled-dynamic'>
+        #
+(void)
+<b>isScheduled</b><span>(url)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#isProcessing-dynamic'>
+        #
+(void)
+<b>isProcessing</b><span>(url)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#isKnown-dynamic'>
+        #
+(void)
+<b>isKnown</b><span>(url)</span>
+      </a>
+    </span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -107,14 +195,47 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
   </li>
   <li>
     <span class='signature'>
-      <a href='#requestsRemaining-dynamic'>
+      <a href='#requestsWaiting-dynamic'>
         #
 (void)
-<b>requestsRemaining</b><span>()</span>
+<b>requestsWaiting</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#hasRequestsWaiting-dynamic'>
+        #
+(void)
+<b>hasRequestsWaiting</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
       Determines whether there are requests left for Spooling 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#hasRequestsUnfinished-dynamic'>
+        #
+(void)
+<b>hasRequestsUnfinished</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#requestsProcessing-dynamic'>
+        #
+(void)
+<b>requestsProcessing</b><span>(pattern)</span>
+      </a>
+    </span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -148,7 +269,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(store = new lokijs(&#39;crawlrequests.json&#39;))</span>
+<b>constructor</b><span>(file)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -172,6 +293,15 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
 </div>
 <div class='tags'>
 </div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='requestsByStatus-dynamic'>
+      #
+(void)
+<b>requestsByStatus</b><span>(statuses = Status.ALL, result = {})</span>
+      <br>
+    </p>
+    
   </div>
   <div class='method_details'>
     <p class='signature' id='insert-dynamic'>
@@ -200,6 +330,33 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
 </div>
   </div>
   <div class='method_details'>
+    <p class='signature' id='updateUrl-dynamic'>
+      #
+(void)
+<b>updateUrl</b><span>(url, status, meta)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='schedule-dynamic'>
+      #
+(void)
+<b>schedule</b><span>(url, meta)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='nextUrlBatch-dynamic'>
+      #
+(void)
+<b>nextUrlBatch</b><span>(size = 100)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='update-dynamic'>
       #
 (void)
@@ -226,10 +383,10 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='contains-dynamic'>
+    <p class='signature' id='hasUrl-dynamic'>
       #
 (Boolean)
-<b>contains</b><span>(url)</span>
+<b>hasUrl</b><span>(url, status)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -264,6 +421,42 @@ is on its way to being processed</p>
 </div>
   </div>
   <div class='method_details'>
+    <p class='signature' id='isVisited-dynamic'>
+      #
+(void)
+<b>isVisited</b><span>(url)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='isScheduled-dynamic'>
+      #
+(void)
+<b>isScheduled</b><span>(url)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='isProcessing-dynamic'>
+      #
+(void)
+<b>isProcessing</b><span>(url)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='isKnown-dynamic'>
+      #
+(void)
+<b>isKnown</b><span>(url)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='completed-dynamic'>
       #
 (void)
@@ -291,10 +484,19 @@ is on its way to being processed</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='requestsRemaining-dynamic'>
+    <p class='signature' id='requestsWaiting-dynamic'>
       #
 (void)
-<b>requestsRemaining</b><span>()</span>
+<b>requestsWaiting</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='hasRequestsWaiting-dynamic'>
+      #
+(void)
+<b>hasRequestsWaiting</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
@@ -302,6 +504,24 @@ is on its way to being processed</p>
 </div>
 <div class='tags'>
 </div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='hasRequestsUnfinished-dynamic'>
+      #
+(void)
+<b>hasRequestsUnfinished</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='requestsProcessing-dynamic'>
+      #
+(void)
+<b>requestsProcessing</b><span>(pattern)</span>
+      <br>
+    </p>
+    
   </div>
   <div class='method_details'>
     <p class='signature' id='initial-dynamic'>
@@ -356,7 +576,7 @@ is on its way to being processed</p>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

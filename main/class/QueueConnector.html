@@ -30,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;extensions&#47;core.queues.coffee</td>
+          <td>src&#47;kermit&#47;extensions&#47;core.queues.coffee</td>
         </tr>
         <tr>
           <td>Inherits:</td>
@@ -48,19 +48,6 @@ are propagated to the queuing system automatically.</p>
 </div>
 <div class='tags'>
 </div>
-      <h2>Variables Summary</h2>
-      <dl class='constants'>
-  <dt id='defaultOpts-variable'>
-    defaultOpts
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>{
-  dbfile: &quot;crawler.json&quot;
-}</code></pre>
-    
-  </dd>
-</dl>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -73,6 +60,18 @@ are propagated to the queuing system automatically.</p>
     </span>
     <span class='desc'>
       Create a queue system and re-expose in context 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#updateQueue-dynamic'>
+        #
+(void)
+<b>updateQueue</b><span>(request)</span>
+      </a>
+    </span>
+    <span class='bound note title'>Bound</span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -96,25 +95,13 @@ are propagated to the queuing system automatically.</p>
           <a href='../class/Extension.html'>Extension</a>
         </h3>
         <p class='inherited'>
-          <a href='../class/Extension.html#mergeOptions-static'>.mergeOptions</a>
           <a href='../class/Extension.html#initialize-dynamic'>#initialize</a>
-          <a href='../class/Extension.html#destroy-dynamic'>#destroy</a>
+          <a href='../class/Extension.html#merge-dynamic'>#merge</a>
+          <a href='../class/Extension.html#shutdown-dynamic'>#shutdown</a>
           <a href='../class/Extension.html#targets-dynamic'>#targets</a>
           <a href='../class/Extension.html#verify-dynamic'>#verify</a>
         </p>
       </h2>
-      <h2>Constructor Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='constructor-dynamic'>
-      #
-(void)
-<b>constructor</b><span>(opts = {})</span>
-      <br>
-    </p>
-    
-  </div>
-</div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -129,6 +116,16 @@ are propagated to the queuing system automatically.</p>
 </div>
 <div class='tags'>
 </div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='updateQueue-dynamic'>
+      #
+(void)
+<b>updateQueue</b><span>(request)</span>
+      <span class='bound note'>Bound</span>
+      <br>
+    </p>
+    
   </div>
   <div class='method_details'>
     <p class='signature' id='apply-dynamic'>
@@ -147,7 +144,7 @@ state transitions to the queue system</p>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:04 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

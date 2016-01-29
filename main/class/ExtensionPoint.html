@@ -31,7 +31,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;Crawler.coffee</td>
+          <td>src&#47;kermit&#47;Crawler.ExtensionPoints.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -44,9 +44,9 @@
     </strong>
     (An extension point should be subclassed) 
   </div>
-  <p>An extension point provides a mechanism to add functionality to the extension point provider.
-Extension points act as containers for <a href='../class/Extension.html'>Extension</a> - the objects providing the actual extension
-code</p>
+  <p>Provide a mechanism to add functionality to the provider of the extension point (=&gt; <a href='../class/Crawler.html'>Crawler</a>)
+Extension points act as containers for <a href='../class/Extension.html'>Extension</a>s - the primary abstraction for containment
+of processing functionality.</p>
 </div>
 <div class='tags'>
 </div>
@@ -61,6 +61,45 @@ code</p>
         <a href='../class/ERROR.html'>ERROR</a>
         <a href='../class/CANCELED.html'>CANCELED</a>
       </p>
+      <h2>Class Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#addExtensions-static'>
+        .
+(void)
+<b>addExtensions</b><span>(provider, extensions = [])</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Add list of extensions to the given provider 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#extpoint-static'>
+        .
+(void)
+<b>extpoint</b><span>(provider, phase)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#execute-static'>
+        .
+(void)
+<b>execute</b><span>(provider, phase, request)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given request 
+    </span>
+  </li>
+</ul>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -96,18 +135,61 @@ code</p>
 <b>apply</b><span>(request)</span>
       </a>
     </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
       Execute all extensions for the given request 
     </span>
   </li>
 </ul>
+      <h2>Class Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='addExtensions-static'>
+      .
+(void)
+<b>addExtensions</b><span>(provider, extensions = [])</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Add list of extensions to the given provider</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='extpoint-static'>
+      .
+(void)
+<b>extpoint</b><span>(provider, phase)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='execute-static'>
+      .
+(void)
+<b>execute</b><span>(provider, phase, request)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given request</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+</div>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(phase, context)</span>
+<b>constructor</b><span>(context)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -164,6 +246,7 @@ code</p>
       #
 (void)
 <b>apply</b><span>(request)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
     <div class='docstring'>
@@ -188,7 +271,7 @@ code</p>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

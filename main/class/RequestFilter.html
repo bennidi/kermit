@@ -30,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;extensions&#47;core.filter.coffee</td>
+          <td>src&#47;kermit&#47;extensions&#47;core.filter.coffee</td>
         </tr>
         <tr>
           <td>Inherits:</td>
@@ -41,24 +41,24 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Filter newly created {RequestStatus.INITIAL} requests based on a flexible set of filter functions.</p>
+  <p>Filter newly created requests based on a flexible set of filter functions.</p>
 </div>
 <div class='tags'>
 </div>
-      <h2>Variables Summary</h2>
-      <dl class='constants'>
-  <dt id='defaultOpts-variable'>
-    defaultOpts
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>{
-  allow: [Filters.ByUrl(&#47;.*&#47;g)],
-  deny: []
-}</code></pre>
-    
-  </dd>
-</dl>
+      <h2>Class Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#defaultOpts-static'>
+        .
+(void)
+<b>defaultOpts</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+</ul>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -82,13 +82,25 @@
           <a href='../class/Extension.html'>Extension</a>
         </h3>
         <p class='inherited'>
-          <a href='../class/Extension.html#mergeOptions-static'>.mergeOptions</a>
           <a href='../class/Extension.html#initialize-dynamic'>#initialize</a>
-          <a href='../class/Extension.html#destroy-dynamic'>#destroy</a>
+          <a href='../class/Extension.html#merge-dynamic'>#merge</a>
+          <a href='../class/Extension.html#shutdown-dynamic'>#shutdown</a>
           <a href='../class/Extension.html#targets-dynamic'>#targets</a>
           <a href='../class/Extension.html#verify-dynamic'>#verify</a>
         </p>
       </h2>
+      <h2>Class Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='defaultOpts-static'>
+      .
+(void)
+<b>defaultOpts</b><span>()</span>
+      <br>
+    </p>
+    
+  </div>
+</div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -121,7 +133,7 @@ Cancels the request if it is not whitelisted or blacklisted</p>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:04 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

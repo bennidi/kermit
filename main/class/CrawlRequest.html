@@ -30,16 +30,15 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;CrawlRequest.coffee</td>
+          <td>src&#47;kermit&#47;CrawlRequest.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
   <p>The crawl request is the central object of processing. It is not to be confused with an Http(s) request
-(which might be created during the processing of its corresponding crawl request).
+(which might be created in the lifespan of a crawl request).
 Each crawl request has a lifecycle determined by the state diagram as defined by the <a href='../class/Crawler.html'>Crawler</a>
 and its <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.
-A crawl request encapsulates all of the state associated with the processing of a single request.
 During its lifecycle the request is enriched with listeners and properties by the <a href='../class/Extension.html'>Extension</a>s
 that take care of its processing.
 Any information necessary for request processing is usually to the request in order
@@ -65,22 +64,10 @@ changes.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#uri-dynamic'>
-        #
-(URI)
-<b>uri</b><span>(uri)</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Get or set the URI of this request 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
       <a href='#url-dynamic'>
         #
 (String)
-<b>url</b><span>()</span>
+<b>url</b><span>(url)</span>
       </a>
     </span>
     <span class='desc'>
@@ -122,6 +109,55 @@ changes.</p>
     <span class='desc'>
       Change the status and notify subscribed listeners or retrieve the current status value
 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#stamp-dynamic'>
+        #
+(void)
+<b>stamp</b><span>(tag)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Add a new timestamp to the collection of timestamps for the given tag.
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#stamps-dynamic'>
+        #
+(void)
+<b>stamps</b><span>(tag)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Get all timestamps stored for the given tag 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#durationOf-dynamic'>
+        #
+(Number)
+<b>durationOf</b><span>(status)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Compute the duration of a phase 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#timeToComplete-dynamic'>
+        #
+(void)
+<b>timeToComplete</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Calculate processing time from INITIAL to COMPLETE 
     </span>
   </li>
   <li>
@@ -201,7 +237,7 @@ changes.</p>
       <a href='#error-dynamic'>
         #
 (CrawlRequest)
-<b>error</b><span>()</span>
+<b>error</b><span>(error)</span>
       </a>
     </span>
     <span class='desc'>
@@ -282,10 +318,10 @@ changes.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#isCompleted-dynamic'>
+      <a href='#isComplete-dynamic'>
         #
 (Boolean)
-<b>isCompleted</b><span>()</span>
+<b>isComplete</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
@@ -318,39 +354,50 @@ changes.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#enqueue-dynamic'>
+      <a href='#cleanup-dynamic'>
         #
-(CrawlRequest)
-<b>enqueue</b><span>(url)</span>
+(void)
+<b>cleanup</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
-      Create a new request and schedule its processing. 
+      Clean all request data that potentially occupies much memory 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#subrequest-dynamic'>
+      <a href='#pipeline-dynamic'>
         #
-(CrawlRequest)
-<b>subrequest</b><span>(url)</span>
+(void)
+<b>pipeline</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
-      Create a new request The new request is considered a successor of this request
-
+      Access the <a href='../class/Pipeline.html'>Pipeline</a> of this request 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#predecessors-dynamic'>
+      <a href='#parents-dynamic'>
         #
-(BigDecimal)
-<b>predecessors</b><span>()</span>
+(Number)
+<b>parents</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
-      A request might have been created by another request (its predecessor). 
+      A request might have been created by another request (its parent). 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#toString-dynamic'>
+        #
+(void)
+<b>toString</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Generate a human readable representation of this request 
     </span>
   </li>
 </ul>
@@ -360,7 +407,9 @@ changes.</p>
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(url, context, predecessors = 0)</span>
+<b>constructor</b><span>(url, meta = {
+  parents: 0
+}, log)</span>
       <br>
     </p>
     
@@ -418,47 +467,10 @@ changes. The post-change state of the request will be passed to the handler</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='uri-dynamic'>
-      #
-(URI)
-<b>uri</b><span>(uri)</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Get or set the URI of this request</p>
-</div>
-<div class='tags'>
-  <h3>Parameters:</h3>
-  <ul class='param'>
-    <li>
-      <span class='name'>uri</span>
-      <span class='type'>
-        (
-          <tt>String</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>The uri to set or null if current value is to be read </span>
-    </li>
-  </ul>
-  <h3>Returns:</h3>
-  <ul class='return'>
-    <li>
-      <span class='type'></span>
-      (
-        <tt>URI</tt>
-      )
-      &mdash;
-      <span class='desc'>The current value of this requests uri </span>
-    </li>
-  </ul>
-</div>
-  </div>
-  <div class='method_details'>
     <p class='signature' id='url-dynamic'>
       #
 (String)
-<b>url</b><span>()</span>
+<b>url</b><span>(url)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -549,6 +561,70 @@ or retrieve the current status value</p>
       <span class='desc'>The current value of status </span>
     </li>
   </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='stamp-dynamic'>
+      #
+(void)
+<b>stamp</b><span>(tag)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Add a new timestamp to the collection of timestamps
+for the given tag. Timestamps are useful to keep track of processing durations.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='stamps-dynamic'>
+      #
+(void)
+<b>stamps</b><span>(tag)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Get all timestamps stored for the given tag</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='durationOf-dynamic'>
+      #
+(Number)
+<b>durationOf</b><span>(status)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Compute the duration of a phase</p>
+</div>
+<div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>Number</tt>
+      )
+      &mdash;
+      <span class='desc'>The duration of the respective phase in ms or -1 if phase not completed </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='timeToComplete-dynamic'>
+      #
+(void)
+<b>timeToComplete</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Calculate processing time from INITIAL to COMPLETE</p>
+</div>
+<div class='tags'>
 </div>
   </div>
   <div class='method_details'>
@@ -777,7 +853,7 @@ or retrieve the current status value</p>
     <p class='signature' id='error-dynamic'>
       #
 (CrawlRequest)
-<b>error</b><span>()</span>
+<b>error</b><span>(error)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -942,10 +1018,10 @@ or retrieve the current status value</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='isCompleted-dynamic'>
+    <p class='signature' id='isComplete-dynamic'>
       #
 (Boolean)
-<b>isCompleted</b><span>()</span>
+<b>isComplete</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
@@ -1014,110 +1090,73 @@ or retrieve the current status value</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='enqueue-dynamic'>
+    <p class='signature' id='cleanup-dynamic'>
       #
-(CrawlRequest)
-<b>enqueue</b><span>(url)</span>
+(void)
+<b>cleanup</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Create a new request and schedule its processing.
-The new request is considered a successor of this request</p>
+  <p>Clean all request data that potentially occupies much memory</p>
 </div>
 <div class='tags'>
-  <h3>Parameters:</h3>
-  <ul class='param'>
-    <li>
-      <span class='name'>url</span>
-      <span class='type'>
-        (
-          <tt>String</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>The url for the new request </span>
-    </li>
-  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='pipeline-dynamic'>
+      #
+(void)
+<b>pipeline</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Access the <a href='../class/Pipeline.html'>Pipeline</a> of this request</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='parents-dynamic'>
+      #
+(Number)
+<b>parents</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>A request might have been created by another request (its parent).
+That parent might in turn have been created by another request and so on.</p>
+</div>
+<div class='tags'>
   <h3>Returns:</h3>
   <ul class='return'>
     <li>
       <span class='type'></span>
       (
-        <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+        <tt>Number</tt>
       )
       &mdash;
-      <span class='desc'>The newly created request </span>
+      <span class='desc'>The number of parents of this request </span>
     </li>
   </ul>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='subrequest-dynamic'>
+    <p class='signature' id='toString-dynamic'>
       #
-(CrawlRequest)
-<b>subrequest</b><span>(url)</span>
+(void)
+<b>toString</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Create a new request
-The new request is considered a successor of this request</p>
+  <p>Generate a human readable representation of this request</p>
 </div>
 <div class='tags'>
-  <h3>Parameters:</h3>
-  <ul class='param'>
-    <li>
-      <span class='name'>url</span>
-      <span class='type'>
-        (
-          <tt>String</tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>The url for the new request </span>
-    </li>
-  </ul>
-  <h3>Returns:</h3>
-  <ul class='return'>
-    <li>
-      <span class='type'></span>
-      (
-        <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
-      )
-      &mdash;
-      <span class='desc'>The newly created request </span>
-    </li>
-  </ul>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='predecessors-dynamic'>
-      #
-(BigDecimal)
-<b>predecessors</b><span>()</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>A request might have been created by another request (its predecessor).
-That predecessor might in turn have been created by another request and so on.</p>
-</div>
-<div class='tags'>
-  <h3>Returns:</h3>
-  <ul class='return'>
-    <li>
-      <span class='type'></span>
-      (
-        <tt>BigDecimal</tt>
-      )
-      &mdash;
-      <span class='desc'>The number of predecessors of this request </span>
-    </li>
-  </ul>
 </div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

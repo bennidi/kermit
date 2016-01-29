@@ -30,7 +30,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;Crawler.coffee</td>
+          <td>src&#47;kermit&#47;Crawler.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -39,29 +39,63 @@
 </div>
 <div class='tags'>
 </div>
-      <h2>Variables Summary</h2>
-      <dl class='constants'>
-  <dt id='defaultOpts-variable'>
-    defaultOpts
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>{
-  name: &quot;kermit&quot;,
-  basedir: &quot;&#47;tmp&#47;sloth&quot;,
-  extensions: [],
-  options: {
-    Queue: {},
-    Streaming: {},
-    Filter: {},
-    Logging: {
-      Streams: []
-    }
-  }
-}</code></pre>
-    
-  </dd>
-</dl>
+      <h2>Class Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#defaultOpts-static'>
+        .
+(void)
+<b>defaultOpts</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+</ul>
+      <h2>Instance Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#basePath-dynamic'>
+        #
+(String)
+<b>basePath</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+</ul>
+      <h2>Class Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='defaultOpts-static'>
+      .
+(void)
+<b>defaultOpts</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      The default configuration
+    </h4>
+    <pre><code class='coffeescript'>name      : &quot;kermit&quot;
+basedir   : &quot;&#47;tmp&#47;sloth&quot;
+extensions: [] # Clients can add extensions
+options   : # Options of each core extension can be customized here
+  Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+  Streaming: {} # Options for the [Streamer]
+  Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]</code></pre>
+  </div>
+</div>
+<div class='tags'>
+</div>
+  </div>
+</div>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -154,7 +188,41 @@
         )
       </span>
       &mdash;
-      <span class='desc'>Options for <a href='../class/RequestFilter.html'>RequestFilter</a> and <a href='../class/DuplicatesFilter.html'>DuplicatesFilter</a> </span>
+      <span class='desc'>Options for <a href='../class/RequestFilter.html'>RequestFilter</a> and <a href='../class/UrlFilter.html'>UrlFilter</a> </span>
+    </li>
+    <li>
+      <span class='name'>Logging</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>Options for <a href='../class/LogHub.html'>LogHub</a> </span>
+    </li>
+  </ul>
+</div>
+  </div>
+</div>
+      <h2>Instance Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='basePath-dynamic'>
+      #
+(String)
+<b>basePath</b><span>()</span>
+      <br>
+    </p>
+    <div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>String</tt>
+      )
+      &mdash;
+      <span class='desc'>The configured base path of this crawler </span>
     </li>
   </ul>
 </div>
@@ -162,7 +230,7 @@
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

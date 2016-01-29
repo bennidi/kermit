@@ -30,14 +30,15 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;Crawler.coffee</td>
+          <td>src&#47;kermit&#47;Crawler.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
   <p>The Crawler coordinates execution of submitted <a href='../class/CrawlRequest.html'>CrawlRequest</a> by applying all <a href='../class/Extension.html'>Extension</a>s
 matching the request&#39;s current status.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
-is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>The crawler defines an ExtensionPoint for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
+is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>Extensions are added to extension points during initialization. Core extensions are added automatically,
+user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
 Each ExtensionPoint wraps the processing steps carried out when the request status changes
 to a new value. The status transitions implicitly define a request flow illustrated in the
 diagram below.</p><pre><code class="lang-txt"> .-------------.
@@ -51,7 +52,7 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
         |             v
         v             .--------------------.
  .-------------.      |  ERROR | CANCELED  |      .-----------.
- |  SPOOLED    |      |--------------------|      | COMPLETED |
+ |  SPOOLED    |      |--------------------|      | COMPLETE  |
  |-------------|  ---&gt;| - Error            |      |-----------|
  | Waiting for |      | - Duplicate        |      | Done!     |
  | free slot   |      | - Blacklisted etc. |      |           |
@@ -100,25 +101,26 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
   </li>
   <li>
     <span class='signature'>
-      <a href='#basePath-dynamic'>
-        #
-(String)
-<b>basePath</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#enqueue-dynamic'>
+      <a href='#execute-dynamic'>
         #
 (CrawlRequest)
-<b>enqueue</b><span>(url)</span>
+<b>execute</b><span>(url, meta)</span>
       </a>
     </span>
     <span class='desc'>
       Create a new <a href='../class/CrawlRequest.html'>CrawlRequest</a> and start its processing 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#schedule-dynamic'>
+        #
+(void)
+<b>schedule</b><span>(url, meta)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Add the url to the <a href='../class/Scheduler.html'>Scheduler</a> 
     </span>
   </li>
   <li>
@@ -157,13 +159,13 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
         )
       </span>
       &mdash;
-      <span class='desc'>The configuration for this crawler. See <a href='../class/CrawlerConfig.html'>CrawlerConfig</a> </span>
+      <span class='desc'>The configuration for this crawler. </span>
     </li>
   </ul>
   <h3>See also:</h3>
   <ul class='see'>
     <li>
-      <a href='{CrawlerConfig.defaultOpts}'>{CrawlerConfig.defaultOpts}</a>
+      <a href='../class/CrawlerConfig.html'>CrawlerConfig</a>
     </li>
   </ul>
 </div>
@@ -200,31 +202,10 @@ to all contained extensions</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='basePath-dynamic'>
-      #
-(String)
-<b>basePath</b><span>()</span>
-      <br>
-    </p>
-    <div class='tags'>
-  <h3>Returns:</h3>
-  <ul class='return'>
-    <li>
-      <span class='type'></span>
-      (
-        <tt>String</tt>
-      )
-      &mdash;
-      <span class='desc'>The configured base path of this crawler </span>
-    </li>
-  </ul>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='enqueue-dynamic'>
+    <p class='signature' id='execute-dynamic'>
       #
 (CrawlRequest)
-<b>enqueue</b><span>(url)</span>
+<b>execute</b><span>(url, meta)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -245,6 +226,19 @@ to all contained extensions</p>
 </div>
   </div>
   <div class='method_details'>
+    <p class='signature' id='schedule-dynamic'>
+      #
+(void)
+<b>schedule</b><span>(url, meta)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Add the url to the <a href='../class/Scheduler.html'>Scheduler</a></p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
     <p class='signature' id='toString-dynamic'>
       #
 (void)
@@ -260,7 +254,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

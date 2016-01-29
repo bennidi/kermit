@@ -31,7 +31,7 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;scraper&#47;Extension.coffee</td>
+          <td>src&#47;kermit&#47;Extension.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
@@ -74,37 +74,23 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
 </div>
       <h2>Direct Known Subclasses</h2>
       <p class='children'>
-        <a href='../class/SimpleExtension.html'>SimpleExtension</a>
         <a href='../class/ExtensionPointConnector.html'>ExtensionPointConnector</a>
         <a href='../class/Spooler.html'>Spooler</a>
         <a href='../class/Completer.html'>Completer</a>
         <a href='../class/RequestLookup.html'>RequestLookup</a>
         <a href='../class/Cleanup.html'>Cleanup</a>
         <a href='../class/RequestFilter.html'>RequestFilter</a>
-        <a href='../class/DuplicatesFilter.html'>DuplicatesFilter</a>
         <a href='../class/QueueConnector.html'>QueueConnector</a>
         <a href='../class/QueueWorker.html'>QueueWorker</a>
         <a href='../class/RequestStreamer.html'>RequestStreamer</a>
-        <a href='../class/ResourceDiscovery.html'>ResourceDiscovery</a>
+        <a href='../class/HtmlProcessor.html'>HtmlProcessor</a>
+        <a href='../class/Monitoring.html'>Monitoring</a>
         <a href='../class/OfflineStorage.html'>OfflineStorage</a>
         <a href='../class/OfflineServer.html'>OfflineServer</a>
+        <a href='../class/TransitionRecorder.html'>TransitionRecorder</a>
+        <a href='../class/RejectingExtension.html'>RejectingExtension</a>
         <a href='../class/ResponseStreamLogger.html'>ResponseStreamLogger</a>
       </p>
-      <h2>Class Method Summary</h2>
-      <ul class='summary'>
-  <li>
-    <span class='signature'>
-      <a href='#mergeOptions-static'>
-        .
-(void)
-<b>mergeOptions</b><span>(a, b)</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Merge two objects recursively. 
-    </span>
-  </li>
-</ul>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -122,10 +108,22 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#destroy-dynamic'>
+      <a href='#merge-dynamic'>
         #
 (void)
-<b>destroy</b><span>()</span>
+<b>merge</b><span>(a, b)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Merge two objects recursively. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#shutdown-dynamic'>
+        #
+(void)
+<b>shutdown</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
@@ -156,24 +154,18 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
       Run validity checks of this extension. 
     </span>
   </li>
+  <li>
+    <span class='signature'>
+      <a href='#toString-dynamic'>
+        #
+(String)
+<b>toString</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
 </ul>
-      <h2>Class Method Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='mergeOptions-static'>
-      .
-(void)
-<b>mergeOptions</b><span>(a, b)</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Merge two objects recursively.
-This is used to combine user specified options with default options</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-</div>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -246,10 +238,24 @@ during crawler construction.</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='destroy-dynamic'>
+    <p class='signature' id='merge-dynamic'>
       #
 (void)
-<b>destroy</b><span>()</span>
+<b>merge</b><span>(a, b)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Merge two objects recursively.
+This is used to combine user specified options with default options</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='shutdown-dynamic'>
+      #
+(void)
+<b>shutdown</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
@@ -304,10 +310,31 @@ actual request processing starts</p>
   </ul>
 </div>
   </div>
+  <div class='method_details'>
+    <p class='signature' id='toString-dynamic'>
+      #
+(String)
+<b>toString</b><span>()</span>
+      <br>
+    </p>
+    <div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>String</tt>
+      )
+      &mdash;
+      <span class='desc'>Human readable description of this extension </span>
+    </li>
+  </ul>
+</div>
+  </div>
 </div>
     </div>
     <div id='footer'>
-  December 16, 15 14:23:03 by
+  January 29, 16 18:22:28 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
