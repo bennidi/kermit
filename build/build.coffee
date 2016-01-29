@@ -1,7 +1,6 @@
 # The master build file aggregates all separate build files
 
 require './build.testing.coffee'
-require './build.qa.coffee'
 require './build.doc.coffee'
 
 # Dependencies for main build
@@ -12,7 +11,7 @@ gulp = require 'gulp'
 buildIntro = """
 
 #################################################
-      Welcome to the Gulp 4 build system
+      Welcome to Kermit's build system
 #################################################
 
 Run: #{ chalk.magenta 'gulp --tasks'} for a list of available build tasks

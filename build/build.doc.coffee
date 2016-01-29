@@ -4,7 +4,7 @@ ghPages = require 'gulp-gh-pages'
 clean = require 'gulp-clean'
 
 gulp.task  'doc:clean', ->
-	gulp.src [ 'target/coffeedoc', 'target/site' ], read : false
+	gulp.src [ 'target/coffeedoc' ], read : false
 		.pipe  clean force : true
 
 gencodo = () ->

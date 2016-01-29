@@ -14,6 +14,7 @@ module.exports =
     overlay : (a,b) ->
       _.merge a , b , (a,b) -> if _.isArray a then b
     randomId : (length=8) ->
+      # Taken from: https://coffeescript-cookbook.github.io/chapters/strings/generating-a-unique-id
       id = ""
       id += Math.random().toString(36).substr(2) while id.length < length
       id.substr 0, length

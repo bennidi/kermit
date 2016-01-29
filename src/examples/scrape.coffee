@@ -1,4 +1,4 @@
-{Status, Crawler, Extension, ext} = require '../cherry.modules.coffee'
+{Status, Crawler, Extension, ext} = require '../kermit/cherry.modules.coffee'
 {ResourceDiscovery, Statistics, OfflineStorage, OfflineServer} = ext
 
 # opts: rateLimit, request depth

@@ -123,10 +123,10 @@ class Crawler
     @scheduler.shutdown()
     for extension in _(@extensions).reverse().value()
       try
-        @log.info? "Calling shutdown on #{extension.name}"
+        @log.info? "Shutdown of #{extension.name}"
         extension.shutdown?()
       catch error
-        @log.error? "Error shutdown in extension #{extension.name}", {error : error.toString() stack: error.stack()}
+        @log.error? "Shutdown error in #{extension.name}", {error : error.toString() stack: error.stack()}
 
   # Create a new {CrawlRequest} and start its processing
   # @return [CrawlRequest] The created request
@@ -135,6 +135,7 @@ class Crawler
     request = new CrawlRequest url, meta, @log
     ExtensionPoint.execute @, INITIAL.phase, request
 
+  # Add the url to the {Scheduler}
   schedule: (url, meta) ->
     @log.debug? "Scheduling #{url}"
     @scheduler.schedule url, meta
@@ -162,13 +163,12 @@ class CrawlerContext
     @config = config.crawler.config
     @queue = config.queue
 
-  # Create a new request and schedule its processing.
-  # The new request is considered a successor of this request
-  # @param url [String] The url for the new request
-  # @return {CrawlRequest} The newly created request
+  # @see [Crawler#schedule]
   schedule : (url, meta) ->
     @crawler.schedule url, meta
 
+  # Access to execution logic of
+  # @see [Crawler#execute]
   execute : (url, meta) =>
     @crawler.execute url, meta
 
@@ -229,11 +229,23 @@ class CrawlerConfig
   # @return [String] The configured base path of this crawler
   basePath: () -> "#{@basedir}/#{@name}"
 
+###
+  The scheduler acts as a buffer for submitted URLs, which it will feed to the crawler
+  according to the crawlers load.
+  It receives URLs from clients and applies all configured filters (blacklist/whitelist)
+  as well as duplicate prevention.
+  The scheduler is an internal class controlled by the {Crawler} and should not be interacted
+  with directly. It is exposed indirectly through the {CrawlerContext}.
+
+  @private
+###
 class Scheduler
 
+  # TODO: Needs tuning
   threshold = 50
   timePerUrl = 50
 
+  # @nodoc
   constructor: (@crawler, @queue, @config) ->
     filterOpts =
       allow : _.filter @config.options.Filtering.allow, _.isRegExp
@@ -242,16 +254,19 @@ class Scheduler
     delete filterOpts.deny if _.isEmpty filterOpts.deny
     @urlFilter = new UrlFilter filterOpts, @crawler.log
 
+  # @private
   schedule: (url, meta) ->
     return if not @urlFilter.isAllowed(url) or @queue.isKnown url
-    if @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length < threshold
+    if @queue.requestsWaiting().length < threshold
       @crawler.execute url, meta
     else
       @queue.schedule url, meta
 
+  # Called by Crawler at startup
+  # @private
   start: () ->
     pushUrls = () =>
-      waiting = @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length
+      waiting = @queue.requestsWaiting().length
       if waiting < threshold
         urls = @queue.nextUrlBatch(threshold - waiting)
         @crawler.log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
@@ -259,6 +274,8 @@ class Scheduler
     @executor = setInterval pushUrls, threshold * timePerUrl
     @executor.unref()
 
+  # @nodoc
+  # @private
   shutdown: () ->
     clearInterval @executor
 

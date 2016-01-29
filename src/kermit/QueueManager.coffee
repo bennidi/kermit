@@ -31,6 +31,8 @@ class QueueManager
         .applyFind status: status
         .applySimpleSort "stamps.#{status}", true
     addRequestView status for status in Status.ALL
+    @requests_waiting = @requests.addDynamicView 'WAITING'
+      .applyFind status: $in : waiting
     @urls.addDynamicView 'visited'
       .applyFind status: 'visited'
       .applySimpleSort 'tsModified', true
@@ -96,12 +98,15 @@ class QueueManager
     # remove request data from storage
     @requests.remove(request.state)
 
-  # Determines whether there are requests left for Spooling
   requestsWaiting: ->
+    @requests.getDynamicView('WAITING').data()
+
+  # Determines whether there are requests left for Spooling
+  hasRequestsWaiting: ->
     waiting = @requests.find status : $in: waiting
     waiting.length > 0
 
-  requestsUnfinished: ->
+  hasRequestsUnfinished: ->
     unfinished = @requests.find status : $in: unfinished
     unfinished.length > 0
 

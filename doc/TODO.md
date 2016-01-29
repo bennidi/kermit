@@ -1,6 +1,14 @@
+DOCUMENTATION
+ + List major classes in main.readme.md
+ + Write introtext in main.readme.md
+ + Replace RequestStatus.XXX because this generates a broken link
+ + Rename status -> phase (REFACTORING)
+ 
+
 IDEAS / FEATURES
  + Implement rest-api for remote control (request submission, pause/resume, shutdown)
  + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
+ + Add event bus (pub/sub) to context such that extensions can communicate via events
 
 TASKS
  + Reorder classes
