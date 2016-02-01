@@ -1,11 +1,11 @@
 basic = (basedir) ->
   basedir: basedir
-  levels : ['trace', 'info', 'error']
+  levels : ['trace', 'info', 'error', 'warn']
   destinations: [
     {
       appender:
         type : 'console'
-      levels : ['trace', 'error', 'info']
+      levels : ['trace', 'error', 'info', 'warn']
     }
   ]
 
@@ -20,7 +20,7 @@ production = (basedir) ->
 
 detailed = (basedir) ->
   conf = basic basedir
-  additionalLevels = ['debug', 'warn']
+  additionalLevels = ['debug']
   conf.levels.push level for level in additionalLevels
   appender.levels.push level for appender in conf.destinations for level in additionalLevels
   conf.destinations.push

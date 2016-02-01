@@ -61,11 +61,11 @@ diagram below.
 class Crawler
 
   # Create a new crawler with the given options
-  # @param config [Object] The configuration for this crawler.
+  # @param options [Object] The configuration for this crawler.
   # @see CrawlerConfig
-  constructor: (config = {}) ->
+  constructor: (options = {}) ->
     # Use default options where no user defined options are given
-    @config = new CrawlerConfig config
+    @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @log.info? "#{obj.print @config}", tags: ['Config']
     @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.filename}"
@@ -187,16 +187,7 @@ class CrawlerContext
 # The central object for configuring an instance of {Crawler}
 class CrawlerConfig
 
-  ###
-  @example The default configuration
-    name      : "kermit"
-    basedir   : "/tmp/sloth"
-    extensions: [] # Clients can add extensions
-    options   : # Options of each core extension can be customized here
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streaming: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
-  ###
+  # Create an object containing the default configuration options
   @defaultOpts : () ->
     name      : "kermit"
     basedir   : "/tmp/sloth"
@@ -207,14 +198,26 @@ class CrawlerConfig
       Streaming: {} # Options for the {Streamer}
       Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 
-  # @param config [Object] The configuration parameters
-  # @option config [String] name The name of the crawler
-  # @option config [String] basedir The base directory used for all data (logs, offline storage etc.)
-  # @option config [Array<Extension>] extensions An array of user {Extension}s to be installed
-  # @option config.options [Object] Queue Options for {QueueWorker} and {QueueConnector}
-  # @option config.options [Object] Streaming Options for {RequestStreamer}
-  # @option config.options [Object] Filtering Options for {RequestFilter} and {UrlFilter}
-  # @option config.options [Object] Logging Options for {LogHub}
+  ###
+  @param config [Object] The configuration parameters
+  @option config [String] name The name of the crawler
+  @option config [String] basedir The base directory used for all data (logs, offline storage etc.)
+  @option config [Array<Extension>] extensions An array of user {Extension}s to be installed
+  @option config.options [Object] Queueing Options for {QueueWorker} and {QueueConnector}
+  @option config.options [Object] Streaming Options for {RequestStreamer}
+  @option config.options [Object] Filtering Options for {RequestFilter} and {UrlFilter}
+  @option config.options [Object] Logging The configuration for the {LogHub}
+
+  @example The default configuration
+    name      : "kermit"
+    basedir   : "/tmp/sloth"
+    extensions: [] # Clients can add extensions
+    options   : # Options of each core extension can be customized here
+      Logging : LogConfig.detailed
+      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streaming: {} # Options for the [Streamer]
+      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+  ###
   constructor: (config = {}) ->
     config = obj.overlay CrawlerConfig.defaultOpts(), config
     @name = config.name
@@ -230,6 +233,7 @@ class CrawlerConfig
   basePath: () -> "#{@basedir}/#{@name}"
 
 ###
+
   The scheduler acts as a buffer for submitted URLs, which it will feed to the crawler
   according to the crawlers load.
   It receives URLs from clients and applies all configured filters (blacklist/whitelist)
