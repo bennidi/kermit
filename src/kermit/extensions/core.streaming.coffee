@@ -1,4 +1,4 @@
-{Status} = require('../CrawlRequest')
+{Phase} = require('../CrawlRequest')
 {Extension} = require '../Extension'
 httpRequest = require 'request'
 https = require 'https'

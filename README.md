@@ -85,7 +85,6 @@ Until the tutorial documentation is finished, have a look at the [examples](./sr
 The code ships with a lot of documentation and it is highly recommended to have a look at
 the sources as well as the generated [API docs](https://open-medicine-initiative.github.io/kermit).
 
-
 # Contribute
 
 Because the program is currently in alpha the most important contribution is feedback
@@ -97,5 +96,3 @@ code and link it in the wiki page for [Extensions](https://github.com/open-medic
 ##License
 For fun and personal enjoyment of rebellious acts the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)
 (Do What The Fuck You Want To Public License). See the [License.md](License.md)
-    
-

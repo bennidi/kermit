@@ -1,4 +1,4 @@
-{Status} = require('../CrawlRequest')
+{Phase} = require('../CrawlRequest')
 {Extension} = require '../Extension'
 {obj} = require '../util/tools.coffee'
 _ = require 'lodash'
@@ -26,8 +26,8 @@ class Monitoring extends Extension
     @counters =
       requests : {}
       durations: {}
-    @counters.requests[status] = 0 for status in Status.ALL
-    @counters.durations[status] = {total:0,min:100000,max:0,avg:0} for status in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
+    @counters.requests[phase] = 0 for phase in Phase.ALL
+    @counters.durations[phase] = {total:0,min:100000,max:0,avg:0} for phase in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
     @opts = @merge Monitoring.defaultOpts(), opts
 
 
@@ -39,11 +39,11 @@ class Monitoring extends Extension
         start = new Date()
         stats =  _.merge {}, @counters, {current: FETCHING: @queue.requests.getDynamicView('FETCHING').data().length}
         stats.requests.ACCEPTED = stats.requests.INITIAL - stats.requests.CANCELED
-        waiting = @queue.requests.find(status: $in: ['INITIAL', 'SPOOLED']).length
+        waiting = @queue.requests.find(phase: $in: ['INITIAL', 'SPOOLED']).length
         scheduled = @queue.urls.getDynamicView('scheduled').data().length
         duration = new Date() - start
         @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.requests.COMPLETE}", tags : ['Stats', 'Count']
-        durations = ("#{status}(#{times.min},#{times.max},#{times.avg})" for status,times of stats.durations)
+        durations = ("#{phase}(#{times.min},#{times.max},#{times.avg})" for phase,times of stats.durations)
         @log.info? "#{durations}", tags : ['Stats', 'Duration']
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack
@@ -55,20 +55,20 @@ class Monitoring extends Extension
     clearInterval @stats
 
   track: (request) ->
-    count = @counters.requests[request.status()]++
+    count = @counters.requests[request.phase()]++
     if not (request.isInitial() or request.isError() or request.isCanceled())
-      preceedingStatus = Status.predecessor request.status()
-      duration = request.durationOf preceedingStatus
+      preceedingPhase = Phase.predecessor request.phase()
+      duration = request.durationOf preceedingPhase
       if count % 500 is 0 # reset counters to emulate sliding window
-        @counters.durations[preceedingStatus].total = duration
-        @counters.durations[preceedingStatus].min = duration
-        @counters.durations[preceedingStatus].max = duration
-        @counters.durations[preceedingStatus].avg = (@counters.durations[preceedingStatus].avg + duration) / 2
+        @counters.durations[preceedingPhase].total = duration
+        @counters.durations[preceedingPhase].min = duration
+        @counters.durations[preceedingPhase].max = duration
+        @counters.durations[preceedingPhase].avg = (@counters.durations[preceedingPhase].avg + duration) / 2
       else
-        @counters.durations[preceedingStatus].total += duration
-        @counters.durations[preceedingStatus].min = Math.min @counters.durations[preceedingStatus].min, duration
-        @counters.durations[preceedingStatus].max = Math.max @counters.durations[preceedingStatus].max, duration
-        @counters.durations[preceedingStatus].avg = Math.floor(@counters.durations[preceedingStatus].total / @counters.requests[preceedingStatus])
+        @counters.durations[preceedingPhase].total += duration
+        @counters.durations[preceedingPhase].min = Math.min @counters.durations[preceedingPhase].min, duration
+        @counters.durations[preceedingPhase].max = Math.max @counters.durations[preceedingPhase].max, duration
+        @counters.durations[preceedingPhase].avg = Math.floor(@counters.durations[preceedingPhase].total / @counters.requests[preceedingPhase])
 
 module.exports = {
   Monitoring

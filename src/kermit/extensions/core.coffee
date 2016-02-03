@@ -1,8 +1,8 @@
-{Status} = require '../CrawlRequest'
+{Phase} = require '../CrawlRequest'
 {Extension} = require '../Extension'
 {ExtensionPoint} = require '../Crawler'
 
-# Adds listeners to the requests such that each status transition will
+# Adds listeners to the requests such that each phase transition will
 # trigger execution of the respective {ExtensionPoint}
 class ExtensionPointConnector extends Extension
 
@@ -13,33 +13,33 @@ class ExtensionPointConnector extends Extension
   executePhase: (request) =>
     @context.executeRequest request
 
-  # Add listener to the request such that status change will trigger
+  # Add listener to the request such that phase change will trigger
   # execution of corresponding {ExtensionPoint}
   apply: (request) ->
     request.context = @context
-    request.onChange 'status', @executePhase
+    request.onChange 'phase', @executePhase
 
 
-# Handle status transition CREATED -> SPOOLED
+# Handle phase transition CREATED -> SPOOLED
 class Spooler extends Extension
 
   # Create a Spooler
   constructor: ()->
     super INITIAL : @apply
 
-  # Handle status transition CREATED -> SPOOLED
+  # Handle phase transition CREATED -> SPOOLED
   # @return [CrawlRequest] The processed request
   apply: (request) ->
     request.spool()
 
-# Handle status transition FETCHED -> COMPLETE
+# Handle phase transition FETCHED -> COMPLETE
 class Completer extends Extension
 
   # Create a Completer
   constructor: ->
     super FETCHED : @apply
 
-  # Handle status transition FETCHED -> COMPLETE
+  # Handle phase transition FETCHED -> COMPLETE
   # @return [CrawlRequest] The processed request
   apply: (request) ->
     request.complete()

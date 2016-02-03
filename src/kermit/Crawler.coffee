@@ -5,7 +5,7 @@
 {RequestStreamer} = require './extensions/core.streaming.coffee'
 {QueueManager} = require './QueueManager.coffee'
 {RequestFilter, UrlFilter} = require './extensions/core.filter.coffee'
-{Status, CrawlRequest} = require './CrawlRequest'
+{Phase, CrawlRequest} = require './CrawlRequest'
 {LogHub, LogConfig} = require './Logging.coffee'
 {obj} = require './util/tools.coffee'
 
@@ -15,7 +15,7 @@ fse = require 'fs-extra'
 
 ###
 The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s
-matching the request's current status.
+matching the request's current phase.
 
 All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as {Extension}s to {ExtensionPoint}s.
@@ -23,40 +23,20 @@ is implemented as {Extension}s to {ExtensionPoint}s.
 Extensions are added to extension points during initialization. Core extensions are added automatically,
 user extensions are specified in the options of the Crawler's constructor.
 
-The crawler defines an extension point for each distinct value of {RequestStatus}.
-Each ExtensionPoint wraps the processing steps carried out when the request status changes
-to a new value. The status transitions implicitly define a request flow illustrated in the
+The crawler defines an extension point for each distinct value of {RequestPhase}.
+Each ExtensionPoint wraps the processing steps carried out when the request phase changes
+to a new value. The phase transitions implicitly define a request flow illustrated in the
 diagram below.
 
-```txt
-
-  .-------------.
- |   INITIAL   |
- |-------------|
- | Unprocessed |
- |             |
- '-------------'   \
-        |           \
-        |            \
-        |             v
-        v             .--------------------.
- .-------------.      |  ERROR | CANCELED  |      .-----------.
- |  SPOOLED    |      |--------------------|      | COMPLETE  |
- |-------------|  --->| - Error            |      |-----------|
- | Waiting for |      | - Duplicate        |      | Done!     |
- | free slot   |      | - Blacklisted etc. |      |           |
- '-------------'      '--------------------'      '-----------'
-        |             ^         ^          ^            ^
-        |            /          |           \           |
-        |           /           |            \          |
-        v          /                          \         |
- .-------------.         .-------------.          .-----------.
- |    READY    |         |  FETCHING   |          |  FETCHED  |
- |-------------|         |-------------|          |-----------|
- | Ready for   |-------->| Request     |--------->| Content   |
- | fetching    |         | streaming   |          | received  |
- '-------------'         '-------------'          '-----------'
-```
+@example Configuration Parameters
+    name      : "kermit"
+    basedir   : "/tmp/sloth"
+    extensions: [] # Clients can add extensions
+    options   : # Options of each core extension can be customized here
+      Logging : LogConfig.detailed
+      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Streaming: {} # Options for the [Streamer]
+      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 ###
 class Crawler
 
@@ -173,7 +153,7 @@ class CrawlerContext
     @crawler.execute url, meta
 
   executeRequest : (request) ->
-    ExtensionPoint.execute @crawler, request.status(), request
+    ExtensionPoint.execute @crawler, request.phase(), request
 
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts
@@ -184,7 +164,10 @@ class CrawlerContext
       @[property] = value
     child
 
-# The central object for configuring an instance of {Crawler}
+###
+  The central object for configuring an instance of {Crawler}.
+  @private
+###
 class CrawlerConfig
 
   # Create an object containing the default configuration options
@@ -208,15 +191,7 @@ class CrawlerConfig
   @option config.options [Object] Filtering Options for {RequestFilter} and {UrlFilter}
   @option config.options [Object] Logging The configuration for the {LogHub}
 
-  @example The default configuration
-    name      : "kermit"
-    basedir   : "/tmp/sloth"
-    extensions: [] # Clients can add extensions
-    options   : # Options of each core extension can be customized here
-      Logging : LogConfig.detailed
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streaming: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+
   ###
   constructor: (config = {}) ->
     config = obj.overlay CrawlerConfig.defaultOpts(), config

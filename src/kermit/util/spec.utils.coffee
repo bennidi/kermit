@@ -1,12 +1,12 @@
 {Extension} = require '../Extension.coffee'
-{Status} = require '../CrawlRequest.coffee'
+{Phase} = require '../CrawlRequest.coffee'
 {QueueManager} = require '../QueueManager.coffee'
 through = require 'through2'
 stream = require 'stream'
 {Mimetypes} = require('../Pipeline.coffee')
 {LogStream} = require './tools.streams.coffee'
 
-# Record status transitions of all requests and assert the a specified series of
+# Record phase transitions of all requests and assert the a specified series of
 # transitions has been made
 class TransitionRecorder extends Extension
 
@@ -25,10 +25,10 @@ class TransitionRecorder extends Extension
     @requests = 0
 
   # @nodoc
-  apply: (request, status) ->
-    @expected[request.url()] = @expected[request.url()].filter (expected) -> expected isnt status
+  apply: (request, phase) ->
+    @expected[request.url()] = @expected[request.url()].filter (expected) -> expected isnt phase
     @log.info? "Expected for #{request.url()}: #{@expected[request.url()]}"
-    expect(@expected[request.url()]).not.contain(status)
+    expect(@expected[request.url()]).not.contain(phase)
     @requests-- if @expected[request.url()].length is 0
     if @requests is 0
       @done()

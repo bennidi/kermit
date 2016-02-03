@@ -1,10 +1,10 @@
-{Status} = require './CrawlRequest'
+{Phase} = require './CrawlRequest'
 lokijs = require 'lokijs'
 _ = require 'lodash'
 
 ###
  Provides access to a queue like system that allows to access {CrawlRequest}s by their
- status.
+ phase.
 
  Currently implemented on top of beautiful [http://lokijs.org lokijs]
  => Queues are emulated with dynamic views on a single request collection.
@@ -16,35 +16,35 @@ class QueueManager
     @store =  new lokijs @file
     @initialize()
 
-  inProgress = [Status.SPOOLED, Status.FETCHING, Status.FETCHED, Status.COMPLETE]
-  waiting = [Status.INITIAL, Status.SPOOLED]
-  unfinished = [Status.INITIAL, Status.SPOOLED, Status.READY, Status.FETCHING, Status.FETCHED]
+  inProgress = [Phase.SPOOLED, Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE]
+  waiting = [Phase.INITIAL, Phase.SPOOLED]
+  unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
   # Initialize this queue manager
   initialize: () ->
-    # One collection for all requests and dynamic views for various request status
+    # One collection for all requests and dynamic views for various request phase
     @requests = @store.addCollection 'requests'
     @urls = @store.addCollection 'urls'#, unique: ['url']
-    # One view per distinct status value
-    addRequestView = (status) =>
-      @requests.addDynamicView status
-        .applyFind status: status
-        .applySimpleSort "stamps.#{status}", true
-    addRequestView status for status in Status.ALL
+    # One view per distinct phase value
+    addRequestView = (phase) =>
+      @requests.addDynamicView phase
+        .applyFind phase: phase
+        .applySimpleSort "stamps.#{phase}", true
+    addRequestView phase for phase in Phase.ALL
     @requests_waiting = @requests.addDynamicView 'WAITING'
-      .applyFind status: $in : waiting
+      .applyFind phase: $in : waiting
     @urls.addDynamicView 'visited'
-      .applyFind status: 'visited'
+      .applyFind phase: 'visited'
       .applySimpleSort 'tsModified', true
     @urls.addDynamicView 'scheduled'
-      .applyFind status: 'scheduled'
+      .applyFind phase: 'scheduled'
       .applySimpleSort 'tsModified', true
     @urls.addDynamicView 'processing'
-      .applyFind status: 'processing'
+      .applyFind phase: 'processing'
       .applySimpleSort 'tsModified', true
 
-  requestsByStatus : (statuses = Status.ALL, result = {}) ->
-    result[status] = @requests.getDynamicView(status).data().length for status in statuses
+  requestsByPhase : (phasees = Phase.ALL, result = {}) ->
+    result[phase] = @requests.getDynamicView(phase).data().length for phase in phasees
     result
 
   # Insert a request into the queue
@@ -53,10 +53,10 @@ class QueueManager
     @requests.insert(request.state)
     @updateUrl request.url(), 'processing', rId: request.id()
 
-  updateUrl: (url, status, meta) ->
+  updateUrl: (url, phase, meta) ->
     record = @urls.getDynamicView('scheduled').branchResultset().find(url : url).data()
     if not _.isEmpty record
-      record[0].status = status
+      record[0].phase = phase
       record[0].meta ?= {}
       record[0].meta[key] = value for key, value of meta
       record[0].meta['tsModified'] = new Date().getTime()
@@ -65,7 +65,7 @@ class QueueManager
   schedule: (url, meta) ->
     meta ?= {}
     meta.tsModified = new Date().getTime()
-    @urls.insert {url: url, meta:meta, status: "scheduled"}
+    @urls.insert {url: url, meta:meta, phase: "scheduled"}
 
   nextUrlBatch: (size = 100) ->
     @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
@@ -80,8 +80,8 @@ class QueueManager
   # is on its way to being processed
   # @param request {CrawlRequest} The request to be inserted
   # @return {Boolean} True, if the url was found, false otherwise
-  hasUrl: (url, status) ->
-    @urls.find({ url:url, status: status}).length > 0
+  hasUrl: (url, phase) ->
+    @urls.find({ url:url, phase: phase}).length > 0
 
   isVisited: (url) -> @hasUrl url, 'visited'
   isScheduled: (url) -> @hasUrl url, 'scheduled'
@@ -94,7 +94,7 @@ class QueueManager
   # @param request {CrawlRequest} The request to be inserted
   completed: (request) ->
     # remember that url has been processed successfully
-    @updateUrl request.url(), status:'visited'
+    @updateUrl request.url(), phase:'visited'
     # remove request data from storage
     @requests.remove(request.state)
 
@@ -103,29 +103,29 @@ class QueueManager
 
   # Determines whether there are requests left for Spooling
   hasRequestsWaiting: ->
-    waiting = @requests.find status : $in: waiting
+    waiting = @requests.find phase : $in: waiting
     waiting.length > 0
 
   hasRequestsUnfinished: ->
-    unfinished = @requests.find status : $in: unfinished
+    unfinished = @requests.find phase : $in: unfinished
     unfinished.length > 0
 
   requestsProcessing: (pattern) ->
     ready = @requests.find $and: [
-      {status : 'FETCHING'},
+      {phase : 'FETCHING'},
       {url : $regex: pattern}
     ]
     ready.length
 
-  # Get all {CrawlRequest}s with status {RequestStatus.INITIAL}
+  # Get all {CrawlRequest}s with phase {INITIAL}
   initial: () ->
-    @requests.getDynamicView(Status.INITIAL).data()
+    @requests.getDynamicView(Phase.INITIAL).data()
 
-  # Retrieve the next batch of {RequestStatus.SPOOLED} requests
+  # Retrieve the next batch of {SPOOLED} requests
   # @param batchSize {Number} The maximum number of requests to be returned
   # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
   spooled: (batchSize = 20) ->
-    @requests.getDynamicView(Status.SPOOLED).branchResultset().limit(batchSize).data()
+    @requests.getDynamicView(Phase.SPOOLED).branchResultset().limit(batchSize).data()
 
 
 module.exports = {

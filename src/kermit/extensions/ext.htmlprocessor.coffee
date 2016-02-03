@@ -1,4 +1,4 @@
-{Status} = require('../CrawlRequest')
+{Phase} = require('../CrawlRequest')
 {MemoryStream} = require('../util/tools.streams.coffee')
 {obj} = require('../util/tools.coffee')
 {Mimetypes} = require('../Pipeline.coffee')

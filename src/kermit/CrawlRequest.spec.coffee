@@ -1,4 +1,4 @@
-{CrawlRequest, Status} = require('./CrawlRequest')
+{CrawlRequest, Phase} = require('./CrawlRequest')
 {MockContext} = require('./util/spec.utils.coffee')
 Queue = require('./QueueManager')
 
@@ -10,18 +10,18 @@ describe  'Requests',  ->
       expect(CrawlRequest).not.to.be.null()
       TestRequest = new CrawlRequest 'localhost',
       expect(TestRequest).not.to.be.null()
-      expect(TestRequest.status()).to.equal(Status.INITIAL)
+      expect(TestRequest.phase()).to.equal(Phase.INITIAL)
       expect(TestRequest.parents()).to.equal(0)
 
     it '# should notify state listeners when changes occurr', ->
-      receivedStatusChanges = []
+      receivedPhaseChanges = []
       TestRequest = new CrawlRequest 'localhost'
-        .onChange 'status', (request) ->
-          receivedStatusChanges.push request.status()
-      TestRequest.status('STATE1')
-      TestRequest.status('STATE2')
-      TestRequest.status('STATE3')
-      expect(receivedStatusChanges).to.contain 'STATE1','STATE2','STATE3'
+        .onChange 'phase', (request) ->
+          receivedPhaseChanges.push request.phase()
+      TestRequest.phase('STATE1')
+      TestRequest.phase('STATE2')
+      TestRequest.phase('STATE3')
+      expect(receivedPhaseChanges).to.contain 'STATE1','STATE2','STATE3'
 
     it '# should respond to different errors with corresponding state transitions', ->
       request = new CrawlRequest 'localhost'

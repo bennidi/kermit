@@ -1,4 +1,4 @@
-{Status, Crawler, Extension, ext, logconf} = require '../kermit/kermit.modules.coffee'
+{Phase, Crawler, Extension, ext, logconf} = require '../kermit/kermit.modules.coffee'
 {ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer} = ext
 
 # opts: rateLimit, request depth

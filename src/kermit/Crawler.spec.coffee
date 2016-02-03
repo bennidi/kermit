@@ -1,7 +1,7 @@
 {Crawler} = require './Crawler'
 {RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils.coffee'
 {ResponseStreamLogger} = require './util/spec.utils.coffee'
-{Status} = require './CrawlRequest.coffee'
+{Phase} = require './CrawlRequest.coffee'
 {ByPattern} = require './extensions/core.filter.coffee'
 
 describe  'Crawler',  ->
@@ -31,16 +31,16 @@ describe  'Crawler',  ->
       
     it '# extensions are called for specific phases', (done)->
       Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
-      Recorder.validate("http://www.google.com/", [Status.INITIAL,Status.SPOOLED, Status.READY,
-        Status.FETCHING, Status.FETCHED, Status.COMPLETE])
+      Recorder.validate("http://www.google.com/", [Phase.INITIAL,Phase.SPOOLED, Phase.READY,
+        Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE])
       Kermit = new Crawler extensions : [Recorder, new ResponseStreamLogger]
       Kermit.execute("http://www.google.com")
 
 
     it '# extensions can prevent a request from being processed', (done)->
       Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
-      Recorder.validate("http://www.google.com/", [Status.INITIAL])
-      Recorder.validate("http://www.github.com/", [Status.INITIAL])
+      Recorder.validate("http://www.google.com/", [Phase.INITIAL])
+      Recorder.validate("http://www.github.com/", [Phase.INITIAL])
       Kermit = new Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
       Kermit.execute("http://www.google.com")
       Kermit.execute("http://www.github.com")

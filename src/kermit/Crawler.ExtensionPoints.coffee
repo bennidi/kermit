@@ -1,4 +1,4 @@
-{Status} = require './CrawlRequest.coffee'
+{Phase} = require './CrawlRequest.coffee'
 ###
  Provide a mechanism to add functionality to the provider of the extension point (=> {Crawler})
  Extension points act as containers for {Extension}s - the primary abstraction for containment
@@ -23,7 +23,7 @@ class ExtensionPoint
     request
 
   # Construct an extension point
-  # @param phase [String] The phase that corresponds to the respective value of {RequestStatus}
+  # @param phase [String] The phase that corresponds to the respective value of {RequestPhase}
   constructor: (@context) ->
     @phase = @constructor.phase # copy from static property
     throw new Error("Please provide phase and description") if !@constructor.phase
@@ -58,67 +58,67 @@ class ExtensionPoint
     request
 
 ###
-Process requests with status {RequestStatus.INITIAL}.
+Process requests with phase INITIAL.
 This ExtensionPoint runs: Filtering, Connect to {QueueManager Queueing System}, User extensions
 ###
 class INITIAL extends ExtensionPoint
-  @phase = Status.INITIAL
+  @phase = Phase.INITIAL
 
 ###
-Process requests with status "SPOOLED".
+Process requests with phase "SPOOLED".
 Spooled requests are waiting in the {QueueManager} for further processing.
 This ExtensionPoint runs: User extensions, {QueueManager}
 ###
 class SPOOLED extends ExtensionPoint
-  @phase = Status.SPOOLED
+  @phase = Phase.SPOOLED
 
 ###
-Process requests with status "READY".
-Request with status "READY" are eligible to be fetched by the {Streamer}.
+Process requests with phase "READY".
+Request with phase "READY" are eligible to be fetched by the {Streamer}.
 This ExtensionPoint runs: User extensions.
 ###
 class READY extends ExtensionPoint
-  @phase = Status.READY
+  @phase = Phase.READY
 
 ###
-Process requests with status "FETCHING".
+Process requests with phase "FETCHING".
 Http(s) call to URL is made and response is being streamed.
 This ExtensionPoint runs: {RequestStreamer}, User extensions.
 ###
 class FETCHING extends ExtensionPoint
-  @phase = Status.FETCHING
+  @phase = Phase.FETCHING
 
 ###
-Process requests with status "FETCHED".
+Process requests with phase "FETCHED".
 All data has been received and the response is ready for further processing.
 This ExtensionPoint runs: User extensions.
 ###
 class FETCHED extends ExtensionPoint
-  @phase = Status.FETCHED
+  @phase = Phase.FETCHED
 
 ###
-Process requests with status "COMPLETE".
-Response processing is finished. This is the terminal status of a successfully processed
+Process requests with phase "COMPLETE".
+Response processing is finished. This is the terminal phase of a successfully processed
 request. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class COMPLETE extends ExtensionPoint
-  @phase = Status.COMPLETE
+  @phase = Phase.COMPLETE
 
 ###
-Process requests with status "ERROR".
-{ExtensionPoint}s will set this status if an exception occurs during execution of an {Extension}.
+Process requests with phase "ERROR".
+{ExtensionPoint}s will set this phase if an exception occurs during execution of an {Extension}.
 This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class ERROR extends ExtensionPoint
-  @phase = Status.ERROR
+  @phase = Phase.ERROR
 
 ###
-Process requests with status "CANCELED".
+Process requests with phase "CANCELED".
 Any extension might cancel a request. Canceled requests are not elligible for further processing
 and will be cleaned up. This ExtensionPoint runs: User extensions, {Cleanup}
 ###
 class CANCELED extends ExtensionPoint
-  @phase = Status.CANCELED
+  @phase = Phase.CANCELED
 
 
 module.exports = {

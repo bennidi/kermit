@@ -3,35 +3,72 @@ URI = require 'urijs'
 {obj, uri} = require './util/tools.coffee'
 _ = require 'lodash'
 
+###
 
-# At any time, each request has a status value equal to one of the values
-# defined by this class. Any request starts with status {RequestStatus.INITIAL}
-# From status {RequestStatus.INITIAL} it transitions forward while being processed by the {Extension}s
-# that handle requests of that particular status.
-# See {Crawler} for a complete state diagram of the status transitions
-class RequestStatus
-  # @property [String] @see INITIAL
+  A {CrawlRequest} is always in one of the following processing phases.
+  Each request starts with phase {ProcessingPhase.INITIAL}
+  From phase {INITIAL} it transitions forward while being processed by the {Extension}s
+  that handle requests of that particular phase. The following diagram illustrate the possible
+  phase transitions with the ordinary flow {INITIAL} -> {SPOOLED} -> {READY} -> {FETCHING} -> {FETCHED} -> {COMPLETE}.
+  Any request may also end in phases {CANCELED} or {ERROR} depending on the logic of the {Extension}s
+
+```txt
+
+  .-------------.
+ |   INITIAL   |
+ |-------------|
+ | Unprocessed |
+ |             |
+ '-------------'   \
+        |           \
+        |            \
+        |             v
+        v             .--------------------.
+ .-------------.      |  ERROR | CANCELED  |      .-----------.
+ |  SPOOLED    |      |--------------------|      | COMPLETE  |
+ |-------------|  --->| - Error            |      |-----------|
+ | Waiting for |      | - Duplicate        |      | Done!     |
+ | free slot   |      | - Blacklisted etc. |      |           |
+ '-------------'      '--------------------'      '-----------'
+        |             ^         ^          ^            ^
+        |            /          |           \           |
+        |           /           |            \          |
+        v          /                          \         |
+ .-------------.         .-------------.          .-----------.
+ |    READY    |         |  FETCHING   |          |  FETCHED  |
+ |-------------|         |-------------|          |-----------|
+ | Ready for   |-------->| Request     |--------->| Content   |
+ | fetching    |         | streaming   |          | received  |
+ '-------------'         '-------------'          '-----------'
+```
+
+@see Crawler for a list of core extensions applied at each phase
+@see ExtensionPoint and its subclasses for descriptions of
+
+###
+class ProcessingPhase
+  # @property [String] See {INITIAL}
   @INITIAL:'INITIAL'
-  # @property [String] @see SPOOLED
+  # @property [String] See {SPOOLED}
   @SPOOLED:'SPOOLED'
-  # @property [String] @see READY
+  # @property [String] See {READY}
   @READY:'READY'
-  # @property [String] @see FETCHING
+  # @property [String] See {FETCHING}
   @FETCHING:'FETCHING'
-  #@property [String] @see FETCHED
+  #@property [String] See {FETCHED}
   @FETCHED:'FETCHED'
-  # @property [String] @see COMPLETE
+  # @property [String] See {COMPLETE}
   @COMPLETE:'COMPLETE'
-  # @property [String] @see ERROR
+  # @property [String] See {ERROR}
   @ERROR:'ERROR'
-  # @property [String] @see CANCELED
+  # @property [String] See {CANCELED}
   @CANCELED:'CANCELED'
-  # @property [Array<String>] Collection of all defined status'
+  # @property [Array<String>] Collection of all defined phase
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
-  # Retrieve the expected succeeding status for the given status
-  @follower : (status) ->
-    switch status
+  # Retrieve the expected succeeding phase for the given phase
+  @follower : (phase) ->
+    switch phase
       when 'INITIAL' then 'SPOOLED'
       when 'SPOOLED' then 'READY'
       when 'READY' then 'FETCHING'
@@ -40,11 +77,11 @@ class RequestStatus
       when 'COMPLETE' then 'COMPLETE'
       when 'CANCELED' then 'CANCELED'
       when 'ERROR' then 'ERROR'
-      else throw new Error "Unknown status #{status} has no follower"
+      else throw new Error "Unknown phase #{phase} has no follower"
 
-  # Retrieve the preceeding status for the given status
-  @predecessor : (status) ->
-    switch status
+  # Retrieve the preceeding phase for the given phase
+  @predecessor : (phase) ->
+    switch phase
       when 'INITIAL' then 'INITIAL'
       when 'SPOOLED' then 'INITIAL'
       when 'READY' then 'SPOOLED'
@@ -53,23 +90,29 @@ class RequestStatus
       when 'COMPLETE' then 'FETCHED'
       when 'CANCELED' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHED']
       when 'ERROR' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
-      else throw new Error "Unknown status #{status} has no predecessor"
+      else throw new Error "Unknown phase #{phase} has no predecessor"
 
-# The crawl request is the central object of processing. It is not to be confused with an Http(s) request
-# (which might be created in the lifespan of a crawl request).
-# Each crawl request has a lifecycle determined by the state diagram as defined by the {Crawler}
-# and its {ExtensionPoint}s.
-# During its lifecycle the request is enriched with listeners and properties by the {Extension}s
-# that take care of its processing.
-# Any information necessary for request processing is usually to the request in order
-# to centralize state. Any property added to its internal state {CrawlRequest#state} will be persistent
-# after the next status transition.
+###
+  The crawl request is the central object in the process of fetching a single URL. The {Crawler} will
+  funnel each request through the different processing phases - applying all {Extension}s registered
+  for the particular phase.
+  During its lifecycle the request is enriched with listeners and properties by the {Extension}s
+  that take care of its processing.
+  Any information necessary for request processing is usually to the request in order
+  to centralize state. Any property added to its internal state {CrawlRequest#state} will be persistent
+  after the next phase transition.
+
+  > NOTE: It is not to be confused with an Http(s) request (which might be created in the lifespan of a crawl request).
+###
 class CrawlRequest
 
+  # @nodoc
+  # @private
   notify = (request, property) ->
     listener(request) for listener in listeners(request, property)
     request
-
+  # @nodoc
+  # @private
   listeners = (request, property) ->
     if !request.changeListeners[property]?
       request.changeListeners[property] = []
@@ -82,14 +125,15 @@ class CrawlRequest
       rest = _.map _.tail(stamps), (value, index) -> (value - stamps[index]) + "ms"
       "#{first}#{rest}"
 
-
+  # Create a new request for the given url and
+  # with the given metadata attached
   constructor: (url, meta = {parents : 0} , @log) ->
     @changeListeners = {}
     @state =
       id : obj.randomId(20)
       stamps: {} # collect timestamps for tracking of meaningful state changes
       meta : meta
-    @status RequestStatus.INITIAL
+    @phase ProcessingPhase.INITIAL
     @url url
 
   # Register a listener {Function} to be invoked whenever the
@@ -113,17 +157,17 @@ class CrawlRequest
   useSSL: () ->
     @url().startsWith 'https'
 
-  # Change the status and notify subscribed listeners
-  # or retrieve the current status value
-  # @param status [String] The status value to set
-  # @return [String] The current value of status
+  # Change the phase and notify subscribed listeners
+  # or retrieve the current phase value
+  # @param phase [String] The phase value to set
+  # @return [String] The current value of phase
   # @private
-  status: (status) ->
-    if status?
-      @stamp status
-      @state.status = status
-      notify this, "status"
-    else @state.status
+  phase: (phase) ->
+    if phase?
+      @stamp phase
+      @state.phase = phase
+      notify this, "phase"
+    else @state.phase
 
   # Add a new timestamp to the collection of timestamps
   # for the given tag. Timestamps are useful to keep track of processing durations.
@@ -136,10 +180,10 @@ class CrawlRequest
 
   # Compute the duration of a phase
   # @return [Number] The duration of the respective phase in ms or -1 if phase not completed
-  durationOf : (status) ->
-    follower = RequestStatus.follower status
+  durationOf : (phase) ->
+    follower = ProcessingPhase.follower phase
     try
-      @stamps(follower)[0] - @stamps(status)[0]
+      @stamps(follower)[0] - @stamps(phase)[0]
     catch error
       # This error occurs if a stamp did not exist
       -1
@@ -153,87 +197,87 @@ class CrawlRequest
       # This error occurs if a stamp did not exist
       -1
 
-  # Register a change listener for a specific value of the status property
-  # @param status [String] The status value that will trigger invocation of the listener
-  # @param listener [Function] The listener to be invoked if status changes
+  # Register a change listener for a specific value of the phase property
+  # @param phase [String] The phase value that will trigger invocation of the listener
+  # @param listener [Function] The listener to be invoked if phase changes
   # @return [CrawlRequest] This request
-  onStatus: (status, listener) ->
-    @onChange 'status', (request) ->
-      listener(request) if request.status() is status
+  onPhase: (phase, listener) ->
+    @onChange 'phase', (request) ->
+      listener(request) if request.phase() is phase
 
-  # Change the requests status to SPOOLED
+  # Change the requests phase to SPOOLED
   # @return {CrawlRequest} This request
-  # @throw Error if request does have other status than INITIAL
+  # @throw Error if request does have other phase than INITIAL
   spool: ->
-    if @isInitial() then @status(RequestStatus.SPOOLED);this
-    else throw new Error "Transition from #{@state.status} to SPOOLED not allowed"
+    if @isInitial() then @phase(ProcessingPhase.SPOOLED);this
+    else throw new Error "Transition from #{@state.phase} to SPOOLED not allowed"
 
-  # Change the requests status to READY
+  # Change the requests phase to READY
   # @return {CrawlRequest} This request
-  # @throw Error if request does have other status than SPOOLED
+  # @throw Error if request does have other phase than SPOOLED
   ready: ->
-    if @isSPOOLED() then @status(RequestStatus.READY);this
-    else throw new Error "Transition from #{@state.status} to READY not allowed"
+    if @isSPOOLED() then @phase(ProcessingPhase.READY);this
+    else throw new Error "Transition from #{@state.phase} to READY not allowed"
 
-  # Change the requests status to FETCHING
+  # Change the requests phase to FETCHING
   # @return {CrawlRequest} This request
-  # @throw Error if request does have other status than READY
+  # @throw Error if request does have other phase than READY
   fetching: () ->
-    if @isReady() then @status(RequestStatus.FETCHING);this
-    else throw new Error "Transition from #{@state.status} to FETCHING not allowed"
+    if @isReady() then @phase(ProcessingPhase.FETCHING);this
+    else throw new Error "Transition from #{@state.phase} to FETCHING not allowed"
 
 
-  # Change the requests status to FETCHED
+  # Change the requests phase to FETCHED
   # @return {CrawlRequest} This request
-  # @throw Error if request request does have other status than FETCHING
+  # @throw Error if request request does have other phase than FETCHING
   fetched: () ->
-    if @isFetching() then @status(RequestStatus.FETCHED);this
-    else throw new Error "Transition from #{@state.status} to FETCHED not allowed"
+    if @isFetching() then @phase(ProcessingPhase.FETCHED);this
+    else throw new Error "Transition from #{@state.phase} to FETCHED not allowed"
 
-  # Change the requests status to COMPLETE
+  # Change the requests phase to COMPLETE
   # @return {CrawlRequest} This request
-  # @throw Error if request does have other status than FETCHED
+  # @throw Error if request does have other phase than FETCHED
   complete: ->
-    if @isFetched() then @status(RequestStatus.COMPLETE);this
-    else throw new Error "Transition from #{@state.status} to COMPLETE not allowed"
+    if @isFetched() then @phase(ProcessingPhase.COMPLETE);this
+    else throw new Error "Transition from #{@state.phase} to COMPLETE not allowed"
 
-  # Change the requests status to ERROR
+  # Change the requests phase to ERROR
   # @return {CrawlRequest} This request
   error: (error) ->
-    @state.status = RequestStatus.ERROR
+    @state.phase = ProcessingPhase.ERROR
     @errors ?= [];@errors.push error
-    notify this, "status"
+    notify this, "phase"
 
-  # Change the requests status to CANCELED
+  # Change the requests phase to CANCELED
   # @return {CrawlRequest} This request
   cancel: ->
-    @state.status = RequestStatus.CANCELED
-    notify this, "status"
+    @state.phase = ProcessingPhase.CANCELED
+    notify this, "phase"
 
-  # Check whether this request has status INITIAL
-  # @return {Boolean} True if status is INITIAL, false otherwise
-  isInitial: () -> @state.status is RequestStatus.INITIAL
-  # Check whether this request has status SPOOLED
-  # @return {Boolean} True if status is SPOOLED, false otherwise
-  isSPOOLED: () -> @state.status is RequestStatus.SPOOLED
-  # Check whether this request has status READY
-  # @return {Boolean} True if status is READY, false otherwise
-  isReady: () -> @state.status is RequestStatus.READY
-  # Check whether this request has status FETCHING
-  # @return {Boolean} True if status is FETCHING, false otherwise
-  isFetching: () -> @state.status is RequestStatus.FETCHING
-  # Check whether this request has status FETCHED
-  # @return {Boolean} True if status is FETCHED, false otherwise
-  isFetched: () -> @state.status is RequestStatus.FETCHED
-  # Check whether this request has status COMPLETE
-  # @return {Boolean} True if status is COMPLETE, false otherwise
-  isComplete: () -> @state.status is RequestStatus.COMPLETE
-  # Check whether this request has status CANCELED
-  # @return {Boolean} True if status is CANCELED, false otherwise
-  isCanceled: () -> @state.status is RequestStatus.CANCELED
-  # Check whether this request has status ERROR
-  # @return {Boolean} True if status is ERROR, false otherwise
-  isError: () -> @state.status is RequestStatus.ERROR
+  # Check whether this request has phase INITIAL
+  # @return {Boolean} True if phase is INITIAL, false otherwise
+  isInitial: () -> @state.phase is ProcessingPhase.INITIAL
+  # Check whether this request has phase SPOOLED
+  # @return {Boolean} True if phase is SPOOLED, false otherwise
+  isSPOOLED: () -> @state.phase is ProcessingPhase.SPOOLED
+  # Check whether this request has phase READY
+  # @return {Boolean} True if phase is READY, false otherwise
+  isReady: () -> @state.phase is ProcessingPhase.READY
+  # Check whether this request has phase FETCHING
+  # @return {Boolean} True if phase is FETCHING, false otherwise
+  isFetching: () -> @state.phase is ProcessingPhase.FETCHING
+  # Check whether this request has phase FETCHED
+  # @return {Boolean} True if phase is FETCHED, false otherwise
+  isFetched: () -> @state.phase is ProcessingPhase.FETCHED
+  # Check whether this request has phase COMPLETE
+  # @return {Boolean} True if phase is COMPLETE, false otherwise
+  isComplete: () -> @state.phase is ProcessingPhase.COMPLETE
+  # Check whether this request has phase CANCELED
+  # @return {Boolean} True if phase is CANCELED, false otherwise
+  isCanceled: () -> @state.phase is ProcessingPhase.CANCELED
+  # Check whether this request has phase ERROR
+  # @return {Boolean} True if phase is ERROR, false otherwise
+  isError: () -> @state.phase is ProcessingPhase.ERROR
 
   # Clean all request data that potentially occupies much memory
   cleanup: () ->
@@ -251,14 +295,14 @@ class CrawlRequest
 
   # Generate a human readable representation of this request
   toString: () ->
-    pretty = switch @state.status
+    pretty = switch @state.phase
         when 'INITIAL','SPOOLED','READY'
-          """#{@state.status} => GET #{@state.url} :#{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """#{@state.phase} => GET #{@state.url} :#{obj.print CrawlRequest.stampsToString @state.stamps}"""
         when 'COMPLETE'
-          """COMPLETE => GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
-        else "Unknown status"
+          """COMPLETE => GET #{@state.url} (phase=#{@_pipeline?.phase} duration=#{@timeToComplete()}ms)"""
+        else "Unknown phase"
 
 module.exports = {
   CrawlRequest
-  Status : RequestStatus
+  Phase : ProcessingPhase
 }

@@ -12,13 +12,13 @@ It aims to encourage the development of relatively small, testable and reusable
 request processing components.
 
 Each extension can expose handlers for request processing by mapping them to
-one of the defined values of {RequestStatus}.
+one of the defined values of {RequestPhase}.
 Note:
  -  The mapping implicitly associates each extension with the {ExtensionPoint}
-   corresponding to one of {RequestStatus}.ALL
- -  Each extension may expose only one handler per status value
+   corresponding to one of {RequestPhase}.ALL
+ -  Each extension may expose only one handler per phase value
 
-See {Crawler} for the state diagram modeling the values and transitions of {RequestStatus}
+See {Crawler} for the state diagram modeling the values and transitions of {RequestPhase}
 and respective {ExtensionPoint}s.
 
 @abstract
@@ -31,8 +31,8 @@ class Extension
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
-  # @param handlers [Object] A mapping of {RequestStatus} values
-  # to handlers that will be invoked for requests with that status
+  # @param handlers [Object] A mapping of {RequestPhase} values
+  # to handlers that will be invoked for requests with that phase
   constructor: (@handlers = {}) ->
     @name = @constructor.name
 
@@ -57,7 +57,7 @@ class Extension
   # @abstract
   shutdown : () ->
 
-  # Get all {RequestStatus} values handled by this extension
+  # Get all {RequestPhase} values handled by this extension
   targets: () ->
     (phase for phase of @handlers)
 

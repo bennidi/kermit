@@ -32,9 +32,9 @@ class Pipeline
     @downstreams[id] = stream
 
   import: (incomingMessage)   ->
-    @status = incomingMessage.statusCode
+    @phase = incomingMessage.phaseCode
     @headers = incomingMessage.headers
-    @log.debug? "Received #{@status} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}", tags:['Pipeline']
+    @log.debug? "Received #{@phase} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}", tags:['Pipeline']
     # Connect all matching downstreams
     streams = []
     for id, matcher of @matchers

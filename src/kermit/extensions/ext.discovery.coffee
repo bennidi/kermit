@@ -1,4 +1,4 @@
-{Status} = require('../CrawlRequest')
+{Phase} = require('../CrawlRequest')
 {HtmlProcessor} = require './ext.htmlprocessor.coffee'
 URI = require 'urijs'
 _ = require 'lodash'

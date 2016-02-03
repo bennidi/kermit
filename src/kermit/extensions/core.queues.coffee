@@ -1,4 +1,4 @@
-{Status} = require '../CrawlRequest'
+{Phase} = require '../CrawlRequest'
 storage = require '../QueueManager'
 {Extension} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
@@ -28,7 +28,7 @@ class QueueConnector extends Extension
   # state transitions to the queue system
   apply: (request) ->
     @queue.insert request
-    request.onChange 'status', @updateQueue
+    request.onChange 'phase', @updateQueue
 
 # Process requests that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
@@ -63,7 +63,7 @@ class QueueWorker extends Extension
     @proceed @requests[request.id] for request in @localBatch()
 
   localBatch: () ->
-    currentBatch = _.filter @batch, (request) -> request.status is 'SPOOLED'
+    currentBatch = _.filter @batch, (request) -> request.phase is 'SPOOLED'
     if not _.isEmpty currentBatch then currentBatch else @batch = @queue.spooled(100)
 
   proceed : (request) ->

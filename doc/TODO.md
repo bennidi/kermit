@@ -2,7 +2,8 @@ DOCUMENTATION
  + List major classes in main.readme.md
  + Write introtext in main.readme.md
  + Replace RequestStatus.XXX because this generates a broken link
- + Rename status -> phase (REFACTORING)
+ + List all core extensions in Crawler
+ + Carefully document all options. Rewrite all examples as tests and refer to them from main README
  
 
 IDEAS / FEATURES

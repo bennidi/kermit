@@ -1,4 +1,4 @@
-{Status} = require '../CrawlRequest'
+{Phase} = require '../CrawlRequest'
 {Extension} = require '../Extension'
 {byExtension} = require '../util/mimetypes.coffee'
 {Mimetypes} = require('../Pipeline.coffee')
