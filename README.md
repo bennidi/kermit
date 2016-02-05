@@ -3,13 +3,15 @@
        width="80" height="15" alt="WTFPL" /></a>
 
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
-> automated data collection
+> automated data collection. It was built to lower the barrier of web-scraping complexity such that
+> even more complex data collection remains a fairly simple task. Kermit especially loves to free data
+> from the claws of corporate ownership. If kermit wasn't a sloth, he would be a pirate...yargh!
 
 Kermit in a nutshell
 ========================
 
   * Written entirely in CoffeeScript. Designed for extensibility and ease of use while maintaining resource efficiency
-  as much as possible (yes, it streams! and its async where possible).
+  as much as possible (yes, it streams! and its async where possible). It takes care of request scheduling, rate limiting, handling of redirects etc.
   * Built around solid js libraries
     * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
     for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
@@ -54,31 +56,8 @@ user feedback.
 
 # Usage
 
-Until the tutorial documentation is finished, have a look at the [examples](./src/examples). 
-
-## Instantiation
-[Coming soon]
-
-### Options
-[Coming soon]
-
-### Log configuration
-[Coming soon]
-
-## Scheduling of URLs
-[Coming soon]
-
-## Monitoring
-[Coming soon]
-
-## Scenario: Offline Crawling
-[Coming soon]
-
-## Scenario: Collecting data from parsed html
-[Coming soon]
-
-## Custom Extensions
-[Coming soon]
+Read the [tutorial](./doc/main.intro.md) in folder [doc](./doc) . The tutorial is work in progress though
+and you should always refer to the [examples](./src/examples). 
 
 # Documentation
 
@@ -87,11 +66,24 @@ the sources as well as the generated [API docs](https://open-medicine-initiative
 
 # Contribute
 
-Because the program is currently in alpha the most important contribution is feedback
+Because Kermit is currently in beta testing the most important contribution is feedback
 on functionality/bugs. Please provide log excerpts when submitting bug reports.
 Another welcome contribution are ideas for custom extensions. Create a gist of your extension
 code and link it in the wiki page for [Extensions](https://github.com/open-medicine-initiative/kermit/wiki/Extensions)
+Spread the word and invite more developers to use Kermit for freeing data.
 
+# Background info
+Kermit is not only an efficient web scraper, no, Kermit is also ... a sloth - and one remarkable sloth indeed! 
+In fact, before Kermit it was not known that sloths actually do have a passion for working with data. 
+They appear as desinterested and unexciting about any form of technology as one could possibly imagine. 
+Only more careful studies have revealed that many of them have a second life as programmers, data analysts,
+number crunchers or, as Kermit, data collectors.
+
+Starting with this incredible discovery, more investigations have shown that there is a whole sub-culture
+of technology enthusiasm among many other mammals to. But only few of them do their data collection work as
+carefully and patiently as Kermit. This is why you should seriously think about hiring Kermit for your
+data collection jobs before contracting any other of those untalented human mammals that put expensive price
+tags on their (mostly imaginary) CV's.
 
 ##License
 For fun and personal enjoyment of rebellious acts the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)

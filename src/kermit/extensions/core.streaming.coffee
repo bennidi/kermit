@@ -7,12 +7,16 @@ socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
 {LogStream} = require '../util/tools.coffee'
 
+###
 
-# Execute the request and retrieve the result for further processing.
-# This extension actually issues http(s) requests and receives the resulting data.
-# @see https://www.paypal-engineering.com/2014/04/01/outbound-ssl-performance-in-node-js/ Paypal Engineering on SSL performance
+  Execute the request and retrieve the result for further processing.
+  This extension actually issues http(s) requests and receives the resulting data.
+
+  @see https://www.paypal-engineering.com/2014/04/01/outbound-ssl-performance-in-node-js/ Paypal Engineering on SSL performance
+###
 class RequestStreamer extends Extension
 
+  # Create a new options object with the default configuration
   @defaultOpts = () ->
     agents : {}
     Tor :
@@ -34,7 +38,7 @@ class RequestStreamer extends Extension
     else
       agentOptions =
         maxSockets: 20
-        ciphers: "AES128-SHA"
+        ciphers: "AES128-SHA" # Disallow expensive Diffie-Hellman key exchange algorithm because it tends to eat up lots of memory
       @opts.agents.http = new http.Agent agentOptions
       @opts.agents.https = new https.Agent agentOptions
 

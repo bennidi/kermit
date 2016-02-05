@@ -1,8 +1,13 @@
 htmlToJson = require 'html-to-json'
 
-# Wrapper around html-to-json library. Allows to compose extractors and run them against
-# any piece of valid html code.
-# @see https://www.npmjs.com/package/html-to-json
+###
+  Wrapper around html-to-json library. Allows to compose extractors and run them against
+  any piece of valid html code.
+
+
+
+  @see https://www.npmjs.com/package/html-to-json html-to-json in npm registry
+###
 class HtmlExtractor
 
   # Create a new HtmlExtractor

@@ -14,7 +14,7 @@ class LogEntry
     @tags = @data?.tags
     delete @data.tags
 
-# Format log messages
+# Format log messages (from string or entry)
 # @abstract
 class Formatter
 
@@ -24,27 +24,41 @@ class Formatter
   #@abstract
   fromEntry: (lvl, entry) ->
 
+###
+  The formatter used by default if no other {Formatter} is specified for a destination.
+###
 class DefaultFormatter extends Formatter
 
   extractTags = (tags) ->
     if _.isEmpty tags then "" else " [#{tags}]"
 
+  # Format a string
   fromString : (lvl, msg) ->
     time = dateFormat new Date(), "d/mm HH:MM:ss.l"
     entry = "[#{time}] #{lvl.toUpperCase()} - #{msg}\n"
 
+  # Format a log entry
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
     data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 3})"
     time = dateFormat new Date(), "d/mm HH:MM:ss.l"
     entry = "[#{time}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
 
+###
+  Public registry for different log formats
+###
 class LogFormats
 
   @llog : () -> new DefaultFormatter
 
+###
+  Log appenders receive formatted log messages and take care of outputting them on their
+  sink. The sink might by the processes stdout, a file, a database or any other type of destination.
+  LogAppender is very similar to log4js' Appender or bunyan's Transport
+###
 class LogAppender
 
+  # @nodoc
   constructor: (opts) ->
     @sink = opts?.sink
 
@@ -52,20 +66,30 @@ class LogAppender
   # @abstract
   initialize: () ->
 
+# Write to the local file system (in append mode)
 class FileAppender extends LogAppender
 
   constructor: (opts) -> super sink : fs.createWriteStream(opts.filename, flags : 'a')
 
+# Write to the process standard output
 class ConsoleAppender extends LogAppender
 
+  # @nodoc
   constructor: () -> super sink : process.stdout
 
+###
+  Apply log formatters to log messages before they are passed on to the {LogAppender}s
+  @private
+###
 class LogFormatHandler extends Transform
 
+  # @nodoc
   constructor : (@formatter, @level) ->
     super objectMode : true
     @setMaxListeners 100
 
+  # @private
+  # @nodoc
   _transform: (chunk, enc, next) ->
     msg = switch
       when chunk.constructor is String then @formatter.fromString @level, chunk
@@ -96,6 +120,13 @@ class Appenders
   create : (def) ->
     new @registry[def.type] def
 
+###
+  Central class for log message processing. The hub receives log messages for specific log levels,
+  applies formatting (via {LogFormatHandler}) and streams into the connected {LogAppender}s.
+
+  All log message processing is based on streams. Formatters are transform streams, appenders are writable
+  streams.
+###
 class LogHub
 
   # Get a default configuration of this log
@@ -132,7 +163,7 @@ class LogHub
       when destination.appender.type instanceof Function then new destination.appender.type destination.appender
       else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
-      if not @dispatcher[level] then console.log "Log level #{level} not defined"
+      if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but requested by destination #{obj.print destination}"
       formatter = destination.formatter or LogFormats.llog()
       @dispatcher[level]
         .pipe new LogFormatHandler formatter, level
@@ -154,15 +185,23 @@ class LogHub
   Wrapper around {LogHub} that provides a method for each available log level.
   This allows for convenient use of the existential operator to guard log statements from
   ever being executed.
+
   Note: Using the existential operator does not only prevent the log message from being sent
   to the appenders but actually prevents the message from being constructed! This allows to make
   heavy use of debug logging without introducing any GC overhead into production code.
+
+  @example Lazy logging to log level 'debug'
+    logger = hub.logger()
+    logger.debug? "This String is only created if log level debug exists", {meta: "The same for any metadata"}
+
 ###
 class Logger
 
   # Wrap calls to the underlying {LogHub}
   logHandler = (lvl, hub) -> (msg, data) -> hub.log lvl, msg, data
 
+  # @private
+  # @nodoc
   constructor: (levels = [], @hub) ->
     for level in levels
       @[level] = logHandler level, @hub

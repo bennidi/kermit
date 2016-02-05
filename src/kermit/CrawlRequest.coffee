@@ -299,7 +299,7 @@ class CrawlRequest
         when 'INITIAL','SPOOLED','READY'
           """#{@state.phase} => GET #{@state.url} :#{obj.print CrawlRequest.stampsToString @state.stamps}"""
         when 'COMPLETE'
-          """COMPLETE => GET #{@state.url} (phase=#{@_pipeline?.phase} duration=#{@timeToComplete()}ms)"""
+          """COMPLETE => GET #{@state.url} (phase=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
         else "Unknown phase"
 
 module.exports = {

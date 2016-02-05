@@ -1,3 +1,32 @@
+# Design overview
+
+
+
+## Instantiation
+[Coming soon]
+
+### Options
+[Coming soon]
+
+### Log configuration
+[Coming soon]
+
+## Scheduling of URLs
+[Coming soon]
+
+## Monitoring
+[Coming soon]
+
+## Scenario: Offline Crawling
+[Coming soon]
+
+## Scenario: Collecting data from parsed html
+[Coming soon]
+
+## Custom Extensions
+[Coming soon]
+
+
 ```txt
  .-------------.
  |   INITIAL   |

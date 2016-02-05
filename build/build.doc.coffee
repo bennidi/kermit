@@ -11,9 +11,9 @@ gencodo = () ->
 	gulp.src ['src/**/*.coffee', '!src/**/*.spec*.coffee'], read: false
 		.pipe codo
 			dir: 'target/coffeedoc/main'
-			name: 'Kermit the Sloth (main)'
-			title: 'Kermit the Sloth (main)'
-			readme: 'doc/codo.main.readme.md'
+			name: 'Kermit(main)'
+			title: 'Kermit(main)'
+			readme: 'doc/main.intro.md'
 			verbose : true
 			extra: ['LICENSE.md']
 gencodo.description = 'Generate main coffee documentation'
@@ -22,9 +22,9 @@ gencodo_test = () ->
 	gulp.src ['./src/**/*spec*.coffee'], read: false
 	.pipe codo
 		dir: 'target/coffeedoc/test'
-		name: 'Kermit the Sloth (test)'
-		title: 'Kermit the Sloth (test)'
-		readme: 'doc/codo.test.readme.md'
+		name: 'Kermit(test)'
+		title: 'Kermit(test)'
+		readme: 'doc/test.intro.md'
 		extra: ['LICENSE.md']
 gencodo_test.description = 'Generate documentation of test classes'
 
