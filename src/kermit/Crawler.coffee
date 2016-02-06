@@ -34,9 +34,9 @@ diagram below.
     extensions: [] # Clients can add extensions
     options   : # Options of each core extension can be customized here
       Logging : LogConfig.detailed
-      Queue   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+      Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
-      Filter  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
 ###
 class Crawler
 

@@ -15,14 +15,14 @@ class Monitoring extends Extension
 
   constructor: (opts) ->
     super
-      INITIAL : @track
-      SPOOLED : @track
-      READY : @track
-      FETCHING : @track
-      FETCHED : @track
-      COMPLETE : @track
-      ERROR : @track
-      CANCELED : @track
+      INITIAL : (request) => @count Phase.INITIAL
+      SPOOLED : (request) => @durationOf request, Phase.INITIAL, @count Phase.SPOOLED
+      READY : (request) => @durationOf request, Phase.SPOOLED, @count Phase.READY
+      FETCHING : (request) => @durationOf request, Phase.READY, @count Phase.FETCHING
+      FETCHED : (request) => @durationOf request, Phase.FETCHING, @count Phase.FETCHED
+      COMPLETE : (request) => @durationOf request, Phase.FETCHED, @count Phase.COMPLETE
+      ERROR : (request) => @count Phase.ERROR
+      CANCELED : (request) => @count Phase.CANCELED
     @counters =
       requests : {}
       durations: {}
@@ -31,6 +31,7 @@ class Monitoring extends Extension
     @opts = @merge Monitoring.defaultOpts(), opts
 
 
+  # Add stats counter at intervals
   initialize: (context) ->
     super context
     @queue = @context.queue
@@ -51,24 +52,27 @@ class Monitoring extends Extension
       @log.info? "Statistics enabled at interval #{@opts.interval}"
       @stats = setInterval statsLogger, @opts.interval
 
+  # Remove stats generator
   shutdown:() ->
     clearInterval @stats
 
-  track: (request) ->
-    count = @counters.requests[request.phase()]++
-    if not (request.isInitial() or request.isError() or request.isCanceled())
-      preceedingPhase = Phase.predecessor request.phase()
-      duration = request.durationOf preceedingPhase
-      if count % 500 is 0 # reset counters to emulate sliding window
-        @counters.durations[preceedingPhase].total = duration
-        @counters.durations[preceedingPhase].min = duration
-        @counters.durations[preceedingPhase].max = duration
-        @counters.durations[preceedingPhase].avg = (@counters.durations[preceedingPhase].avg + duration) / 2
-      else
-        @counters.durations[preceedingPhase].total += duration
-        @counters.durations[preceedingPhase].min = Math.min @counters.durations[preceedingPhase].min, duration
-        @counters.durations[preceedingPhase].max = Math.max @counters.durations[preceedingPhase].max, duration
-        @counters.durations[preceedingPhase].avg = Math.floor(@counters.durations[preceedingPhase].total / @counters.requests[preceedingPhase])
+  # Count the request (phase)
+  count : (phase) ->
+    @counters.requests[phase]++
+
+  # Compute the duration of the request phase and add to request counters
+  durationOf: (request, preceedingPhase, count) ->
+    duration = request.durationOf preceedingPhase
+    if count % 500 is 0 # reset counters to emulate sliding window
+      @counters.durations[preceedingPhase].total = duration
+      @counters.durations[preceedingPhase].min = duration
+      @counters.durations[preceedingPhase].max = duration
+      @counters.durations[preceedingPhase].avg = (@counters.durations[preceedingPhase].avg + duration) / 2
+    else
+      @counters.durations[preceedingPhase].total += duration
+      @counters.durations[preceedingPhase].min = Math.min @counters.durations[preceedingPhase].min, duration
+      @counters.durations[preceedingPhase].max = Math.max @counters.durations[preceedingPhase].max, duration
+      @counters.durations[preceedingPhase].avg = Math.floor(@counters.durations[preceedingPhase].total / @counters.requests[preceedingPhase])
 
 module.exports = {
   Monitoring

@@ -1,16 +1,14 @@
 DOCUMENTATION
- + List major classes in main.readme.md
- + Write tutorial and design overview in main.readme.md
- + Complete coffeedoc of QueueManager
- + List all core extensions in Crawler
+ + Complete coffeedoc of QueueManager and core extensions
  + Carefully document all options. Rewrite all examples as tests and refer to them from main README
+ + 
  
 
 IDEAS / FEATURES
  + Implement rest-api for remote control (request submission, pause/resume, shutdown)
  + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
  + Add event bus (pub/sub) to context such that extensions can communicate via events
- + Count computation time in Monitoring and add in separate log entry
+ + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
 
 TASKS

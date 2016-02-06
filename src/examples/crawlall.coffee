@@ -3,7 +3,7 @@
 
 # opts: rateLimit, request depth
 Kermit = new Crawler
-  name: "crawlall"
+  name: "downloader"
   extensions : [
     new OfflineStorage
     new Monitoring

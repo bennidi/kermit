@@ -20,7 +20,7 @@ class QueueConnector extends Extension
     super context
     @queue = context.queue
 
-
+  # @nodoc
   updateQueue : (request) =>
     @queue.update(request)
 
@@ -49,6 +49,7 @@ class QueueWorker extends Extension
 
     # 'second', 'minute', 'day', or a number of milliseconds
 
+  # @nodoc
   initialize: (context) ->
     super context
     @queue = context.queue # Request state is fetched from the queue
@@ -57,44 +58,61 @@ class QueueWorker extends Extension
     @spooler = setInterval @processRequests, 100 # Request spooling runs regularly
     @batch = [] # Local batch of requests to be put into READY state
 
+  # This is run at intervals to process waiting requests
   # @private
   processRequests : () =>
     # Transition SPOOLED requests into READY state unless parallelism threshold is reached
     @proceed @requests[request.id] for request in @localBatch()
 
+  # @nodoc
   localBatch: () ->
     currentBatch = _.filter @batch, (request) -> request.phase is 'SPOOLED'
     if not _.isEmpty currentBatch then currentBatch else @batch = @queue.spooled(100)
 
+  # @nodoc
   proceed : (request) ->
     request.ready() if @limits.isAllowed request.url()
 
+  # Stop the continuous execution of request spooling
   shutdown: ->
     clearInterval @spooler
 
 
+###
+  Wrapper for rate limit configurations passed as options to the {QueueWorker}
+  @private
+  @nodoc
+###
 class RateLimits
 
   constructor: (limits =[], @log, queue) ->
     @limits = (new Limit limitDef, queue for limitDef in limits)
 
+  # Check whether applicable rate limits allow this URL to pass
   isAllowed : (url) ->
     for limit in @limits
       return limit.isAllowed() if limit.matches url
     throw new Error "No limit matched #{url}"
 
+###
+  @nodoc
+  @private
+###
 class Limit
 
+  # @nodoc
   constructor: (@def, @queue) ->
     @regex = @def.pattern
     @limiter = new RateLimiter @def.to , @def.per
 
+  # @nodoc
   isAllowed: ->
     @limiter.tryRemoveTokens(1) and @queue.requestsProcessing(@regex) < @def.max
 
+  # @nodoc
   matches: (url) ->
     url.match @regex
-# Export a function to create the core plugin with default extensions
+
 module.exports = {
   QueueConnector
   QueueWorker

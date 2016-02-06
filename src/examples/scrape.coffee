@@ -11,27 +11,23 @@ Kermit = new Crawler
     new ResourceDiscovery
   ]
   options:
-    Logging: logconf.basic
+    Logging: logconf.detailed
     Queueing:
       limits : [
         {
           pattern : /.*jimmycuadra\.com.*/
-          to : 20
-          per : 'second'
-          max : 10
-        }
-        {
-          pattern : /.*/
-          to : 20
+          to : 5
           per : 'second'
           max : 10
         }
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra.*/
+        /.*jimmycuadra\.com.*/
       ]
-      deny : []
+      deny : [
+        /.*github.*/
+      ]
 
 Kermit.schedule("http://www.jimmycuadra.com")
 

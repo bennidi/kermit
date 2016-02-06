@@ -27,8 +27,12 @@ class Filters
       return true if pattern.test url
     false
 
+###
+  Filter URLs by means of regular expressions. Supports white-listing and black-listing.
+###
 class UrlFilter
 
+  # Default options
   @defaultOpts : () ->
     allow : [] # allows all by default
     deny : [] # denies none by default
@@ -39,9 +43,8 @@ class UrlFilter
     @opts = obj.overlay UrlFilter.defaultOpts(), opts
     @log.debug? "", @opts
 
-  # Check the given URL matching entries in blacklist/whitelist
-  # @param url {String} The request to filter
-  # @return {Boolean} True
+  # Check the given URL for matching entries in blacklist/whitelist
+  # @param url {String} The URL to be checked
   isAllowed: (url) ->
     if (not _.isEmpty @opts.allow) and not Filters.matchUrl url, @opts.allow
       @log.debug? "#{url} not on whitelist", tags:['UrlFilter']

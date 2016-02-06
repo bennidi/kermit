@@ -1,7 +1,7 @@
 {Phase} = require '../CrawlRequest'
 {Extension} = require '../Extension'
 {byExtension} = require '../util/mimetypes.coffee'
-{Mimetypes} = require('../Pipeline.coffee')
+{ContentType} = require('../Pipeline.coffee')
 fse = require 'fs-extra'
 fs = require 'fs'
 Mitm = require 'mitm'
@@ -44,7 +44,7 @@ class OfflineStorage extends Extension
         path = toLocalPath @basedir , request.url()
         if @shouldStore path
           @log.debug? "Storing #{request.url()} to #{path}", tags: ['OfflineStorage']
-          request.pipeline().stream Mimetypes([/.*/g]), fse.createOutputStream path
+          request.pipeline().stream ContentType([/.*/g]), fse.createOutputStream path
 
   shouldStore: (path) ->
     @log.debug? "#{path} already exists" if exists = fileExists path
