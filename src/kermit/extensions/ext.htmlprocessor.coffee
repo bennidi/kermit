@@ -1,7 +1,7 @@
 {Phase} = require('../CrawlRequest')
 {MemoryStream} = require('../util/tools.streams.coffee')
 {obj} = require('../util/tools.coffee')
-{Mimetypes} = require('../Pipeline.coffee')
+{ContentType} = require('../Pipeline.coffee')
 {Extension} = require '../Extension'
 _ = require 'lodash'
 htmlToJson = require 'html-to-json'
@@ -21,7 +21,7 @@ class HtmlProcessor extends Extension
       READY : (request) =>
         target = @content[request.id()] = []
         # Store response data in-memory for subsequent processing
-        request.pipeline().stream Mimetypes( [/.*html.*/g] ), new MemoryStream target
+        request.pipeline().stream ContentType( [/.*html.*/g] ), new MemoryStream target
       FETCHED : (request) =>
         input = @contents request
         if not _.isEmpty input
