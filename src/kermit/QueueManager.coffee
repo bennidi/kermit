@@ -24,7 +24,7 @@ class QueueManager
   initialize: () ->
     # One collection for all requests and dynamic views for various request phase
     @requests = @store.addCollection 'requests'
-    @urls = @store.addCollection 'urls'#, unique: ['url']
+    @urls = @store.addCollection 'urls', unique: ['url']
     # One view per distinct phase value
     addRequestView = (phase) =>
       @requests.addDynamicView phase
@@ -43,8 +43,8 @@ class QueueManager
       .applyFind phase: 'processing'
       .applySimpleSort 'tsModified', true
 
-  requestsByPhase : (phasees = Phase.ALL, result = {}) ->
-    result[phase] = @requests.getDynamicView(phase).data().length for phase in phasees
+  requestsByPhase : (phases = Phase.ALL, result = {}) ->
+    result[phase] = @requests.getDynamicView(phase).data().length for phase in phases
     result
 
   # Insert a request into the queue
@@ -54,18 +54,19 @@ class QueueManager
     @updateUrl request.url(), 'processing', rId: request.id()
 
   updateUrl: (url, phase, meta) ->
-    record = @urls.getDynamicView('scheduled').branchResultset().find(url : url).data()
+    record = @urls.find(url : url)
     if not _.isEmpty record
       record[0].phase = phase
       record[0].meta ?= {}
       record[0].meta[key] = value for key, value of meta
       record[0].meta['tsModified'] = new Date().getTime()
       @urls.update record
+    else @urls.insert {url: url, meta:meta, phase: phase}
 
   schedule: (url, meta) ->
     meta ?= {}
     meta.tsModified = new Date().getTime()
-    @urls.insert {url: url, meta:meta, phase: "scheduled"}
+    @updateUrl url, 'scheduled', meta
 
   nextUrlBatch: (size = 100) ->
     @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
@@ -87,14 +88,16 @@ class QueueManager
   isScheduled: (url) -> @hasUrl url, 'scheduled'
   isProcessing: (url) -> @hasUrl url, 'processing'
   isKnown: (url) ->
-    @urls.find( url:url ).length > 0
+    known = @urls.find( url:url ).length > 0
+    console.log "Checking for existence of url #{url}: #{known}"
+    known
 
   # Handle a request that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
   # @param request {CrawlRequest} The request to be inserted
   completed: (request) ->
     # remember that url has been processed successfully
-    @updateUrl request.url(), phase:'visited'
+    @updateUrl request.url(), 'visited'
     # remove request data from storage
     @requests.remove(request.state)
 
