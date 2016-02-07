@@ -23,10 +23,10 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra\.com.*/
+        /.*jimmycuadra.*/
       ]
       deny : [
-        /.*github.*/
+        /.*return_to.*/
       ]
 
 Kermit.schedule("http://www.jimmycuadra.com")

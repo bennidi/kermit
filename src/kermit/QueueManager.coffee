@@ -88,9 +88,7 @@ class QueueManager
   isScheduled: (url) -> @hasUrl url, 'scheduled'
   isProcessing: (url) -> @hasUrl url, 'processing'
   isKnown: (url) ->
-    known = @urls.find( url:url ).length > 0
-    console.log "Checking for existence of url #{url}: #{known}"
-    known
+    @urls.find( url:url ).length > 0
 
   # Handle a request that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
