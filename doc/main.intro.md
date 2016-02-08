@@ -1,15 +1,14 @@
 # Design overview
 
-The core of kermit is built around the representation of a request to a given URL and 
-the implementation of a series of well-defined "state" transitions applied to each of those requests.
-A request to a URL is represented by the [CrawlRequest](../../class/CrawlRequest.html).
+The core of kermit is built around the representation of a request to a given URL - [CrawlRequest](../../class/CrawlRequest.html) - 
+and the implementation of a series of well-defined "state" transitions applied to each of those requests.
 
-The "states" are referred to as **processing phase** and each transition moves the request 
-further down from phase INITIAL to phase COMPLETE. 
+The "states" are referred to as **processing phases** and each transition moves the request 
+further down from phase [INITIAL](../../class/INITIAL.html) to phase [COMPLETE](../../class/COMPLETE.html). 
 
 ## Processing Phases
 
-All defined processing phases as well as their allowed transitions are illustrated in the following diagram.
+All defined processing phases as well as their allowed transitions are illustrated in the following diagram:
 
 ```txt
  .-------------.
@@ -51,9 +50,24 @@ the requests that are at the head of the queue.
 [Extension](../../class/Extension.html)s are reusable components designed to accomplish specific tasks like storing content 
 on local file system or scanning content for certain words. Extensions can attach handlers to 
 any of the processing phases. Most of Kermit's core functionality is implemented based on this extension
-mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling
+mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling.
+
+(Incomplete) List of core extensions:
+
+* [RequestFilter](../../class/ExtensionPointConnector.html)
+* [ExtensionPointConnector](../../class/ExtensionPointConnector.html)
+* [RequestLookup](../../class/RequestLookup.html)
+* [QueueConnector](../../class/QueueConnector.html)
+* [QueueWorker](../../class/QueueWorker.html)
+* [RequestStreamer](../../class/Spooler.html)
+* [Spooler](../../class/Spooler.html)
+* [Completer](../../class/Completer.html)
+* [Cleanup](../../class/Cleanup.html)
+
 
 # Tutorial
+The following sections are meant to walk you through the most fundamental parts of the API from a user's
+perspective.
 
 ## Instantiation
 
@@ -62,13 +76,13 @@ An absolute minimal example looks like this:
 
 ```cs
 # Require the main class from the modules package
-{Crawler} = require '../kermit/kermit.modules.coffee'
+{Crawler} = require '../kermit/kermit.modules'
 
 # This will initialize a crawler with default options and no particularly interesting functionality
 Kermit = new Crawler
-  name: "downloader" 
-# This will issue a request and then detect that there is not much to do with the result
-# so the program finishes
+  name: "name your crawler here" 
+# This will issue a request and then detect that there is not much to do with the result (no writable streams attached)
+# so the program will do nothing but be kept alive forever
 Kermit.schedule("http://www.yourtargeturl.info")
     
 ```
@@ -78,7 +92,7 @@ A more elaborate and useful example could look like this:
 ```cs
 
 # Require the main class and extensions
-{Crawler, ext} = require '../kermit/kermit.modules.coffee'
+{Crawler, ext} = require '../kermit/kermit.modules'
 {ResourceDiscovery, Monitoring, OfflineStorage} = ext
 
 # Configure a crawler with some useful extensions

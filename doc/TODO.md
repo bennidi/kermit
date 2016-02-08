@@ -5,11 +5,12 @@ DOCUMENTATION
  
 
 IDEAS / FEATURES
- + Implement rest-api for remote control (request submission, pause/resume, shutdown)
+ + Implement rest-api for remote control (request submission, pause/resume, shutdown) (via Extension)
  + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
  + Add event bus (pub/sub) to context such that extensions can communicate via events
  + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
+ + Extension that takes care of automatic shutdown when crawling finished.
 
 TASKS
   

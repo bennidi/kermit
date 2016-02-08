@@ -8,51 +8,38 @@ class ExtensionPointConnector extends Extension
 
   # @nodoc
   constructor: () ->
-    super INITIAL : @apply
+    super INITIAL : (request) =>
+      request.context = @context
+      request.onChange 'phase', @executePhase
 
+  # @nodoc
   executePhase: (request) =>
     @context.executeRequest request
 
-  # Add listener to the request such that phase change will trigger
-  # execution of corresponding {ExtensionPoint}
-  apply: (request) ->
-    request.context = @context
-    request.onChange 'phase', @executePhase
 
-
-# Handle phase transition CREATED -> SPOOLED
+# Handle phase transition {INITIAL} -> {SPOOLED}
 class Spooler extends Extension
 
   # Create a Spooler
   constructor: ()->
-    super INITIAL : @apply
+    super INITIAL : (request) -> request.spool()
 
-  # Handle phase transition CREATED -> SPOOLED
-  # @return [CrawlRequest] The processed request
-  apply: (request) ->
-    request.spool()
-
-# Handle phase transition FETCHED -> COMPLETE
+# Handle phase transition {FETCHED} -> {COMPLETE}
 class Completer extends Extension
 
   # Create a Completer
   constructor: ->
-    super FETCHED : @apply
-
-  # Handle phase transition FETCHED -> COMPLETE
-  # @return [CrawlRequest] The processed request
-  apply: (request) ->
-    request.complete()
+    super FETCHED : (request) -> request.complete()
 
 # Add capability to lookup a request object by its id.
-# This is necessary to find the living request object for a given persistent state
-# because lokijs does not store the entire JavaScript object
+# Note: This is used to find the living request object for a given persistent state
+# stored in lokijs.
 class RequestLookup extends Extension
 
   # @nodoc
   constructor: () ->
     super
-      INITIAL : @apply
+      INITIAL : (request) => @requests[request.id()] = request
 
   # Expose a map that allows to lookup a {CrawlRequest} object by id
   initialize: (context) ->
@@ -60,12 +47,8 @@ class RequestLookup extends Extension
     @requests = {}
     context.share "requests", @requests
 
-  # Associated the requests id with the request object itself
-  apply: (request) ->
-    @requests[request.id()] = request
 
-
-# Run cleanup on all terminal states
+# Run cleanup on all terminal phases
 class Cleanup extends Extension
 
   # @nodoc
