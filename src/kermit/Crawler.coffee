@@ -1,11 +1,11 @@
 {Extension} = require './Extension'
-{INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, ExtensionPoint} = require './Crawler.ExtensionPoints'
-{ExtensionPointConnector, RequestLookup, Spooler, Completer, Cleanup} = require './extensions/core'
+{ExtensionPoint} = require './Crawler.ExtensionPoints'
+{ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
 {QueueManager} = require './QueueManager'
 {RequestFilter, UrlFilter} = require './extensions/core.filter'
-{Phase, RequestItem} = require './RequestItem'
+{INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, Phase, RequestItem} = require './RequestItem'
 {LogHub, LogConfig} = require './Logging'
 {obj} = require './util/tools'
 
@@ -37,6 +37,9 @@ diagram below.
       Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
       Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
+      Scheduling : {} # Options for the [Scheduler]
+        maxWaiting: 50
+        msPerUrl: 50
 ###
 class Crawler
 
@@ -60,14 +63,14 @@ class Crawler
 
     # Create and add extension points
     @extpoints = {}
-    @extpoints[ExtensionPoint.phase] = new ExtensionPoint @context for ExtensionPoint in [INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR]
+    @extpoints[phase] = new ExtensionPoint @context, phase for phase in Phase.ALL
     @extensions = []
 
     # Core extensions that need to run BEFORE user extensions
     ExtensionPoint.addExtensions this, [
       new RequestFilter @config.options.Filtering
       new ExtensionPointConnector
-      new RequestLookup
+      new RequestItemMapper
       new QueueConnector @config.options.Queueing
       new QueueWorker @config.options.Queueing
       ]
@@ -113,7 +116,7 @@ class Crawler
   execute: (url, meta) ->
     @log.debug? "Executing #{url}"
     item = new RequestItem url, meta, @log
-    ExtensionPoint.execute @, INITIAL.phase, item
+    ExtensionPoint.execute @, Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
@@ -180,6 +183,7 @@ class CrawlerConfig
       Queueing   : {filename : "#{obj.randomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the {Streamer}
       Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
+      Scheduling  : {} # Options for URL scheduling [Scheduler]
 
   ###
   @param config [Object] The configuration parameters
@@ -220,9 +224,9 @@ class CrawlerConfig
 ###
 class Scheduler
 
-  # TODO: Needs tuning
-  threshold = 50
-  timePerUrl = 50
+  @defaultOptions: () ->
+    maxWaiting : 50
+    msPerUrl : 50
 
   # @nodoc
   constructor: (@crawler, @queue, @config) ->
@@ -232,12 +236,13 @@ class Scheduler
     delete filterOpts.allow if _.isEmpty filterOpts.allow
     delete filterOpts.deny if _.isEmpty filterOpts.deny
     @urlFilter = new UrlFilter filterOpts, @crawler.log
+    @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
 
   # @private
   schedule: (url, meta) ->
     if not @urlFilter.isAllowed(url) or @queue.isKnown url
       return
-    if @queue.itemsWaiting().length < threshold
+    if @queue.itemsWaiting().length <  @opts.maxWaiting
       @crawler.execute url, meta
     else
       @queue.schedule url, meta
@@ -247,11 +252,11 @@ class Scheduler
   start: () ->
     pushUrls = () =>
       waiting = @queue.itemsWaiting().length
-      if waiting < threshold
-        urls = @queue.nextUrlBatch(threshold - waiting)
+      if waiting < @opts.maxWaiting
+        urls = @queue.nextUrlBatch(@opts.maxWaiting - waiting)
         @crawler.log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
         @crawler.execute entry.url, entry.meta for entry in urls
-    @executor = setInterval pushUrls, threshold * timePerUrl
+    @executor = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
     @executor.unref()
 
   # @nodoc

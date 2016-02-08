@@ -34,7 +34,7 @@ class Completer extends Extension
 # Add capability to lookup a item object by its id.
 # Note: This is used to find the living item object for a given persistent state
 # stored in lokijs.
-class RequestLookup extends Extension
+class RequestItemMapper extends Extension
 
   # @nodoc
   constructor: () ->
@@ -77,7 +77,7 @@ class Cleanup extends Extension
 
 module.exports = {
   ExtensionPointConnector
-  RequestLookup
+  RequestItemMapper
   Spooler
   Completer
   Cleanup

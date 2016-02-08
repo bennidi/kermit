@@ -43,7 +43,7 @@ _ = require 'lodash'
 ```
 
 @see Crawler for a list of core extensions applied at each phase
-@see ExtensionPoint and its subclasses for descriptions of
+@see ProcessingPhase and its subclasses for descriptions of
 
 ###
 class ProcessingPhase
@@ -65,6 +65,9 @@ class ProcessingPhase
   @CANCELED:'CANCELED'
   # @property [Array<String>] Collection of all defined phase
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
+
+  constructor: () ->
+    @name = constructor.name
 
   # Retrieve the expected succeeding phase for the given phase
   @follower : (phase) ->
@@ -91,6 +94,61 @@ class ProcessingPhase
       when 'CANCELED' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHED']
       when 'ERROR' then ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
       else throw new Error "Unknown phase #{phase} has no predecessor"
+
+###
+Process items with phase INITIAL.
+This ProcessingPhase runs: Filtering, Connect to {QueueManager Queueing System}, User extensions
+###
+class INITIAL extends ProcessingPhase
+
+###
+Process items with phase "SPOOLED".
+Spooled items are waiting in the {QueueManager} for further processing.
+This ProcessingPhase runs: User extensions, {QueueManager}
+###
+class SPOOLED extends ProcessingPhase
+
+###
+Process items with phase "READY".
+Request with phase "READY" are eligible to be fetched by the {Streamer}.
+This ProcessingPhase runs: User extensions.
+###
+class READY extends ProcessingPhase
+
+###
+Process items with phase "FETCHING".
+Http(s) call to URL is made and response is being streamed.
+This ProcessingPhase runs: {RequestStreamer}, User extensions.
+###
+class FETCHING extends ProcessingPhase
+
+###
+Process items with phase "FETCHED".
+All data has been received and the response is ready for further processing.
+This ProcessingPhase runs: User extensions.
+###
+class FETCHED extends ProcessingPhase
+
+###
+Process items with phase "COMPLETE".
+Response processing is finished. This is the terminal phase of a successfully processed
+item. This ProcessingPhase runs: User extensions, {Cleanup}
+###
+class COMPLETE extends ProcessingPhase
+
+###
+Process items with phase "ERROR".
+{ExtensionPoint}s will set this phase if an exception occurs during execution of an {Extension}.
+This ProcessingPhase runs: User extensions, {Cleanup}
+###
+class ERROR extends ProcessingPhase
+
+###
+Process items with phase "CANCELED".
+Any extension might cancel a item. Canceled items are not elligible for further processing
+and will be cleaned up. This ProcessingPhase runs: User extensions, {Cleanup}
+###
+class CANCELED extends ProcessingPhase
 
 ###
   The RequestItem is the central object in the process of fetching a single URL. The {Crawler} will

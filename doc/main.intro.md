@@ -7,11 +7,12 @@ phase to the other, usually from phase [INITIAL](../../class/INITIAL.html) to ph
 ## Processing Phases
 
 Each processing phase contains a set of handlers that do some work on the request item they receive.
-These handlers are provided by [Extension](../../class/Extension.html)s and added during initialization of the [Crawler](../../class/Crawler.html)
-For each processing phase all matching handlers are called to do their processing logic with the item.
+These handlers are provided by [Extension](../../class/Extension.html)s and are inserted during initialization 
+of the [Crawler](../../class/Crawler.html). 
+The execution of a processing phase for a given item involves the invocation of all handlers (in order of insertion).
 
-All requests are held in a queue and the node.js event loop is used to to schedule processing callbacks for 
-the requests that are at the head of the queue.
+All items are held in a [queueing backend](../../class/QueueManager.html) and the node.js event loop is used to to schedule processing callbacks for 
+the items that are at the head of the queue.
 
 All defined processing phases as well as their allowed transitions are illustrated in the diagram below.
 
@@ -50,9 +51,8 @@ All defined processing phases as well as their allowed transitions are illustrat
 [Extension](../../class/Extension.html)s are reusable components designed to accomplish specific tasks like storing content 
 on local file system or scanning content for certain words. Extensions can attach handlers to 
 any of the processing phases. Most of Kermit's core functionality is implemented based on this extension
-mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling.
-
-(Incomplete) List of core extensions:
+mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling. 
+List of core extensions:
 
 * [RequestFilter](../../class/ExtensionPointConnector.html)
 * [ExtensionPointConnector](../../class/ExtensionPointConnector.html)
@@ -188,7 +188,10 @@ There are a number of [predefined log configurations](../../file/src/kermit/Logg
 It is also easily possible to roll up a custom configuration following the code examples from that file.
 
 ## Scheduling of URLs
-[Coming soon]
+To reduce the memory footprint, not every URL submission will create a request item immediately (as request items are
+persistent, ie. increase queue size and affect query performance).
+Therefore, a [Scheduler](../../class/Scheduler.html) is used to keep track of submitted URLs and 
+schedule a request when the load limits allow.
 
 
 ## Core extensions
