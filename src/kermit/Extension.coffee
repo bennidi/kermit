@@ -1,17 +1,17 @@
 _ = require 'lodash'
-{obj} = require './util/tools.coffee'
+{obj} = require './util/tools'
 
 ###
-{Extension}s are the core abstraction for adding actual request processing functionality
-to the {Crawler}. In fact, **all** of the available **request processing functionality** like filtering,
+{Extension}s are the core abstraction for adding actual item processing functionality
+to the {Crawler}. In fact, **all** of the available **item processing functionality** like filtering,
 queueing, streaming, logging etc. **is implemented by means of extensions**.
 
 A major motivation of the extension design is to support the principles
 of separation of concern as well as single responsibility.
 It aims to encourage the development of relatively small, testable and reusable
-request processing components.
+item processing components.
 
-Each extension can expose handlers for request processing by mapping them to
+Each extension can expose handlers for item processing by mapping them to
 one of the defined values of {RequestPhase}.
 Note:
  -  The mapping implicitly associates each extension with the {ExtensionPoint}
@@ -24,7 +24,7 @@ and respective {ExtensionPoint}s.
 @abstract
 @see Crawler
 @see ExtensionPoint
-@see CrawlRequest
+@see RequestItem
   
 ###
 class Extension
@@ -32,7 +32,7 @@ class Extension
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
   # @param handlers [Object] A mapping of {RequestPhase} values
-  # to handlers that will be invoked for requests with that phase
+  # to handlers that will be invoked for items with that phase
   constructor: (@handlers = {}) ->
     @name = @constructor.name
 
@@ -50,7 +50,7 @@ class Extension
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
   merge : (a,b) ->
-    {obj} = require './util/tools.coffee'
+    {obj} = require './util/tools'
     obj.overlay a,b
 
   # Run shutdown logic of this extension (if any)
@@ -62,7 +62,7 @@ class Extension
     (phase for phase of @handlers)
 
   # Run validity checks of this extension. Called after initialization and before
-  # actual request processing starts
+  # actual item processing starts
   # @throw Error if the configuration is invalid in any way
   verify: () ->
     if !@name

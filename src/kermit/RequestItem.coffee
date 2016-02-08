@@ -1,16 +1,16 @@
 URI = require 'urijs'
-{Pipeline} = require './Pipeline.coffee'
-{obj, uri} = require './util/tools.coffee'
+{Pipeline} = require './Pipeline'
+{obj, uri} = require './util/tools'
 _ = require 'lodash'
 
 ###
 
-  A {CrawlRequest} is always in one of the following processing phases.
-  Each request starts with phase {ProcessingPhase.INITIAL}
+  A {RequestItem} is always in one of the following processing phases.
+  Each item starts with phase {ProcessingPhase.INITIAL}
   From phase {INITIAL} it transitions forward while being processed by the {Extension}s
-  that handle requests of that particular phase. The following diagram illustrate the possible
+  that handle items of that particular phase. The following diagram illustrate the possible
   phase transitions with the ordinary flow {INITIAL} -> {SPOOLED} -> {READY} -> {FETCHING} -> {FETCHED} -> {COMPLETE}.
-  Any request may also end in phases {CANCELED} or {ERROR} depending on the logic of the {Extension}s
+  Any item may also end in phases {CANCELED} or {ERROR} depending on the logic of the {Extension}s
 
 ```txt
 
@@ -93,30 +93,29 @@ class ProcessingPhase
       else throw new Error "Unknown phase #{phase} has no predecessor"
 
 ###
-  The crawl request is the central object in the process of fetching a single URL. The {Crawler} will
-  funnel each request through the different processing phases - applying all {Extension}s registered
+  The RequestItem is the central object in the process of fetching a single URL. The {Crawler} will
+  funnel each item through the different processing phases - applying all {Extension}s registered
   for the particular phase.
-  During its lifecycle the request is enriched with listeners and properties by the {Extension}s
+  During its lifecycle the item is enriched with listeners and properties by the {Extension}s
   that take care of its processing.
-  Any information necessary for request processing is usually to the request in order
-  to centralize state. Any property added to its internal state {CrawlRequest#state} will be persistent
+  Any information necessary for processing is usually to the item in order
+  to centralize state. Any property added to its internal state {RequestItem#state} will be persistent
   after the next phase transition.
 
-  > NOTE: It is not to be confused with an Http(s) request (which might be created in the lifespan of a crawl request).
 ###
-class CrawlRequest
+class RequestItem
 
   # @nodoc
   # @private
-  notify = (request, property) ->
-    listener(request) for listener in listeners(request, property)
-    request
+  notify = (item, property) ->
+    listener(item) for listener in listeners(item, property)
+    item
   # @nodoc
   # @private
-  listeners = (request, property) ->
-    if !request.changeListeners[property]?
-      request.changeListeners[property] = []
-    request.changeListeners[property]
+  listeners = (item, property) ->
+    if !item.changeListeners[property]?
+      item.changeListeners[property] = []
+    item.changeListeners[property]
 
   # @nodoc
   @stampsToString : (stamps) ->
@@ -125,7 +124,7 @@ class CrawlRequest
       rest = _.map _.tail(stamps), (value, index) -> (value - stamps[index]) + "ms"
       "#{first}#{rest}"
 
-  # Create a new request for the given url and
+  # Create a new item for the given url and
   # with the given metadata attached
   constructor: (url, meta = {parents : 0} , @log) ->
     @changeListeners = {}
@@ -140,8 +139,8 @@ class CrawlRequest
   # specified property value is changed
   # @param property [String] The name of the property to watch
   # @param listener [Function] The handler to be invoked whenever the property
-  # changes. The post-change state of the request will be passed to the handler
-  # @return [CrawlRequest] This request
+  # changes. The post-change state of the item will be passed to the handler
+  # @return [RequestItem] This item
   onChange: (property, listener) ->
     listeners(this, property).push listener; this
 
@@ -150,10 +149,10 @@ class CrawlRequest
   url: (url) ->
     if url then @state.url = uri.normalize url else @state.url
 
-  # @return [String] The synthetic id of this request
+  # @return [String] The synthetic id of this item
   id: () -> @state.id
 
-  # Check whether https should be used to fetch this request  
+  # Check whether https should be used to fetch this item  
   useSSL: () ->
     @url().startsWith 'https'
 
@@ -200,109 +199,109 @@ class CrawlRequest
   # Register a change listener for a specific value of the phase property
   # @param phase [String] The phase value that will trigger invocation of the listener
   # @param listener [Function] The listener to be invoked if phase changes
-  # @return [CrawlRequest] This request
+  # @return [RequestItem] This item
   onPhase: (phase, listener) ->
-    @onChange 'phase', (request) ->
-      listener(request) if request.phase() is phase
+    @onChange 'phase', (item) ->
+      listener(item) if item.phase() is phase
 
-  # Change the requests phase to SPOOLED
-  # @return {CrawlRequest} This request
-  # @throw Error if request does have other phase than INITIAL
+  # Change the items phase to SPOOLED
+  # @return {RequestItem} This item
+  # @throw Error if item does have other phase than INITIAL
   spool: ->
     if @isInitial() then @phase(ProcessingPhase.SPOOLED);this
     else throw new Error "Transition from #{@state.phase} to SPOOLED not allowed"
 
-  # Change the requests phase to READY
-  # @return {CrawlRequest} This request
-  # @throw Error if request does have other phase than SPOOLED
+  # Change the items phase to READY
+  # @return {RequestItem} This item
+  # @throw Error if item does have other phase than SPOOLED
   ready: ->
     if @isSPOOLED() then @phase(ProcessingPhase.READY);this
     else throw new Error "Transition from #{@state.phase} to READY not allowed"
 
-  # Change the requests phase to FETCHING
-  # @return {CrawlRequest} This request
-  # @throw Error if request does have other phase than READY
+  # Change the items phase to FETCHING
+  # @return {RequestItem} This item
+  # @throw Error if item does have other phase than READY
   fetching: () ->
     if @isReady() then @phase(ProcessingPhase.FETCHING);this
     else throw new Error "Transition from #{@state.phase} to FETCHING not allowed"
 
 
-  # Change the requests phase to FETCHED
-  # @return {CrawlRequest} This request
-  # @throw Error if request request does have other phase than FETCHING
+  # Change the items phase to FETCHED
+  # @return {RequestItem} This item
+  # @throw Error if item item does have other phase than FETCHING
   fetched: () ->
     if @isFetching() then @phase(ProcessingPhase.FETCHED);this
     else throw new Error "Transition from #{@state.phase} to FETCHED not allowed"
 
-  # Change the requests phase to COMPLETE
-  # @return {CrawlRequest} This request
-  # @throw Error if request does have other phase than FETCHED
+  # Change the items phase to COMPLETE
+  # @return {RequestItem} This item
+  # @throw Error if item does have other phase than FETCHED
   complete: ->
     if @isFetched() then @phase(ProcessingPhase.COMPLETE);this
     else throw new Error "Transition from #{@state.phase} to COMPLETE not allowed"
 
-  # Change the requests phase to ERROR
-  # @return {CrawlRequest} This request
+  # Change the items phase to ERROR
+  # @return {RequestItem} This item
   error: (error) ->
     @state.phase = ProcessingPhase.ERROR
     @errors ?= [];@errors.push error
     notify this, "phase"
 
-  # Change the requests phase to CANCELED
-  # @return {CrawlRequest} This request
+  # Change the items phase to CANCELED
+  # @return {RequestItem} This item
   cancel: ->
     @state.phase = ProcessingPhase.CANCELED
     notify this, "phase"
 
-  # Check whether this request has phase INITIAL
+  # Check whether this item has phase INITIAL
   # @return {Boolean} True if phase is INITIAL, false otherwise
   isInitial: () -> @state.phase is ProcessingPhase.INITIAL
-  # Check whether this request has phase SPOOLED
+  # Check whether this item has phase SPOOLED
   # @return {Boolean} True if phase is SPOOLED, false otherwise
   isSPOOLED: () -> @state.phase is ProcessingPhase.SPOOLED
-  # Check whether this request has phase READY
+  # Check whether this item has phase READY
   # @return {Boolean} True if phase is READY, false otherwise
   isReady: () -> @state.phase is ProcessingPhase.READY
-  # Check whether this request has phase FETCHING
+  # Check whether this item has phase FETCHING
   # @return {Boolean} True if phase is FETCHING, false otherwise
   isFetching: () -> @state.phase is ProcessingPhase.FETCHING
-  # Check whether this request has phase FETCHED
+  # Check whether this item has phase FETCHED
   # @return {Boolean} True if phase is FETCHED, false otherwise
   isFetched: () -> @state.phase is ProcessingPhase.FETCHED
-  # Check whether this request has phase COMPLETE
+  # Check whether this item has phase COMPLETE
   # @return {Boolean} True if phase is COMPLETE, false otherwise
   isComplete: () -> @state.phase is ProcessingPhase.COMPLETE
-  # Check whether this request has phase CANCELED
+  # Check whether this item has phase CANCELED
   # @return {Boolean} True if phase is CANCELED, false otherwise
   isCanceled: () -> @state.phase is ProcessingPhase.CANCELED
-  # Check whether this request has phase ERROR
+  # Check whether this item has phase ERROR
   # @return {Boolean} True if phase is ERROR, false otherwise
   isError: () -> @state.phase is ProcessingPhase.ERROR
 
-  # Clean all request data that potentially occupies much memory
+  # Clean all item data that potentially occupies much memory
   cleanup: () ->
     @_pipeline?.cleanup()
     delete @changeListeners
 
-  # Access the {Pipeline} of this request
+  # Access the {Pipeline} of this item
   pipeline: () ->
     @_pipeline ?= new Pipeline @log, @
 
-  # A request might have been created by another request (its parent).
-  # That parent might in turn have been created by another request and so on.
-  # @return {Number} The number of parents of this request
+  # A item might have been created by another item (its parent).
+  # That parent might in turn have been created by another item and so on.
+  # @return {Number} The number of parents of this item
   parents: () -> 0
 
-  # Generate a human readable representation of this request
+  # Generate a human readable representation of this item
   toString: () ->
     pretty = switch @state.phase
         when 'INITIAL','SPOOLED','READY'
-          """#{@state.phase} => GET #{@state.url} :#{obj.print CrawlRequest.stampsToString @state.stamps}"""
+          """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""
         when 'COMPLETE'
           """COMPLETE => GET #{@state.url} (phase=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
         else "Unknown phase"
 
 module.exports = {
-  CrawlRequest
+  RequestItem
   Phase : ProcessingPhase
 }

@@ -1,13 +1,13 @@
-{Phase} = require('../CrawlRequest')
-{HtmlProcessor} = require './ext.htmlprocessor.coffee'
+{Phase} = require('../RequestItem')
+{HtmlProcessor} = require './ext.htmlprocessor'
 URI = require 'urijs'
 _ = require 'lodash'
-{HtmlExtractor} = require '../Extractor.coffee'
-tools = require '../util/tools.coffee'
+{HtmlExtractor} = require '../Extractor'
+tools = require '../util/tools'
 
 
 # Scan result data for links to other resources (css, img, js, html) and schedule
-# a request to retrieve those resources.
+# a item to retrieve those resources.
 class ResourceDiscovery extends HtmlProcessor
 
   @defaultOpts: () ->
@@ -29,16 +29,16 @@ class ResourceDiscovery extends HtmlProcessor
           links: ['a',
             'href':  ($link) -> $link.attr 'href'
           ]
-        onResult : (results, request) =>
-          resources = _.reject (@cleanUrl request, url.href for url in results.resources), _.isEmpty
-          links = _.reject (@cleanUrl request, url.href for url in results.links), _.isEmpty
-          @context.schedule url, parents:request.parents()+1  for url in resources
-          @context.schedule url, parents:request.parents()+1  for url in links
+        onResult : (results, item) =>
+          resources = _.reject (@cleanUrl item, url.href for url in results.resources), _.isEmpty
+          links = _.reject (@cleanUrl item, url.href for url in results.links), _.isEmpty
+          @context.schedule url, parents:item.parents()+1  for url in resources
+          @context.schedule url, parents:item.parents()+1  for url in links
     ]
 
-  cleanUrl: (request, url)  =>
+  cleanUrl: (item, url)  =>
     return "" if not url
-    base = URI request.url()
+    base = URI item.url()
     cleaned = url
     if cleaned
       # Handle //de.wikinews.org/wiki/Hauptseite

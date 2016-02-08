@@ -1,13 +1,13 @@
-{Phase} = require '../CrawlRequest'
+{Phase} = require '../RequestItem'
 storage = require '../QueueManager'
 {Extension} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
-{obj} = require '../util/tools.coffee'
+{obj} = require '../util/tools'
 _ = require 'lodash'
 
 # The Queue Connector establishes a system of queues where each state
-# of the CrawlRequest state machine is represented in its own queue.
-# It also enriches each request, such that its state transitions
+# of the RequestItem state machine is represented in its own queue.
+# It also enriches each item, such that its state transitions
 # are propagated to the queuing system automatically.
 class QueueConnector extends Extension
 
@@ -21,16 +21,16 @@ class QueueConnector extends Extension
     @queue = context.queue
 
   # @nodoc
-  updateQueue : (request) =>
-    @queue.update(request)
+  updateQueue : (item) =>
+    @queue.update(item)
 
-  # Enrich each request with methods that propagate its
+  # Enrich each item with methods that propagate its
   # state transitions to the queue system
-  apply: (request) ->
-    @queue.insert request
-    request.onChange 'phase', @updateQueue
+  apply: (item) ->
+    @queue.insert item
+    item.onChange 'phase', @updateQueue
 
-# Process requests that have been SPOOLED for fetching.
+# Process items that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
@@ -53,27 +53,27 @@ class QueueWorker extends Extension
   initialize: (context) ->
     super context
     @queue = context.queue # Request state is fetched from the queue
-    @requests = context.requests # Request object is resolved from shared request map
+    @items = context.items # Request object is resolved from shared item map
     @limits = new RateLimits @opts.limits, @context.log, @queue # Rate limiting is applied here
     @spooler = setInterval @processRequests, 100 # Request spooling runs regularly
-    @batch = [] # Local batch of requests to be put into READY state
+    @batch = [] # Local batch of items to be put into READY state
 
-  # This is run at intervals to process waiting requests
+  # This is run at intervals to process waiting items
   # @private
   processRequests : () =>
-    # Transition SPOOLED requests into READY state unless parallelism threshold is reached
-    @proceed @requests[request.id] for request in @localBatch()
+    # Transition SPOOLED items into READY state unless parallelism threshold is reached
+    @proceed @items[item.id] for item in @localBatch()
 
   # @nodoc
   localBatch: () ->
-    currentBatch = _.filter @batch, (request) -> request.phase is 'SPOOLED'
+    currentBatch = _.filter @batch, (item) -> item.phase is 'SPOOLED'
     if not _.isEmpty currentBatch then currentBatch else @batch = @queue.spooled(100)
 
   # @nodoc
-  proceed : (request) ->
-    request.ready() if @limits.isAllowed request.url()
+  proceed : (item) ->
+    item.ready() if @limits.isAllowed item.url()
 
-  # Stop the continuous execution of request spooling
+  # Stop the continuous execution of item spooling
   shutdown: ->
     clearInterval @spooler
 
@@ -107,7 +107,7 @@ class Limit
 
   # @nodoc
   isAllowed: ->
-    @limiter.tryRemoveTokens(1) and @queue.requestsProcessing(@regex) < @def.max
+    @limiter.tryRemoveTokens(1) and @queue.itemsProcessing(@regex) < @def.max
 
   # @nodoc
   matches: (url) ->

@@ -1,40 +1,40 @@
-{Extension} = require '../Extension.coffee'
-{Phase} = require '../CrawlRequest.coffee'
-{QueueManager} = require '../QueueManager.coffee'
+{Extension} = require '../Extension'
+{Phase} = require '../RequestItem'
+{QueueManager} = require '../QueueManager'
 through = require 'through2'
 stream = require 'stream'
-{Mimetypes} = require('../Pipeline.coffee')
-{LogStream} = require './tools.streams.coffee'
+{ContentType} = require '../Pipeline'
+{LogStream} = require './tools.streams'
 
-# Record phase transitions of all requests and assert the a specified series of
+# Record phase transitions of all items and assert the a specified series of
 # transitions has been made
 class TransitionRecorder extends Extension
 
   # @nodoc
   constructor: (@done)->
     super
-      INITIAL: (request) -> @apply request, 'INITIAL'
-      SPOOLED: (request) -> @apply request, 'SPOOLED'
-      READY: (request) -> @apply request, 'READY'
-      FETCHING: (request) -> @apply request, 'FETCHING'
-      FETCHED: (request) -> @apply request, 'FETCHED'
-      COMPLETE: (request) -> @apply request, 'COMPLETE'
-      ERROR: (request) -> @apply request, 'ERROR'
-      CANCELED : (request) -> @apply request, 'CANCELED'
+      INITIAL: (item) -> @apply item, 'INITIAL'
+      SPOOLED: (item) -> @apply item, 'SPOOLED'
+      READY: (item) -> @apply item, 'READY'
+      FETCHING: (item) -> @apply item, 'FETCHING'
+      FETCHED: (item) -> @apply item, 'FETCHED'
+      COMPLETE: (item) -> @apply item, 'COMPLETE'
+      ERROR: (item) -> @apply item, 'ERROR'
+      CANCELED : (item) -> @apply item, 'CANCELED'
     @expected = {}
-    @requests = 0
+    @items = 0
 
   # @nodoc
-  apply: (request, phase) ->
-    @expected[request.url()] = @expected[request.url()].filter (expected) -> expected isnt phase
-    @log.info? "Expected for #{request.url()}: #{@expected[request.url()]}"
-    expect(@expected[request.url()]).not.contain(phase)
-    @requests-- if @expected[request.url()].length is 0
-    if @requests is 0
+  apply: (item, phase) ->
+    @expected[item.url()] = @expected[item.url()].filter (expected) -> expected isnt phase
+    @log.info? "Expected for #{item.url()}: #{@expected[item.url()]}"
+    expect(@expected[item.url()]).not.contain(phase)
+    @items-- if @expected[item.url()].length is 0
+    if @items is 0
       @done()
 
   validate: (url, expected) ->
-    @requests++
+    @items++
     @expected[url] = expected
 
 class RejectingExtension extends Extension
@@ -43,20 +43,20 @@ class RejectingExtension extends Extension
     super INITIAL: @apply
     @invocations = 0
 
-  apply: (request) ->
-    @log.info? "Rejecting " + request.url()
-    request.cancel("Rejected by RejectingExtension")
+  apply: (item) ->
+    @log.info? "Rejecting " + item.url()
+    item.cancel("Rejected by RejectingExtension")
 
 class MockContext
-  execute: (request) -> request
-  schedule: (request, url) -> request.subrequest url
+  execute: (item) -> item
+  schedule: (item, url) -> item.subitem url
   config:
     basePath : () -> "somepath"
   queue: new QueueManager
   share: (property, value ) =>
     @[property] = value
   crawler :
-    enqueue: (request) -> request
+    enqueue: (item) -> item
   log :
     info : (msg) -> console.log msg
     debug : (msg) -> console.log msg
@@ -67,8 +67,8 @@ class MockContext
 class ResponseStreamLogger extends Extension
 
   constructor: (shouldLog = false) ->
-    super INITIAL: (request) ->
-      request.pipeline().stream Mimetypes([/.*/]), new LogStream shouldLog
+    super INITIAL: (item) ->
+      item.pipeline().stream ContentType([/.*/]), new LogStream shouldLog
 
 module.exports = {
   RejectingExtension

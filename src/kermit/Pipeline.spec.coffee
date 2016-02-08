@@ -1,5 +1,5 @@
-{Pipeline} = require './Pipeline.coffee'
-{CharStream} = require './util/tools.streams.coffee'
+{Pipeline} = require './Pipeline'
+{CharStream} = require './util/tools.streams'
 through = require 'through2'
 
 describe  'Channels',  ->

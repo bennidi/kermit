@@ -1,13 +1,13 @@
-{Phase} = require './CrawlRequest'
+{Phase} = require './RequestItem'
 lokijs = require 'lokijs'
 _ = require 'lodash'
 
 ###
- Provides access to a queue like system that allows to access {CrawlRequest}s by their
+ Provides access to a queue like system that allows to access {RequestItem}s by their
  phase.
 
  Currently implemented on top of beautiful [http://lokijs.org lokijs]
- => Queues are emulated with dynamic views on a single request collection.
+ => Queues are emulated with dynamic views on a single item collection.
 ###
 class QueueManager
 
@@ -22,16 +22,16 @@ class QueueManager
 
   # Initialize this queue manager
   initialize: () ->
-    # One collection for all requests and dynamic views for various request phase
-    @requests = @store.addCollection 'requests'
+    # One collection for all items and dynamic views for various item phase
+    @items = @store.addCollection 'items'
     @urls = @store.addCollection 'urls', unique: ['url']
     # One view per distinct phase value
     addRequestView = (phase) =>
-      @requests.addDynamicView phase
+      @items.addDynamicView phase
         .applyFind phase: phase
         .applySimpleSort "stamps.#{phase}", true
     addRequestView phase for phase in Phase.ALL
-    @requests_waiting = @requests.addDynamicView 'WAITING'
+    @items_waiting = @items.addDynamicView 'WAITING'
       .applyFind phase: $in : waiting
     @urls.addDynamicView 'visited'
       .applyFind phase: 'visited'
@@ -43,15 +43,15 @@ class QueueManager
       .applyFind phase: 'processing'
       .applySimpleSort 'tsModified', true
 
-  requestsByPhase : (phases = Phase.ALL, result = {}) ->
-    result[phase] = @requests.getDynamicView(phase).data().length for phase in phases
+  itemsByPhase : (phases = Phase.ALL, result = {}) ->
+    result[phase] = @items.getDynamicView(phase).data().length for phase in phases
     result
 
-  # Insert a request into the queue
-  # @param request {CrawlRequest} The request to be inserted
-  insert: (request) ->
-    @requests.insert(request.state)
-    @updateUrl request.url(), 'processing', rId: request.id()
+  # Insert a item into the queue
+  # @param item {RequestItem} The item to be inserted
+  insert: (item) ->
+    @items.insert(item.state)
+    @updateUrl item.url(), 'processing', rId: item.id()
 
   updateUrl: (url, phase, meta) ->
     record = @urls.find(url : url)
@@ -72,14 +72,14 @@ class QueueManager
     @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
 
 
-  # Update a known request
-  # @param request {CrawlRequest} The request to be updated
-  update: (request) ->
-    @requests.update(request.state)
+  # Update a known item
+  # @param item {RequestItem} The item to be updated
+  update: (item) ->
+    @items.update(item.state)
 
   # Check whether the given url has already been processed or
   # is on its way to being processed
-  # @param request {CrawlRequest} The request to be inserted
+  # @param item {RequestItem} The item to be inserted
   # @return {Boolean} True, if the url was found, false otherwise
   hasUrl: (url, phase) ->
     @urls.find({ url:url, phase: phase}).length > 0
@@ -90,43 +90,43 @@ class QueueManager
   isKnown: (url) ->
     @urls.find( url:url ).length > 0
 
-  # Handle a request that successfully completed processing
+  # Handle a item that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
-  # @param request {CrawlRequest} The request to be inserted
-  completed: (request) ->
+  # @param item {RequestItem} The item to be inserted
+  completed: (item) ->
     # remember that url has been processed successfully
-    @updateUrl request.url(), 'visited'
-    # remove request data from storage
-    @requests.remove(request.state)
+    @updateUrl item.url(), 'visited'
+    # remove item data from storage
+    @items.remove(item.state)
 
-  requestsWaiting: ->
-    @requests.getDynamicView('WAITING').data()
+  itemsWaiting: ->
+    @items.getDynamicView('WAITING').data()
 
-  # Determines whether there are requests left for Spooling
+  # Determines whether there are items left for Spooling
   hasRequestsWaiting: ->
-    waiting = @requests.find phase : $in: waiting
+    waiting = @items.find phase : $in: waiting
     waiting.length > 0
 
   hasRequestsUnfinished: ->
-    unfinished = @requests.find phase : $in: unfinished
+    unfinished = @items.find phase : $in: unfinished
     unfinished.length > 0
 
-  requestsProcessing: (pattern) ->
-    ready = @requests.find $and: [
+  itemsProcessing: (pattern) ->
+    ready = @items.find $and: [
       {phase : 'FETCHING'},
       {url : $regex: pattern}
     ]
     ready.length
 
-  # Get all {CrawlRequest}s with phase {INITIAL}
+  # Get all {RequestItem}s with phase {INITIAL}
   initial: () ->
-    @requests.getDynamicView(Phase.INITIAL).data()
+    @items.getDynamicView(Phase.INITIAL).data()
 
-  # Retrieve the next batch of {SPOOLED} requests
-  # @param batchSize {Number} The maximum number of requests to be returned
-  # @return {Array<CrawlRequest.state>} An arrays of requests in state SPOOLED
+  # Retrieve the next batch of {SPOOLED} items
+  # @param batchSize {Number} The maximum number of items to be returned
+  # @return {Array<RequestItem.state>} An arrays of items in state SPOOLED
   spooled: (batchSize = 20) ->
-    @requests.getDynamicView(Phase.SPOOLED).branchResultset().limit(batchSize).data()
+    @items.getDynamicView(Phase.SPOOLED).branchResultset().limit(batchSize).data()
 
 
 module.exports = {

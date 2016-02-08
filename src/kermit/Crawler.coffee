@@ -1,31 +1,31 @@
 {Extension} = require './Extension'
-{INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, ExtensionPoint} = require './Crawler.ExtensionPoints.coffee'
+{INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, ExtensionPoint} = require './Crawler.ExtensionPoints'
 {ExtensionPointConnector, RequestLookup, Spooler, Completer, Cleanup} = require './extensions/core'
-{QueueConnector, QueueWorker} = require './extensions/core.queues.coffee'
-{RequestStreamer} = require './extensions/core.streaming.coffee'
-{QueueManager} = require './QueueManager.coffee'
-{RequestFilter, UrlFilter} = require './extensions/core.filter.coffee'
-{Phase, CrawlRequest} = require './CrawlRequest'
-{LogHub, LogConfig} = require './Logging.coffee'
-{obj} = require './util/tools.coffee'
+{QueueConnector, QueueWorker} = require './extensions/core.queues'
+{RequestStreamer} = require './extensions/core.streaming'
+{QueueManager} = require './QueueManager'
+{RequestFilter, UrlFilter} = require './extensions/core.filter'
+{Phase, RequestItem} = require './RequestItem'
+{LogHub, LogConfig} = require './Logging'
+{obj} = require './util/tools'
 
 _ = require 'lodash'
 fse = require 'fs-extra'
 
 
 ###
-The Crawler coordinates execution of submitted {CrawlRequest} by applying all {Extension}s
-matching the request's current phase.
+The Crawler coordinates execution of submitted {RequestItem} by applying all {Extension}s
+matching the item's current phase.
 
-All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
+All functionality for item handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as {Extension}s to {ExtensionPoint}s.
 
 Extensions are added to extension points during initialization. Core extensions are added automatically,
 user extensions are specified in the options of the Crawler's constructor.
 
 The crawler defines an extension point for each distinct value of {RequestPhase}.
-Each ExtensionPoint wraps the processing steps carried out when the request phase changes
-to a new value. The phase transitions implicitly define a request flow illustrated in the
+Each ExtensionPoint wraps the processing steps carried out when the item phase changes
+to a new value. The phase transitions implicitly define a item flow illustrated in the
 diagram below.
 
 @example Configuration Parameters
@@ -36,7 +36,7 @@ diagram below.
       Logging : LogConfig.detailed
       Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the [Streamer]
-      Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
 ###
 class Crawler
 
@@ -82,7 +82,7 @@ class Crawler
       new Cleanup]
     @initialize()
     # Usually this handler is considered back practice but in case of processing errors
-    # of single requests, operation should continue.
+    # of single items, operation should continue.
     process.on 'uncaughtException', (error) =>
     # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually allow the process to exit
       @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
@@ -108,12 +108,12 @@ class Crawler
       catch error
         @log.error? "Shutdown error in #{extension.name}", {error : error.toString() stack: error.stack()}
 
-  # Create a new {CrawlRequest} and start its processing
-  # @return [CrawlRequest] The created request
+  # Create a new {RequestItem} and start its processing
+  # @return [RequestItem] The created item
   execute: (url, meta) ->
     @log.debug? "Executing #{url}"
-    request = new CrawlRequest url, meta, @log
-    ExtensionPoint.execute @, INITIAL.phase, request
+    item = new RequestItem url, meta, @log
+    ExtensionPoint.execute @, INITIAL.phase, item
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
@@ -152,8 +152,8 @@ class CrawlerContext
   execute : (url, meta) =>
     @crawler.execute url, meta
 
-  executeRequest : (request) ->
-    ExtensionPoint.execute @crawler, request.phase(), request
+  executeRequest : (item) ->
+    ExtensionPoint.execute @crawler, item.phase(), item
 
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts
@@ -179,7 +179,7 @@ class CrawlerConfig
       Logging   : LogConfig.detailed
       Queueing   : {filename : "#{obj.randomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Streaming: {} # Options for the {Streamer}
-      Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]
+      Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
 
   ###
   @param config [Object] The configuration parameters
@@ -237,7 +237,7 @@ class Scheduler
   schedule: (url, meta) ->
     if not @urlFilter.isAllowed(url) or @queue.isKnown url
       return
-    if @queue.requestsWaiting().length < threshold
+    if @queue.itemsWaiting().length < threshold
       @crawler.execute url, meta
     else
       @queue.schedule url, meta
@@ -246,7 +246,7 @@ class Scheduler
   # @private
   start: () ->
     pushUrls = () =>
-      waiting = @queue.requestsWaiting().length
+      waiting = @queue.itemsWaiting().length
       if waiting < threshold
         urls = @queue.nextUrlBatch(threshold - waiting)
         @crawler.log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']

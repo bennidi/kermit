@@ -1,16 +1,16 @@
-{Phase} = require('../CrawlRequest')
+{Phase} = require('../RequestItem')
 {Extension} = require '../Extension'
 httpRequest = require 'request'
 https = require 'https'
 http = require 'http'
 socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
-{LogStream} = require '../util/tools.coffee'
+{LogStream} = require '../util/tools'
 
 ###
 
-  Execute the request and retrieve the result for further processing.
-  This extension actually issues http(s) requests and receives the resulting data.
+  Execute the item and retrieve the result for further processing.
+  This extension actually issues http(s) items and receives the resulting data.
 
   @see https://www.paypal-engineering.com/2014/04/01/outbound-ssl-performance-in-node-js/ Paypal Engineering on SSL performance
 ###

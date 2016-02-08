@@ -1,14 +1,19 @@
 # Design overview
 
-The core of kermit is built around the representation of a request to a given URL - [CrawlRequest](../../class/CrawlRequest.html) - 
-and the implementation of a series of well-defined "state" transitions applied to each of those requests.
-
-The "states" are referred to as **processing phases** and each transition moves the request 
-further down from phase [INITIAL](../../class/INITIAL.html) to phase [COMPLETE](../../class/COMPLETE.html). 
+The core of kermit is built around the representation of a request to a given URL - [RequestItem](../../class/RequestItem.html) - 
+and the implementation of a series of well-defined **processing phases** applied to each of those items. Items "transition" from one 
+phase to the other, usually from phase [INITIAL](../../class/INITIAL.html) to phase [COMPLETE](../../class/COMPLETE.html).
 
 ## Processing Phases
 
-All defined processing phases as well as their allowed transitions are illustrated in the following diagram:
+Each processing phase contains a set of handlers that do some work on the request item they receive.
+These handlers are provided by [Extension](../../class/Extension.html)s and added during initialization of the [Crawler](../../class/Crawler.html)
+For each processing phase all matching handlers are called to do their processing logic with the item.
+
+All requests are held in a queue and the node.js event loop is used to to schedule processing callbacks for 
+the requests that are at the head of the queue.
+
+All defined processing phases as well as their allowed transitions are illustrated in the diagram below.
 
 ```txt
  .-------------.
@@ -40,11 +45,6 @@ All defined processing phases as well as their allowed transitions are illustrat
 
 
 ```
-
-For each processing phase all matching handlers are called to do their processing logic with the request.
-
-All requests are held in a queue and the node.js event loop is used to to schedule processing callbacks for 
-the requests that are at the head of the queue.
 
 ## Processing Extensions
 [Extension](../../class/Extension.html)s are reusable components designed to accomplish specific tasks like storing content 

@@ -1,8 +1,8 @@
 {Crawler} = require './Crawler'
-{RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils.coffee'
-{ResponseStreamLogger} = require './util/spec.utils.coffee'
-{Phase} = require './CrawlRequest.coffee'
-{ByPattern} = require './extensions/core.filter.coffee'
+{RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils'
+{ResponseStreamLogger} = require './util/spec.utils'
+{Phase} = require './RequestItem'
+{ByPattern} = require './extensions/core.filter'
 
 describe  'Crawler',  ->
   @timeout 3000
@@ -37,7 +37,7 @@ describe  'Crawler',  ->
       Kermit.execute("http://www.google.com")
 
 
-    it '# extensions can prevent a request from being processed', (done)->
+    it '# extensions can prevent a item from being processed', (done)->
       Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
       Recorder.validate("http://www.google.com/", [Phase.INITIAL])
       Recorder.validate("http://www.github.com/", [Phase.INITIAL])

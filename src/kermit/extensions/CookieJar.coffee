@@ -7,9 +7,9 @@ class CookieSupport extends crawl.extensions.Extension
     super  ["PROCESSING"]
     @cookiejar = new tCookie.CookieJar();
 
-  apply: (request) ->
+  apply: (item) ->
     Cookie = tCookie.Cookie;
-    cookie = Cookie.parse(request.response.headers["set-cookie"]);
+    cookie = Cookie.parse(item.response.headers["set-cookie"]);
 
   initialize: (context) ->
     super context

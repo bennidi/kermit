@@ -1,14 +1,14 @@
-{QueueConnector} = require './core.queues.coffee'
-{CrawlRequest} = require '../CrawlRequest.coffee'
-{MockContext} =  require '../util/spec.utils.coffee'
+{QueueConnector} = require './core.queues'
+{RequestItem} = require '../RequestItem'
+{MockContext} =  require '../util/spec.utils'
 
 describe  'Queueing extension',  ->
   describe 'QueueConnector', ->
     mockCtx = new MockContext
-    it '# can enrich requests for state tracing', ->
+    it '# can enrich items for state tracing', ->
       QueueConnector = new QueueConnector
       QueueConnector.initialize mockCtx
-      TestRequest = new CrawlRequest 'www.npmjs.com', mockCtx
+      TestRequest = new RequestItem 'www.npmjs.com', mockCtx
       QueueConnector.apply TestRequest
       expect(mockCtx.queue.initial().length).to.equal(1)
       expect(mockCtx.queue.spooled().length).to.equal(0)

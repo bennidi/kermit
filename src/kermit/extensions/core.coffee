@@ -1,20 +1,20 @@
-{Phase} = require '../CrawlRequest'
+{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
 {ExtensionPoint} = require '../Crawler'
 
-# Adds listeners to the requests such that each phase transition will
+# Adds listeners to the items such that each phase transition will
 # trigger execution of the respective {ExtensionPoint}
 class ExtensionPointConnector extends Extension
 
   # @nodoc
   constructor: () ->
-    super INITIAL : (request) =>
-      request.context = @context
-      request.onChange 'phase', @executePhase
+    super INITIAL : (item) =>
+      item.context = @context
+      item.onChange 'phase', @executePhase
 
   # @nodoc
-  executePhase: (request) =>
-    @context.executeRequest request
+  executePhase: (item) =>
+    @context.executeRequest item
 
 
 # Handle phase transition {INITIAL} -> {SPOOLED}
@@ -22,30 +22,30 @@ class Spooler extends Extension
 
   # Create a Spooler
   constructor: ()->
-    super INITIAL : (request) -> request.spool()
+    super INITIAL : (item) -> item.spool()
 
 # Handle phase transition {FETCHED} -> {COMPLETE}
 class Completer extends Extension
 
   # Create a Completer
   constructor: ->
-    super FETCHED : (request) -> request.complete()
+    super FETCHED : (item) -> item.complete()
 
-# Add capability to lookup a request object by its id.
-# Note: This is used to find the living request object for a given persistent state
+# Add capability to lookup a item object by its id.
+# Note: This is used to find the living item object for a given persistent state
 # stored in lokijs.
 class RequestLookup extends Extension
 
   # @nodoc
   constructor: () ->
     super
-      INITIAL : (request) => @requests[request.id()] = request
+      INITIAL : (item) => @items[item.id()] = item
 
-  # Expose a map that allows to lookup a {CrawlRequest} object by id
+  # Expose a map that allows to lookup a {RequestItem} object by id
   initialize: (context) ->
     super context
-    @requests = {}
-    context.share "requests", @requests
+    @items = {}
+    context.share "items", @items
 
 
 # Run cleanup on all terminal phases
@@ -59,21 +59,21 @@ class Cleanup extends Extension
       ERROR : @error
 
   # Do cleanup work to prevent memory leaks
-  complete: (request) ->
-    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    @context.queue.completed(request) # Remove from
-    request.cleanup()
-    @log.trace? request.toString()
+  complete: (item) ->
+    delete @context.items[item.id()] # Remove from Lookup table to allow GC
+    @context.queue.completed(item) # Remove from
+    item.cleanup()
+    @log.trace? item.toString()
 
   # Do cleanup work to prevent memory leaks
-  error: (request) ->
-    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    request.cleanup()
+  error: (item) ->
+    delete @context.items[item.id()] # Remove from Lookup table to allow GC
+    item.cleanup()
 
   # Do cleanup work to prevent memory leaks
-  canceled: (request) ->
-    delete @context.requests[request.id()] # Remove from Lookup table to allow GC
-    request.cleanup()
+  canceled: (item) ->
+    delete @context.items[item.id()] # Remove from Lookup table to allow GC
+    item.cleanup()
 
 module.exports = {
   ExtensionPointConnector

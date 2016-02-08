@@ -1,10 +1,10 @@
-{ExtensionPointConnector, Spooler, Completer, RequestLookup} = require './core.coffee'
+{ExtensionPointConnector, Spooler, Completer, RequestLookup} = require './core'
 
 describe  'Core extensions',  ->
 
   describe 'ExtensionPointConnector', ->
 
-    it '# auto-connects requests to the extension points', ->
+    it '# auto-connects items to the extension points', ->
       expect(ExtensionPointConnector).not.to.be.null()
 
   describe 'Spooler', ->
@@ -20,6 +20,6 @@ describe  'Core extensions',  ->
 
   describe 'RequestLookup', ->
 
-    it '# extends the context with a map to lookup requests by id', ->
+    it '# extends the context with a map to lookup items by id', ->
       expect(RequestLookup).not.to.be.null()
 

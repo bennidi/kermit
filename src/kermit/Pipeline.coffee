@@ -1,9 +1,9 @@
 through = require 'through2'
 {PassThrough} = require 'stream'
-{HtmlExtractor} = require './Extractor.coffee'
-{DevNull} = require './util/tools.streams.coffee'
+{HtmlExtractor} = require './Extractor'
+{DevNull} = require './util/tools.streams'
 _ = require 'lodash'
-{obj} = require('./util/tools.coffee')
+{obj} = require('./util/tools')
 
 ###
   The pipeline is a convenience abstraction that allows to attach writable streams as destinations
@@ -19,7 +19,7 @@ _ = require 'lodash'
 ###
 class Pipeline
 
-  # Create a new Pipeline for the given {CrawlRequest}
+  # Create a new Pipeline for the given {RequestItem}
   constructor : (@log, @crawlRequest) ->
     @incoming = new PassThrough() # stream.PassThrough serves as connector
     @destinations = {} # map destination listeners using regex on mimetype
@@ -46,7 +46,7 @@ class Pipeline
         @incoming.pipe @destinations[id]
         streams.push @destinations[id].constructor.name
     if _.isEmpty streams # For some responses a matching destination might not be found
-      # In that case the request phase is simply set to 'FETCHED' to continue processing
+      # In that case the item phase is simply set to 'FETCHED' to continue processing
       @log.debug? "No matching destinations found. Skipping.", tags:['Pipeline']
       @crawlRequest.fetched()
     else

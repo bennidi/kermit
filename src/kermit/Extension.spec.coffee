@@ -1,4 +1,4 @@
-{Extension} = require './Extension.coffee'
+{Extension} = require './Extension'
 
 describe  'Extension',  ->
   describe 'Extending an extension', ->

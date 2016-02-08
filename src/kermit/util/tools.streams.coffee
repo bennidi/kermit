@@ -1,4 +1,4 @@
-{Extension} = require '../Extension.coffee'
+{Extension} = require '../Extension'
 stream = require 'stream'
 _ = require 'lodash'
 util = require 'util'

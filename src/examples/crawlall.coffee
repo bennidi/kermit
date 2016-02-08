@@ -1,7 +1,7 @@
 {Crawler, ext} = require '../kermit/kermit.modules.coffee'
 {ResourceDiscovery, Monitoring, OfflineStorage} = ext
 
-# opts: rateLimit, request depth
+# opts: rateLimit, item depth
 Kermit = new Crawler
   name: "downloader"
   extensions : [

@@ -1,9 +1,9 @@
-{obj} = require './util/tools.coffee'
+{obj} = require './util/tools'
 {PassThrough, Transform, Writable} = require 'stream'
 fs = require 'fs-extra'
 _ = require 'lodash'
 dateFormat = require 'dateformat'
-{basic} = require './Logging.conf.coffee'
+{basic} = require './Logging.conf'
 
 # Aggregates log message and additional (meta-)data. Constructed whenever
 # the log() method of {LogHub} is called with more than just the message.
@@ -163,7 +163,7 @@ class LogHub
       when destination.appender.type instanceof Function then new destination.appender.type destination.appender
       else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
-      if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but requested by destination #{obj.print destination}"
+      if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but itemed by destination #{obj.print destination}"
       formatter = destination.formatter or LogFormats.llog()
       @dispatcher[level]
         .pipe new LogFormatHandler formatter, level
@@ -212,5 +212,5 @@ module.exports = {
   LogAppender
   FileAppender
   ConsoleAppender
-  LogConfig : require './Logging.conf.coffee'
+  LogConfig : require './Logging.conf'
 }

@@ -1,7 +1,7 @@
-{Phase} = require '../CrawlRequest'
+{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
-{byExtension} = require '../util/mimetypes.coffee'
-{ContentType} = require('../Pipeline.coffee')
+{byExtension} = require '../util/mimetypes'
+{ContentType} = require '../Pipeline'
 fse = require 'fs-extra'
 fs = require 'fs'
 Mitm = require 'mitm'
@@ -30,7 +30,7 @@ toLocalPath = (basedir = "", url) ->
   augmentedPath = [uri.path().slice(0, lastDot), uri.query(), uri.path().slice(lastDot)].join('');
   "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
 
-# Store request results in local repository for future serving from filesystem
+# Store item results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
 
   @defaultOpts = () ->
@@ -39,12 +39,12 @@ class OfflineStorage extends Extension
   constructor: (opts = {}) ->
     @opts = @merge OfflineStorage.defaultOpts(), opts
     super
-      READY: (request) =>
+      READY: (item) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-        path = toLocalPath @basedir , request.url()
+        path = toLocalPath @basedir , item.url()
         if @shouldStore path
-          @log.debug? "Storing #{request.url()} to #{path}", tags: ['OfflineStorage']
-          request.pipeline().stream ContentType([/.*/g]), fse.createOutputStream path
+          @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
+          item.pipeline().stream ContentType([/.*/g]), fse.createOutputStream path
 
   shouldStore: (path) ->
     @log.debug? "#{path} already exists" if exists = fileExists path
@@ -80,9 +80,9 @@ class OfflineServer extends Extension
       if not fileExists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
-    # Redirect requests to local server
-    @mitm.on 'request', (request, response) =>
-      url = "http://#{request.headers.host}#{request.url}"
+    # Redirect items to local server
+    @mitm.on 'item', (item, response) =>
+      url = "http://#{item.headers.host}#{item.url}"
       localUrl = toLocalPath "http://localhost:3000", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
       response.writeHead 302, 'Location': localUrl

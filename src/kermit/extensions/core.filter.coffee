@@ -1,4 +1,4 @@
-{Phase} = require '../CrawlRequest'
+{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
 _ = require 'lodash'
 
@@ -9,7 +9,7 @@ _ = require 'lodash'
 class Filters
 
   @ByPattern: (pattern) ->
-    (request) -> pattern.test request.url()
+    (item) -> pattern.test item.url()
 
   @MimeTypes:
     CSS : Filters.ByPattern /.*\.css/g
@@ -17,9 +17,9 @@ class Filters
     PDF : Filters.ByPattern /.*\.pdf/g
   @AllUrls : Filters.ByPattern /.*/g
 
-  @match : (request, filters) ->
+  @match : (item, filters) ->
     for filter in filters
-      return true if filter(request)
+      return true if filter(item)
     false
 
   @matchUrl : (url, patterns) ->
@@ -39,7 +39,7 @@ class UrlFilter
 
   # @nodoc
   constructor: (opts = {}, @log) ->
-    {obj} = require '../util/tools.coffee'
+    {obj} = require '../util/tools'
     @opts = obj.overlay UrlFilter.defaultOpts(), opts
     @log.debug? "", @opts
 
@@ -53,7 +53,7 @@ class UrlFilter
       @log.debug? "#{url} on blacklist", tags:['UrlFilter']
       return false
     true
-# Filter newly created requests based on a flexible set of filter functions.
+# Filter newly created items based on a flexible set of filter functions.
 class RequestFilter extends Extension
 
   @defaultOpts : () ->
@@ -68,15 +68,15 @@ class RequestFilter extends Extension
     @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
 
   # Apply defined filters
-  # Cancels the request if it is not whitelisted or blacklisted
-  # @param request {CrawlRequest} The request to filter
-  apply: (request) ->
-    if not Filters.match(request, @opts.allow)
-      @log.trace? "#{request.url()} not on whitelist", tags: ['RequestFilter']
-      return request.cancel()
-    if Filters.match(request, @opts.deny)
-      @log.trace? "#{request.url()} on blacklist", tags: ['RequestFilter']
-      return request.cancel()
+  # Cancels the item if it is not whitelisted or blacklisted
+  # @param item {RequestItem} The item to filter
+  apply: (item) ->
+    if not Filters.match(item, @opts.allow)
+      @log.trace? "#{item.url()} not on whitelist", tags: ['RequestFilter']
+      return item.cancel()
+    if Filters.match(item, @opts.deny)
+      @log.trace? "#{item.url()} on blacklist", tags: ['RequestFilter']
+      return item.cancel()
 
 module.exports = {
   UrlFilter

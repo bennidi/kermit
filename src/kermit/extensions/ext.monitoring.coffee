@@ -1,11 +1,11 @@
-{Phase} = require('../CrawlRequest')
+{Phase} = require('../RequestItem')
 {Extension} = require '../Extension'
-{obj} = require '../util/tools.coffee'
+{obj} = require '../util/tools'
 _ = require 'lodash'
 
 ###
   Generate and log runtime statistics on queueing system and
-  request processing.
+  item processing.
 ###
 class Monitoring extends Extension
 
@@ -15,18 +15,18 @@ class Monitoring extends Extension
 
   constructor: (opts) ->
     super
-      INITIAL : (request) => @count Phase.INITIAL
-      SPOOLED : (request) => @durationOf request, Phase.INITIAL, @count Phase.SPOOLED
-      READY : (request) => @durationOf request, Phase.SPOOLED, @count Phase.READY
-      FETCHING : (request) => @durationOf request, Phase.READY, @count Phase.FETCHING
-      FETCHED : (request) => @durationOf request, Phase.FETCHING, @count Phase.FETCHED
-      COMPLETE : (request) => @durationOf request, Phase.FETCHED, @count Phase.COMPLETE
-      ERROR : (request) => @count Phase.ERROR
-      CANCELED : (request) => @count Phase.CANCELED
+      INITIAL : (item) => @count Phase.INITIAL
+      SPOOLED : (item) => @durationOf item, Phase.INITIAL, @count Phase.SPOOLED
+      READY : (item) => @durationOf item, Phase.SPOOLED, @count Phase.READY
+      FETCHING : (item) => @durationOf item, Phase.READY, @count Phase.FETCHING
+      FETCHED : (item) => @durationOf item, Phase.FETCHING, @count Phase.FETCHED
+      COMPLETE : (item) => @durationOf item, Phase.FETCHED, @count Phase.COMPLETE
+      ERROR : (item) => @count Phase.ERROR
+      CANCELED : (item) => @count Phase.CANCELED
     @counters =
-      requests : {}
+      items : {}
       durations: {}
-    @counters.requests[phase] = 0 for phase in Phase.ALL
+    @counters.items[phase] = 0 for phase in Phase.ALL
     @counters.durations[phase] = {total:0,min:100000,max:0,avg:0} for phase in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
     @opts = @merge Monitoring.defaultOpts(), opts
 
@@ -38,12 +38,12 @@ class Monitoring extends Extension
     statsLogger = () =>
       try
         start = new Date()
-        stats =  _.merge {}, @counters, {current: FETCHING: @queue.requests.getDynamicView('FETCHING').data().length}
-        stats.requests.ACCEPTED = stats.requests.INITIAL - stats.requests.CANCELED
-        waiting = @queue.requests.find(phase: $in: ['INITIAL', 'SPOOLED']).length
+        stats =  _.merge {}, @counters, {current: FETCHING: @queue.items.getDynamicView('FETCHING').data().length}
+        stats.items.ACCEPTED = stats.items.INITIAL - stats.items.CANCELED
+        waiting = @queue.items.find(phase: $in: ['INITIAL', 'SPOOLED']).length
         scheduled = @queue.urls.getDynamicView('scheduled').data().length
         duration = new Date() - start
-        @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.requests.COMPLETE}", tags : ['Stats', 'Count']
+        @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.items.COMPLETE}", tags : ['Stats', 'Count']
         durations = ("#{phase}(#{times.min},#{times.max},#{times.avg})" for phase,times of stats.durations)
         @log.info? "#{durations}", tags : ['Stats', 'Duration']
       catch error
@@ -56,13 +56,13 @@ class Monitoring extends Extension
   shutdown:() ->
     clearInterval @stats
 
-  # Count the request (phase)
+  # Count the item (phase)
   count : (phase) ->
-    @counters.requests[phase]++
+    @counters.items[phase]++
 
-  # Compute the duration of the request phase and add to request counters
-  durationOf: (request, preceedingPhase, count) ->
-    duration = request.durationOf preceedingPhase
+  # Compute the duration of the item phase and add to item counters
+  durationOf: (item, preceedingPhase, count) ->
+    duration = item.durationOf preceedingPhase
     if count % 500 is 0 # reset counters to emulate sliding window
       @counters.durations[preceedingPhase].total = duration
       @counters.durations[preceedingPhase].min = duration
@@ -72,7 +72,7 @@ class Monitoring extends Extension
       @counters.durations[preceedingPhase].total += duration
       @counters.durations[preceedingPhase].min = Math.min @counters.durations[preceedingPhase].min, duration
       @counters.durations[preceedingPhase].max = Math.max @counters.durations[preceedingPhase].max, duration
-      @counters.durations[preceedingPhase].avg = Math.floor(@counters.durations[preceedingPhase].total / @counters.requests[preceedingPhase])
+      @counters.durations[preceedingPhase].avg = Math.floor(@counters.durations[preceedingPhase].total / @counters.items[preceedingPhase])
 
 module.exports = {
   Monitoring

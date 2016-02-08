@@ -1,4 +1,4 @@
-{HtmlExtractor} = require './Extractor.coffee'
+{HtmlExtractor} = require './Extractor'
 {LocalHttpServer} = require './util/httpserver'
 
 process = (extractor, input) ->
