@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit the Sloth (main)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,8 +11,8 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/codo.main.readme.md.html' title='Kermit the Sloth (main)'>
-      Kermit the Sloth (main)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
@@ -37,28 +37,23 @@
       <div class='docstring'>
   <p>Wrapper around <a href='../class/LogHub.html'>LogHub</a> that provides a method for each available log level.
 This allows for convenient use of the existential operator to guard log statements from
-ever being executed.
-Note: Using the existential operator does not only prevent the log message from being sent
+ever being executed.</p><p>Note: Using the existential operator does not only prevent the log message from being sent
 to the appenders but actually prevents the message from being constructed! This allows to make
 heavy use of debug logging without introducing any GC overhead into production code.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      Lazy logging to log level &#39;debug&#39;
+    </h4>
+    <pre><code class='coffeescript'>logger = hub.logger()
+logger.debug? &quot;This String is only created if log level debug exists&quot;, {meta: &quot;The same for any metadata&quot;}</code></pre>
+  </div>
 </div>
 <div class='tags'>
 </div>
-      <h2>Constructor Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='constructor-dynamic'>
-      #
-(void)
-<b>constructor</b><span>(levels = [], hub)</span>
-      <br>
-    </p>
-    
-  </div>
-</div>
     </div>
     <div id='footer'>
-  January 29, 16 18:22:28 by
+  February 08, 16 09:54:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit the Sloth (main)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,8 +11,8 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/codo.main.readme.md.html' title='Kermit the Sloth (main)'>
-      Kermit the Sloth (main)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
@@ -35,40 +35,27 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>The Crawler coordinates execution of submitted <a href='../class/CrawlRequest.html'>CrawlRequest</a> by applying all <a href='../class/Extension.html'>Extension</a>s
-matching the request&#39;s current status.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
+  <p>The Crawler coordinates execution of submitted <a href='../class/RequestItem.html'>RequestItem</a> by applying all <a href='../class/Extension.html'>Extension</a>s
+matching the request&#39;s current phase.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>Extensions are added to extension points during initialization. Core extensions are added automatically,
-user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of <a href='../class/RequestStatus.html'>RequestStatus</a>.
-Each ExtensionPoint wraps the processing steps carried out when the request status changes
-to a new value. The status transitions implicitly define a request flow illustrated in the
-diagram below.</p><pre><code class="lang-txt"> .-------------.
- |   INITIAL   |
- |-------------|
- | Unprocessed |
- |             |
- &#39;-------------&#39;   \
-        |           \
-        |            \
-        |             v
-        v             .--------------------.
- .-------------.      |  ERROR | CANCELED  |      .-----------.
- |  SPOOLED    |      |--------------------|      | COMPLETE  |
- |-------------|  ---&gt;| - Error            |      |-----------|
- | Waiting for |      | - Duplicate        |      | Done!     |
- | free slot   |      | - Blacklisted etc. |      |           |
- &#39;-------------&#39;      &#39;--------------------&#39;      &#39;-----------&#39;
-        |             ^         ^          ^            ^
-        |            /          |           \           |
-        |           /           |            \          |
-        v          /                          \         |
- .-------------.         .-------------.          .-----------.
- |    READY    |         |  FETCHING   |          |  FETCHED  |
- |-------------|         |-------------|          |-----------|
- | Ready for   |--------&gt;| Request     |---------&gt;| Content   |
- | fetching    |         | streaming   |          | received  |
- &#39;-------------&#39;         &#39;-------------&#39;          &#39;-----------&#39;
-</code></pre>
-
+user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of {RequestPhase}.
+Each ExtensionPoint wraps the processing steps carried out when the request phase changes
+to a new value. The phase transitions implicitly define a request flow illustrated in the
+diagram below.</p>
+  <div class='examples'>
+    <h3>Examples:</h3>
+    <h4>
+      Configuration Parameters
+    </h4>
+    <pre><code class='coffeescript'>  name      : &quot;kermit&quot;
+  basedir   : &quot;&#47;tmp&#47;sloth&quot;
+  extensions: [] # Clients can add extensions
+  options   : # Options of each core extension can be customized here
+    Logging : LogConfig.detailed
+    Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+    Streaming: {} # Options for the [Streamer]
+    Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]</code></pre>
+  </div>
 </div>
 <div class='tags'>
 </div>
@@ -103,12 +90,12 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
     <span class='signature'>
       <a href='#execute-dynamic'>
         #
-(CrawlRequest)
+(RequestItem)
 <b>execute</b><span>(url, meta)</span>
       </a>
     </span>
     <span class='desc'>
-      Create a new <a href='../class/CrawlRequest.html'>CrawlRequest</a> and start its processing 
+      Create a new <a href='../class/RequestItem.html'>RequestItem</a> and start its processing 
     </span>
   </li>
   <li>
@@ -142,7 +129,7 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(config = {})</span>
+<b>constructor</b><span>(options = {})</span>
       <br>
     </p>
     <div class='docstring'>
@@ -152,7 +139,7 @@ diagram below.</p><pre><code class="lang-txt"> .-------------.
   <h3>Parameters:</h3>
   <ul class='param'>
     <li>
-      <span class='name'>config</span>
+      <span class='name'>options</span>
       <span class='type'>
         (
           <tt>Object</tt>
@@ -204,12 +191,12 @@ to all contained extensions</p>
   <div class='method_details'>
     <p class='signature' id='execute-dynamic'>
       #
-(CrawlRequest)
+(RequestItem)
 <b>execute</b><span>(url, meta)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Create a new <a href='../class/CrawlRequest.html'>CrawlRequest</a> and start its processing</p>
+  <p>Create a new <a href='../class/RequestItem.html'>RequestItem</a> and start its processing</p>
 </div>
 <div class='tags'>
   <h3>Returns:</h3>
@@ -217,7 +204,7 @@ to all contained extensions</p>
     <li>
       <span class='type'></span>
       (
-        <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+        <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
       )
       &mdash;
       <span class='desc'>The created request </span>
@@ -254,7 +241,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  January 29, 16 18:22:28 by
+  February 08, 16 09:54:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

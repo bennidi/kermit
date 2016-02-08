@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit the Sloth (main)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,8 +11,8 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/codo.main.readme.md.html' title='Kermit the Sloth (main)'>
-      Kermit the Sloth (main)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
@@ -64,17 +64,6 @@ Takes care that concurrency and rate limits are met.</p>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#initialize-dynamic'>
-        #
-(void)
-<b>initialize</b><span>(context)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
       <a href='#processRequests-dynamic'>
         #
 (void)
@@ -84,28 +73,7 @@ Takes care that concurrency and rate limits are met.</p>
     <span class='bound note title'>Bound</span>
     <span class='note private title'>Private</span>
     <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#localBatch-dynamic'>
-        #
-(void)
-<b>localBatch</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#proceed-dynamic'>
-        #
-(void)
-<b>proceed</b><span>(request)</span>
-      </a>
-    </span>
-    <span class='desc'>
+      This is run at intervals to process waiting requests 
     </span>
   </li>
   <li>
@@ -117,6 +85,7 @@ Takes care that concurrency and rate limits are met.</p>
       </a>
     </span>
     <span class='desc'>
+      Stop the continuous execution of request spooling 
     </span>
   </li>
 </ul>
@@ -165,15 +134,6 @@ Takes care that concurrency and rate limits are met.</p>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='initialize-dynamic'>
-      #
-(void)
-<b>initialize</b><span>(context)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
     <p class='signature' id='processRequests-dynamic'>
       #
 (void)
@@ -182,26 +142,11 @@ Takes care that concurrency and rate limits are met.</p>
       <span class='note private'>Private</span>
       <br>
     </p>
-    <div class='tags'>
+    <div class='docstring'>
+  <p>This is run at intervals to process waiting requests</p>
 </div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='localBatch-dynamic'>
-      #
-(void)
-<b>localBatch</b><span>()</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='proceed-dynamic'>
-      #
-(void)
-<b>proceed</b><span>(request)</span>
-      <br>
-    </p>
-    
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='shutdown-dynamic'>
@@ -210,12 +155,16 @@ Takes care that concurrency and rate limits are met.</p>
 <b>shutdown</b><span>()</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Stop the continuous execution of request spooling</p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  January 29, 16 18:22:28 by
+  February 08, 16 09:54:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

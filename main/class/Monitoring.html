@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit the Sloth (main)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,8 +11,8 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/codo.main.readme.md.html' title='Kermit the Sloth (main)'>
-      Kermit the Sloth (main)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
@@ -71,6 +71,7 @@ request processing.</p>
       </a>
     </span>
     <span class='desc'>
+      Add stats counter at intervals 
     </span>
   </li>
   <li>
@@ -82,17 +83,31 @@ request processing.</p>
       </a>
     </span>
     <span class='desc'>
+      Remove stats generator 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#track-dynamic'>
+      <a href='#count-dynamic'>
         #
 (void)
-<b>track</b><span>(request)</span>
+<b>count</b><span>(phase)</span>
       </a>
     </span>
     <span class='desc'>
+      Count the request (phase) 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#durationOf-dynamic'>
+        #
+(void)
+<b>durationOf</b><span>(request, preceedingPhase, count)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Compute the duration of the request phase and add to request counters 
     </span>
   </li>
 </ul>
@@ -143,7 +158,11 @@ request processing.</p>
 <b>initialize</b><span>(context)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Add stats counter at intervals</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='shutdown-dynamic'>
@@ -152,21 +171,42 @@ request processing.</p>
 <b>shutdown</b><span>()</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Remove stats generator</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='track-dynamic'>
+    <p class='signature' id='count-dynamic'>
       #
 (void)
-<b>track</b><span>(request)</span>
+<b>count</b><span>(phase)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Count the request (phase)</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='durationOf-dynamic'>
+      #
+(void)
+<b>durationOf</b><span>(request, preceedingPhase, count)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Compute the duration of the request phase and add to request counters</p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  January 29, 16 18:22:28 by
+  February 08, 16 09:54:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

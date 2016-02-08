@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit the Sloth (main)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,8 +11,8 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/codo.main.readme.md.html' title='Kermit the Sloth (main)'>
-      Kermit the Sloth (main)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
@@ -35,8 +35,8 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Provides access to a queue like system that allows to access <a href='../class/CrawlRequest.html'>CrawlRequest</a>s by their
-status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.org">http://lokijs.org</a> lokijs]
+  <p>Provides access to a queue like system that allows to access <a href='../class/RequestItem.html'>RequestItem</a>s by their
+phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.org">http://lokijs.org</a> lokijs]
 =&gt; Queues are emulated with dynamic views on a single request collection.</p>
 </div>
 <div class='tags'>
@@ -57,10 +57,10 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
   </li>
   <li>
     <span class='signature'>
-      <a href='#requestsByStatus-dynamic'>
+      <a href='#requestsByPhase-dynamic'>
         #
 (void)
-<b>requestsByStatus</b><span>(statuses = Status.ALL, result = {})</span>
+<b>requestsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       </a>
     </span>
     <span class='desc'>
@@ -83,7 +83,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
       <a href='#updateUrl-dynamic'>
         #
 (void)
-<b>updateUrl</b><span>(url, status, meta)</span>
+<b>updateUrl</b><span>(url, phase, meta)</span>
       </a>
     </span>
     <span class='desc'>
@@ -128,7 +128,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
       <a href='#hasUrl-dynamic'>
         #
 (Boolean)
-<b>hasUrl</b><span>(url, status)</span>
+<b>hasUrl</b><span>(url, phase)</span>
       </a>
     </span>
     <span class='desc'>
@@ -247,19 +247,19 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
       </a>
     </span>
     <span class='desc'>
-      Get all <a href='../class/CrawlRequest.html'>CrawlRequest</a>s with status {RequestStatus.INITIAL} 
+      Get all <a href='../class/RequestItem.html'>RequestItem</a>s with phase <a href='../class/INITIAL.html'>INITIAL</a> 
     </span>
   </li>
   <li>
     <span class='signature'>
       <a href='#spooled-dynamic'>
         #
-(Array&lt;CrawlRequest.state&gt;)
+(Array&lt;RequestItem.state&gt;)
 <b>spooled</b><span>(batchSize = 20)</span>
       </a>
     </span>
     <span class='desc'>
-      Retrieve the next batch of {RequestStatus.SPOOLED} requests 
+      Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> requests 
     </span>
   </li>
 </ul>
@@ -295,10 +295,10 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='requestsByStatus-dynamic'>
+    <p class='signature' id='requestsByPhase-dynamic'>
       #
 (void)
-<b>requestsByStatus</b><span>(statuses = Status.ALL, result = {})</span>
+<b>requestsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       <br>
     </p>
     
@@ -320,7 +320,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
       <span class='name'>request</span>
       <span class='type'>
         (
-          <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+          <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
@@ -333,7 +333,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
     <p class='signature' id='updateUrl-dynamic'>
       #
 (void)
-<b>updateUrl</b><span>(url, status, meta)</span>
+<b>updateUrl</b><span>(url, phase, meta)</span>
       <br>
     </p>
     
@@ -373,7 +373,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
       <span class='name'>request</span>
       <span class='type'>
         (
-          <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+          <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
@@ -386,7 +386,7 @@ status.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.
     <p class='signature' id='hasUrl-dynamic'>
       #
 (Boolean)
-<b>hasUrl</b><span>(url, status)</span>
+<b>hasUrl</b><span>(url, phase)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -400,7 +400,7 @@ is on its way to being processed</p>
       <span class='name'>request</span>
       <span class='type'>
         (
-          <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+          <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
@@ -474,7 +474,7 @@ is on its way to being processed</p>
       <span class='name'>request</span>
       <span class='type'>
         (
-          <tt><a href='../class/CrawlRequest.html'>CrawlRequest</a></tt>
+          <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
@@ -531,7 +531,7 @@ is on its way to being processed</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Get all <a href='../class/CrawlRequest.html'>CrawlRequest</a>s with status {RequestStatus.INITIAL}</p>
+  <p>Get all <a href='../class/RequestItem.html'>RequestItem</a>s with phase <a href='../class/INITIAL.html'>INITIAL</a></p>
 </div>
 <div class='tags'>
 </div>
@@ -539,12 +539,12 @@ is on its way to being processed</p>
   <div class='method_details'>
     <p class='signature' id='spooled-dynamic'>
       #
-(Array&lt;CrawlRequest.state&gt;)
+(Array&lt;RequestItem.state&gt;)
 <b>spooled</b><span>(batchSize = 20)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Retrieve the next batch of {RequestStatus.SPOOLED} requests</p>
+  <p>Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> requests</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -565,7 +565,7 @@ is on its way to being processed</p>
     <li>
       <span class='type'></span>
       (
-        <tt>Array&lt;CrawlRequest.state&gt;</tt>
+        <tt>Array&lt;RequestItem.state&gt;</tt>
       )
       &mdash;
       <span class='desc'>An arrays of requests in state SPOOLED </span>
@@ -576,7 +576,7 @@ is on its way to being processed</p>
 </div>
     </div>
     <div id='footer'>
-  January 29, 16 18:22:28 by
+  February 08, 16 09:54:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
