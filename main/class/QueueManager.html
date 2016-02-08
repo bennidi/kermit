@@ -35,9 +35,8 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Provides access to a queue like system that allows to access <a href='../class/RequestItem.html'>RequestItem</a>s by their
-phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.org">http://lokijs.org</a> lokijs]
-=&gt; Queues are emulated with dynamic views on a single item collection.</p>
+  <p>Provides access to a queue like system that allows to access <a href='../class/RequestItem.html'>RequestItem</a>s using lokijs query interface.
+Queues are emulated with dynamic views on a single item collection.</p>
 </div>
 <div class='tags'>
 </div>
@@ -57,13 +56,15 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
   </li>
   <li>
     <span class='signature'>
-      <a href='#itemsByPhase-dynamic'>
+      <a href='#itemCountByPhase-dynamic'>
         #
-(void)
-<b>itemsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
+(Object)
+<b>itemCountByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       </a>
     </span>
     <span class='desc'>
+      Count the number of items per phase number of items in that phase
+
     </span>
   </li>
   <li>
@@ -86,18 +87,21 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
 <b>updateUrl</b><span>(url, phase, meta)</span>
       </a>
     </span>
+    <span class='note private title'>Private</span>
     <span class='desc'>
+      Update the url collection such that it reflects the current status of the given URL 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#schedule-dynamic'>
+      <a href='#scheduleUrl-dynamic'>
         #
 (void)
-<b>schedule</b><span>(url, meta)</span>
+<b>scheduleUrl</b><span>(url, meta)</span>
       </a>
     </span>
     <span class='desc'>
+      Add a url as scheduled 
     </span>
   </li>
   <li>
@@ -109,6 +113,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Retrieve the next batch of scheduled URLs (FIFO ordered) 
     </span>
   </li>
   <li>
@@ -145,6 +150,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Whether the given url has already been visited 
     </span>
   </li>
   <li>
@@ -156,6 +162,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Whether the given url is already scheduled 
     </span>
   </li>
   <li>
@@ -167,6 +174,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Whether the given url is currently processing 
     </span>
   </li>
   <li>
@@ -178,6 +186,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Whether the given url is known, i.e. 
     </span>
   </li>
   <li>
@@ -202,29 +211,19 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Retrieve a set of all items with phases defined as &quot;WAITING&quot; 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#hasRequestsWaiting-dynamic'>
+      <a href='#hasItemsWaiting-dynamic'>
         #
 (void)
-<b>hasRequestsWaiting</b><span>()</span>
+<b>hasItemsWaiting</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
       Determines whether there are items left for Spooling 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#hasRequestsUnfinished-dynamic'>
-        #
-(void)
-<b>hasRequestsUnfinished</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
     </span>
   </li>
   <li>
@@ -236,6 +235,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
+      Retrieve 
     </span>
   </li>
   <li>
@@ -295,13 +295,29 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='itemsByPhase-dynamic'>
+    <p class='signature' id='itemCountByPhase-dynamic'>
       #
-(void)
-<b>itemsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
+(Object)
+<b>itemCountByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Count the number of items per phase
+number of items in that phase</p>
+</div>
+<div class='tags'>
+  <h3>Returns:</h3>
+  <ul class='return'>
+    <li>
+      <span class='type'></span>
+      (
+        <tt>Object</tt>
+      )
+      &mdash;
+      <span class='desc'>An object with a property for each phase associated with the </span>
+    </li>
+  </ul>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='insert-dynamic'>
@@ -334,18 +350,27 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       #
 (void)
 <b>updateUrl</b><span>(url, phase, meta)</span>
+      <span class='note private'>Private</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Update the url collection such that it reflects the current status of the given URL</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='schedule-dynamic'>
+    <p class='signature' id='scheduleUrl-dynamic'>
       #
 (void)
-<b>schedule</b><span>(url, meta)</span>
+<b>scheduleUrl</b><span>(url, meta)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Add a url as scheduled</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='nextUrlBatch-dynamic'>
@@ -354,7 +379,11 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
 <b>nextUrlBatch</b><span>(size = 100)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Retrieve the next batch of scheduled URLs (FIFO ordered)</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='update-dynamic'>
@@ -427,7 +456,11 @@ is on its way to being processed</p>
 <b>isVisited</b><span>(url)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Whether the given url has already been visited</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='isScheduled-dynamic'>
@@ -436,7 +469,11 @@ is on its way to being processed</p>
 <b>isScheduled</b><span>(url)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Whether the given url is already scheduled</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='isProcessing-dynamic'>
@@ -445,7 +482,11 @@ is on its way to being processed</p>
 <b>isProcessing</b><span>(url)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Whether the given url is currently processing</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='isKnown-dynamic'>
@@ -454,7 +495,11 @@ is on its way to being processed</p>
 <b>isKnown</b><span>(url)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Whether the given url is known, i.e. one of [scheduled|processing|visited]</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='completed-dynamic'>
@@ -490,13 +535,17 @@ is on its way to being processed</p>
 <b>itemsWaiting</b><span>()</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Retrieve a set of all items with phases defined as &quot;WAITING&quot;</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='hasRequestsWaiting-dynamic'>
+    <p class='signature' id='hasItemsWaiting-dynamic'>
       #
 (void)
-<b>hasRequestsWaiting</b><span>()</span>
+<b>hasItemsWaiting</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
@@ -506,22 +555,17 @@ is on its way to being processed</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='hasRequestsUnfinished-dynamic'>
-      #
-(void)
-<b>hasRequestsUnfinished</b><span>()</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
     <p class='signature' id='itemsProcessing-dynamic'>
       #
 (void)
 <b>itemsProcessing</b><span>(pattern)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Retrieve</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='initial-dynamic'>
@@ -576,7 +620,7 @@ is on its way to being processed</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 11:05:19 by
+  February 08, 16 13:25:27 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

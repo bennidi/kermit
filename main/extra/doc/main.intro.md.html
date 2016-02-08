@@ -76,7 +76,7 @@ mechanism. Core extensions provide functionality for request filtering, rate lim
 List of core extensions:</p><ul>
 <li><a href="../../class/ExtensionPointConnector.html">RequestFilter</a></li>
 <li><a href="../../class/ExtensionPointConnector.html">ExtensionPointConnector</a></li>
-<li><a href="../../class/RequestLookup.html">RequestLookup</a></li>
+<li><a href="../../class/RequestItemMapper.html">RequestItemMapper</a></li>
 <li><a href="../../class/QueueConnector.html">QueueConnector</a></li>
 <li><a href="../../class/QueueWorker.html">QueueWorker</a></li>
 <li><a href="../../class/Spooler.html">RequestStreamer</a></li>
@@ -84,8 +84,8 @@ List of core extensions:</p><ul>
 <li><a href="../../class/Completer.html">Completer</a></li>
 <li><a href="../../class/Cleanup.html">Cleanup</a></li>
 </ul>
-<h1 id="tutorial">Tutorial</h1><p>The following sections are meant to walk you through the most fundamental parts of the API from a user&#39;s
-perspective.</p><h2 id="instantiation">Instantiation</h2><p>Instantiation of a Crawler is very simple as Kermit comes with a lot of default options.
+<h2 id="tutorial">Tutorial</h2><p>The following sections are meant to walk you through the most fundamental parts of the API from a user&#39;s
+perspective.</p><h3 id="instantiation">Instantiation</h3><p>Instantiation of a Crawler is very simple as Kermit comes with a lot of default options.
 An absolute minimal example looks like this:</p><pre><code class="lang-cs"># Require the main class from the modules package
 {Crawler} = require &#39;../kermit/kermit.modules&#39;
 
@@ -168,22 +168,22 @@ Kermit = new Crawler
         }    
       ]
 </code></pre><p>There are a number of <a href="../../file/src/kermit/Logging.conf.coffee.html">predefined log configurations</a> that can be used.
-It is also easily possible to roll up a custom configuration following the code examples from that file.</p><h2 id="scheduling-of-urls">Scheduling of URLs</h2><p>To reduce the memory footprint, not every URL submission will create a request item immediately (as request items are
+It is also easily possible to roll up a custom configuration following the code examples from that file.</p><h3 id="scheduling-of-urls">Scheduling of URLs</h3><p>To reduce the memory footprint, not every URL submission will create a request item immediately (as request items are
 persistent, ie. increase queue size and affect query performance).
 Therefore, a <a href="../../class/Scheduler.html">Scheduler</a> is used to keep track of submitted URLs and 
 schedule a request when the load limits allow.</p><h2 id="feature-extensions">Feature extensions</h2>
 <ul>
-<li><a href="../../class/RequestStreamer.html">ResourceDiscovery</a></li>
-<li><a href="../../class/RequestStreamer.html">Monitoring</a></li>
-<li><a href="../../class/RequestStreamer.html">OfflineStorage</a></li>
-<li><a href="../../class/RequestStreamer.html">OfflineServer</a></li>
+<li><a href="../../class/ResourceDiscovery.html">ResourceDiscovery</a></li>
+<li><a href="../../class/Monitoring.html">Monitoring</a></li>
+<li><a href="../../class/OfflineStorage.html">OfflineStorage</a></li>
+<li><a href="../../class/OfflineServer.html">OfflineServer</a></li>
 </ul>
 <h2 id="custom-extensions">Custom Extensions</h2><p>This will become a guide for implementing your own extensions. Until then, please have a look
 at the code of the various available extensions. It&#39;s fairly easy to get started.</p>
       </div>
     </div>
     <div id='footer'>
-  February 08, 16 11:05:19 by
+  February 08, 16 13:25:27 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
