@@ -1,4 +1,5 @@
-{Phase} = require('../RequestItem')
+{Phase} = require '../RequestItem'
+{Extension} = require '../Extension'
 {HtmlProcessor} = require './ext.htmlprocessor'
 URI = require 'urijs'
 _ = require 'lodash'
@@ -8,7 +9,7 @@ tools = require '../util/tools'
 
 # Scan result data for links to other resources (css, img, js, html) and schedule
 # a item to retrieve those resources.
-class ResourceDiscovery extends HtmlProcessor
+class ResourceDiscovery extends Extension
 
   @defaultOpts: () ->
     links : true
@@ -19,7 +20,7 @@ class ResourceDiscovery extends HtmlProcessor
   # Create a new resource discovery extension
   constructor: () ->
     @opts = @merge ResourceDiscovery.defaultOpts(), @opts
-    super [
+    @processor = new HtmlProcessor [
       new HtmlExtractor
         name : 'all'
         select :
@@ -30,13 +31,17 @@ class ResourceDiscovery extends HtmlProcessor
             'href':  ($link) -> $link.attr 'href'
           ]
         onResult : (results, item) =>
-          resources = _.reject (@cleanUrl item, url.href for url in results.resources), _.isEmpty
-          links = _.reject (@cleanUrl item, url.href for url in results.links), _.isEmpty
+          resources = _.reject (cleanUrl item, url.href for url in results.resources), _.isEmpty
+          links = _.reject (cleanUrl item, url.href for url in results.links), _.isEmpty
           @context.schedule url, parents:item.parents()+1  for url in resources
           @context.schedule url, parents:item.parents()+1  for url in links
     ]
+    super
+      READY: @processor.attach
+      FETCHED: @processor.process
 
-  cleanUrl: (item, url)  =>
+  # utility function to sanitize URLs
+  cleanUrl = (item, url)  ->
     return "" if not url
     base = URI item.url()
     cleaned = url
