@@ -30,52 +30,53 @@
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;kermit&#47;Crawler.ExtensionPoints.coffee</td>
+          <td>src&#47;kermit&#47;RequestItem.coffee</td>
         </tr>
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
+            <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>
           </td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Process requests with phase &quot;READY&quot;.
+  <p>Process items with phase &quot;READY&quot;.
 Request with phase &quot;READY&quot; are eligible to be fetched by the {Streamer}.
-This ExtensionPoint runs: User extensions.</p>
+This ProcessingPhase runs: User extensions.</p>
 </div>
 <div class='tags'>
 </div>
-      <h2>Variables Summary</h2>
-      <dl class='constants'>
-  <dt id='phase-variable'>
-    phase
-    =
-  </dt>
-  <dd>
-    <pre><code class='coffeescript'>Phase</code></pre>
-    
-  </dd>
-</dl>
+      <h2>Property Summary</h2>
+      <h3 class='inherited'>
+        Properties inherited from
+        <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>
+      </h3>
+      <p class='inherited'>
+        <a href='[object Object]'>INITIAL</a>
+        <a href='[object Object]'>SPOOLED</a>
+        <a href='[object Object]'>READY</a>
+        <a href='[object Object]'>FETCHING</a>
+        <a href='[object Object]'>FETCHED</a>
+        <a href='[object Object]'>COMPLETE</a>
+        <a href='[object Object]'>ERROR</a>
+        <a href='[object Object]'>CANCELED</a>
+        <a href='[object Object]'>ALL</a>
+      </p>
       <h2>
         <small>Inherited Method Summary</small>
         <h3 class='inherited'>
           Methods inherited from
-          <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
+          <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>
         </h3>
         <p class='inherited'>
-          <a href='../class/ExtensionPoint.html#addExtensions-static'>.addExtensions</a>
-          <a href='../class/ExtensionPoint.html#extpoint-static'>.extpoint</a>
-          <a href='../class/ExtensionPoint.html#execute-static'>.execute</a>
-          <a href='../class/ExtensionPoint.html#addExtension-dynamic'>#addExtension</a>
-          <a href='../class/ExtensionPoint.html#callExtensions-dynamic'>#callExtensions</a>
-          <a href='../class/ExtensionPoint.html#apply-dynamic'>#apply</a>
+          <a href='../class/ProcessingPhase.html#follower-static'>.follower</a>
+          <a href='../class/ProcessingPhase.html#predecessor-static'>.predecessor</a>
         </p>
       </h2>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

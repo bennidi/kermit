@@ -26,7 +26,6 @@
       <h1>
         Class:
         ExtensionPoint
-        <span class='note title'>Abstract</span>
       </h1>
       <table class='box'>
         <tr>
@@ -36,31 +35,12 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <div class='abstract note'>
-    <strong>
-      This
-      class
-      is abstract.
-    </strong>
-    (An extension point should be subclassed) 
-  </div>
   <p>Provide a mechanism to add functionality to the provider of the extension point (=&gt; <a href='../class/Crawler.html'>Crawler</a>)
 Extension points act as containers for <a href='../class/Extension.html'>Extension</a>s - the primary abstraction for containment
 of processing functionality.</p>
 </div>
 <div class='tags'>
 </div>
-      <h2>Direct Known Subclasses</h2>
-      <p class='children'>
-        <a href='../class/INITIAL.html'>INITIAL</a>
-        <a href='../class/SPOOLED.html'>SPOOLED</a>
-        <a href='../class/READY.html'>READY</a>
-        <a href='../class/FETCHING.html'>FETCHING</a>
-        <a href='../class/FETCHED.html'>FETCHED</a>
-        <a href='../class/COMPLETE.html'>COMPLETE</a>
-        <a href='../class/ERROR.html'>ERROR</a>
-        <a href='../class/CANCELED.html'>CANCELED</a>
-      </p>
       <h2>Class Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -77,10 +57,10 @@ of processing functionality.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#extpoint-static'>
+      <a href='#get-static'>
         .
 (void)
-<b>extpoint</b><span>(provider, phase)</span>
+<b>get</b><span>(provider, phase)</span>
       </a>
     </span>
     <span class='desc'>
@@ -92,11 +72,11 @@ of processing functionality.</p>
       <a href='#execute-static'>
         .
 (void)
-<b>execute</b><span>(provider, phase, request)</span>
+<b>execute</b><span>(provider, phase, item)</span>
       </a>
     </span>
     <span class='desc'>
-      Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given request 
+      Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item 
     </span>
   </li>
 </ul>
@@ -104,10 +84,10 @@ of processing functionality.</p>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#addExtension-dynamic'>
+      <a href='#add-dynamic'>
         #
 (void)
-<b>addExtension</b><span>(extension)</span>
+<b>add</b><span>(extension)</span>
       </a>
     </span>
     <span class='desc'>
@@ -116,28 +96,16 @@ of processing functionality.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#callExtensions-dynamic'>
+      <a href='#process-dynamic'>
         #
 (void)
-<b>callExtensions</b><span>(request)</span>
-      </a>
-    </span>
-    <span class='note private title'>Private</span>
-    <span class='desc'>
-      Helper method to invoke all extensions for processing of a given request 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#apply-dynamic'>
-        #
-(void)
-<b>apply</b><span>(request)</span>
+<b>process</b><span>(item)</span>
       </a>
     </span>
     <span class='bound note title'>Bound</span>
+    <span class='note private title'>Private</span>
     <span class='desc'>
-      Execute all extensions for the given request 
+      Helper method to invoke all extensions for processing of a given item 
     </span>
   </li>
 </ul>
@@ -157,10 +125,10 @@ of processing functionality.</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='extpoint-static'>
+    <p class='signature' id='get-static'>
       .
 (void)
-<b>extpoint</b><span>(provider, phase)</span>
+<b>get</b><span>(provider, phase)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -173,11 +141,11 @@ of processing functionality.</p>
     <p class='signature' id='execute-static'>
       .
 (void)
-<b>execute</b><span>(provider, phase, request)</span>
+<b>execute</b><span>(provider, phase, item)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given request</p>
+  <p>Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item</p>
 </div>
 <div class='tags'>
 </div>
@@ -189,7 +157,7 @@ of processing functionality.</p>
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(context)</span>
+<b>constructor</b><span>(context, phase)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -215,10 +183,10 @@ of processing functionality.</p>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='addExtension-dynamic'>
+    <p class='signature' id='add-dynamic'>
       #
 (void)
-<b>addExtension</b><span>(extension)</span>
+<b>add</b><span>(extension)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -228,50 +196,24 @@ of processing functionality.</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='callExtensions-dynamic'>
+    <p class='signature' id='process-dynamic'>
       #
 (void)
-<b>callExtensions</b><span>(request)</span>
+<b>process</b><span>(item)</span>
+      <span class='bound note'>Bound</span>
       <span class='note private'>Private</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Helper method to invoke all extensions for processing of a given request</p>
+  <p>Helper method to invoke all extensions for processing of a given item</p>
 </div>
 <div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='apply-dynamic'>
-      #
-(void)
-<b>apply</b><span>(request)</span>
-      <span class='bound note'>Bound</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Execute all extensions for the given request</p>
-</div>
-<div class='tags'>
-  <h3>Parameters:</h3>
-  <ul class='param'>
-    <li>
-      <span class='name'>request</span>
-      <span class='type'>
-        (
-          <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
-        )
-      </span>
-      &mdash;
-      <span class='desc'>The request to be processed </span>
-    </li>
-  </ul>
 </div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

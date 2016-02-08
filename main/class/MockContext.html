@@ -53,8 +53,8 @@
   </dt>
   <dd>
     <pre><code class='coffeescript'>{
-  enqueue: function(request) {
-    return request;
+  enqueue: function(item) {
+    return item;
   }
 }</code></pre>
     
@@ -91,7 +91,7 @@
       <a href='#execute-dynamic'>
         #
 (void)
-<b>execute</b><span>(request)</span>
+<b>execute</b><span>(item)</span>
       </a>
     </span>
     <span class='desc'>
@@ -102,7 +102,7 @@
       <a href='#schedule-dynamic'>
         #
 (void)
-<b>schedule</b><span>(request, url)</span>
+<b>schedule</b><span>(item, url)</span>
       </a>
     </span>
     <span class='desc'>
@@ -127,7 +127,7 @@
     <p class='signature' id='execute-dynamic'>
       #
 (void)
-<b>execute</b><span>(request)</span>
+<b>execute</b><span>(item)</span>
       <br>
     </p>
     
@@ -136,7 +136,7 @@
     <p class='signature' id='schedule-dynamic'>
       #
 (void)
-<b>schedule</b><span>(request, url)</span>
+<b>schedule</b><span>(item, url)</span>
       <br>
     </p>
     
@@ -154,7 +154,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -37,7 +37,7 @@
       <div class='docstring'>
   <p>Provides access to a queue like system that allows to access <a href='../class/RequestItem.html'>RequestItem</a>s by their
 phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.org">http://lokijs.org</a> lokijs]
-=&gt; Queues are emulated with dynamic views on a single request collection.</p>
+=&gt; Queues are emulated with dynamic views on a single item collection.</p>
 </div>
 <div class='tags'>
 </div>
@@ -57,10 +57,10 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
   </li>
   <li>
     <span class='signature'>
-      <a href='#requestsByPhase-dynamic'>
+      <a href='#itemsByPhase-dynamic'>
         #
 (void)
-<b>requestsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
+<b>itemsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       </a>
     </span>
     <span class='desc'>
@@ -71,11 +71,11 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       <a href='#insert-dynamic'>
         #
 (void)
-<b>insert</b><span>(request)</span>
+<b>insert</b><span>(item)</span>
       </a>
     </span>
     <span class='desc'>
-      Insert a request into the queue 
+      Insert a item into the queue 
     </span>
   </li>
   <li>
@@ -116,11 +116,11 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       <a href='#update-dynamic'>
         #
 (void)
-<b>update</b><span>(request)</span>
+<b>update</b><span>(item)</span>
       </a>
     </span>
     <span class='desc'>
-      Update a known request 
+      Update a known item 
     </span>
   </li>
   <li>
@@ -185,20 +185,20 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       <a href='#completed-dynamic'>
         #
 (void)
-<b>completed</b><span>(request)</span>
+<b>completed</b><span>(item)</span>
       </a>
     </span>
     <span class='desc'>
-      Handle a request that successfully completed processing (run cleanup and remember the url as successfully processed).
+      Handle a item that successfully completed processing (run cleanup and remember the url as successfully processed).
 
     </span>
   </li>
   <li>
     <span class='signature'>
-      <a href='#requestsWaiting-dynamic'>
+      <a href='#itemsWaiting-dynamic'>
         #
 (void)
-<b>requestsWaiting</b><span>()</span>
+<b>itemsWaiting</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
@@ -213,7 +213,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
-      Determines whether there are requests left for Spooling 
+      Determines whether there are items left for Spooling 
     </span>
   </li>
   <li>
@@ -229,10 +229,10 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
   </li>
   <li>
     <span class='signature'>
-      <a href='#requestsProcessing-dynamic'>
+      <a href='#itemsProcessing-dynamic'>
         #
 (void)
-<b>requestsProcessing</b><span>(pattern)</span>
+<b>itemsProcessing</b><span>(pattern)</span>
       </a>
     </span>
     <span class='desc'>
@@ -259,7 +259,7 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
       </a>
     </span>
     <span class='desc'>
-      Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> requests 
+      Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> items 
     </span>
   </li>
 </ul>
@@ -295,10 +295,10 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='requestsByPhase-dynamic'>
+    <p class='signature' id='itemsByPhase-dynamic'>
       #
 (void)
-<b>requestsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
+<b>itemsByPhase</b><span>(phases = Phase.ALL, result = {})</span>
       <br>
     </p>
     
@@ -307,24 +307,24 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
     <p class='signature' id='insert-dynamic'>
       #
 (void)
-<b>insert</b><span>(request)</span>
+<b>insert</b><span>(item)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Insert a request into the queue</p>
+  <p>Insert a item into the queue</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
   <ul class='param'>
     <li>
-      <span class='name'>request</span>
+      <span class='name'>item</span>
       <span class='type'>
         (
           <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
-      <span class='desc'>The request to be inserted </span>
+      <span class='desc'>The item to be inserted </span>
     </li>
   </ul>
 </div>
@@ -360,24 +360,24 @@ phase.</p><p>Currently implemented on top of beautiful [<a href="http://lokijs.o
     <p class='signature' id='update-dynamic'>
       #
 (void)
-<b>update</b><span>(request)</span>
+<b>update</b><span>(item)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Update a known request</p>
+  <p>Update a known item</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
   <ul class='param'>
     <li>
-      <span class='name'>request</span>
+      <span class='name'>item</span>
       <span class='type'>
         (
           <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
-      <span class='desc'>The request to be updated </span>
+      <span class='desc'>The item to be updated </span>
     </li>
   </ul>
 </div>
@@ -397,14 +397,14 @@ is on its way to being processed</p>
   <h3>Parameters:</h3>
   <ul class='param'>
     <li>
-      <span class='name'>request</span>
+      <span class='name'>item</span>
       <span class='type'>
         (
           <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
-      <span class='desc'>The request to be inserted </span>
+      <span class='desc'>The item to be inserted </span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -460,34 +460,34 @@ is on its way to being processed</p>
     <p class='signature' id='completed-dynamic'>
       #
 (void)
-<b>completed</b><span>(request)</span>
+<b>completed</b><span>(item)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Handle a request that successfully completed processing
+  <p>Handle a item that successfully completed processing
 (run cleanup and remember the url as successfully processed).</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
   <ul class='param'>
     <li>
-      <span class='name'>request</span>
+      <span class='name'>item</span>
       <span class='type'>
         (
           <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
         )
       </span>
       &mdash;
-      <span class='desc'>The request to be inserted </span>
+      <span class='desc'>The item to be inserted </span>
     </li>
   </ul>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='requestsWaiting-dynamic'>
+    <p class='signature' id='itemsWaiting-dynamic'>
       #
 (void)
-<b>requestsWaiting</b><span>()</span>
+<b>itemsWaiting</b><span>()</span>
       <br>
     </p>
     
@@ -500,7 +500,7 @@ is on its way to being processed</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Determines whether there are requests left for Spooling</p>
+  <p>Determines whether there are items left for Spooling</p>
 </div>
 <div class='tags'>
 </div>
@@ -515,10 +515,10 @@ is on its way to being processed</p>
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='requestsProcessing-dynamic'>
+    <p class='signature' id='itemsProcessing-dynamic'>
       #
 (void)
-<b>requestsProcessing</b><span>(pattern)</span>
+<b>itemsProcessing</b><span>(pattern)</span>
       <br>
     </p>
     
@@ -544,7 +544,7 @@ is on its way to being processed</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> requests</p>
+  <p>Retrieve the next batch of <a href='../class/SPOOLED.html'>SPOOLED</a> items</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -557,7 +557,7 @@ is on its way to being processed</p>
         )
       </span>
       &mdash;
-      <span class='desc'>The maximum number of requests to be returned </span>
+      <span class='desc'>The maximum number of items to be returned </span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -568,7 +568,7 @@ is on its way to being processed</p>
         <tt>Array&lt;RequestItem.state&gt;</tt>
       )
       &mdash;
-      <span class='desc'>An arrays of requests in state SPOOLED </span>
+      <span class='desc'>An arrays of items in state SPOOLED </span>
     </li>
   </ul>
 </div>
@@ -576,7 +576,7 @@ is on its way to being processed</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

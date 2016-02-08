@@ -44,12 +44,12 @@
     </strong>
     
   </div>
-  <p><a href='../class/Extension.html'>Extension</a>s are the core abstraction for adding actual request processing functionality
-to the <a href='../class/Crawler.html'>Crawler</a>. In fact, <strong>all</strong> of the available <strong>request processing functionality</strong> like filtering,
+  <p><a href='../class/Extension.html'>Extension</a>s are the core abstraction for adding actual item processing functionality
+to the <a href='../class/Crawler.html'>Crawler</a>. In fact, <strong>all</strong> of the available <strong>item processing functionality</strong> like filtering,
 queueing, streaming, logging etc. <strong>is implemented by means of extensions</strong>.</p><p>A major motivation of the extension design is to support the principles
 of separation of concern as well as single responsibility.
 It aims to encourage the development of relatively small, testable and reusable
-request processing components.</p><p>Each extension can expose handlers for request processing by mapping them to
+item processing components.</p><p>Each extension can expose handlers for item processing by mapping them to
 one of the defined values of {RequestPhase}.
 Note:</p><ul>
 <li>The mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
@@ -77,7 +77,7 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
         <a href='../class/ExtensionPointConnector.html'>ExtensionPointConnector</a>
         <a href='../class/Spooler.html'>Spooler</a>
         <a href='../class/Completer.html'>Completer</a>
-        <a href='../class/RequestLookup.html'>RequestLookup</a>
+        <a href='../class/RequestItemMapper.html'>RequestItemMapper</a>
         <a href='../class/Cleanup.html'>Cleanup</a>
         <a href='../class/RequestFilter.html'>RequestFilter</a>
         <a href='../class/QueueConnector.html'>QueueConnector</a>
@@ -178,7 +178,7 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
     <div class='docstring'>
   <p>Construct a new extension. By convention the property &quot;name&quot;
 will be assigned the class name of this extension
-to handlers that will be invoked for requests with that phase</p>
+to handlers that will be invoked for items with that phase</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -294,7 +294,7 @@ This is used to combine user specified options with default options</p>
     </p>
     <div class='docstring'>
   <p>Run validity checks of this extension. Called after initialization and before
-actual request processing starts</p>
+actual item processing starts</p>
 </div>
 <div class='tags'>
   <h3>Throws:</h3>
@@ -334,7 +334,7 @@ actual request processing starts</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

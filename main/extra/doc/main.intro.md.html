@@ -36,11 +36,13 @@
         </p>
       </nav>
       <div id='filecontents'>
-        <h1 id="design-overview">Design overview</h1><p>The core of kermit is built around the representation of a request to a given URL - <a href="../../class/CrawlRequest.html">CrawlRequest</a> - 
-and the implementation of a series of well-defined &quot;state&quot; transitions applied to each of those requests.</p><p>The &quot;states&quot; are referred to as <strong>processing phases</strong> and each transition moves the request 
-further down from phase <a href="../../class/INITIAL.html">INITIAL</a> to phase <a href="../../class/COMPLETE.html">COMPLETE</a>. </p><h2 id="processing-phases">Processing Phases</h2><p>All defined processing phases as well as their allowed transitions are illustrated in the diagram below.
-For each processing phase all matching handlers are called to do their processing logic with the request.</p><p>All requests are held in a queue and the node.js event loop is used to to schedule processing callbacks for 
-the requests that are at the head of the queue.</p><pre><code class="lang-txt"> .-------------.
+        <h1 id="design-overview">Design overview</h1><p>The core of kermit is built around the representation of a request to a given URL - <a href="../../class/RequestItem.html">RequestItem</a> - 
+and the implementation of a series of well-defined <strong>processing phases</strong> applied to each of those items. Items &quot;transition&quot; from one 
+phase to the other, usually from phase <a href="../../class/INITIAL.html">INITIAL</a> to phase <a href="../../class/COMPLETE.html">COMPLETE</a>.</p><h2 id="processing-phases">Processing Phases</h2><p>Each processing phase contains a set of handlers that do some work on the request item they receive.
+These handlers are provided by <a href="../../class/Extension.html">Extension</a>s and are inserted during initialization 
+of the <a href="../../class/Crawler.html">Crawler</a>. 
+The execution of a processing phase for a given item involves the invocation of all handlers (in order of insertion).</p><p>All items are held in a <a href="../../class/QueueManager.html">queueing backend</a> and the node.js event loop is used to to schedule processing callbacks for 
+the items that are at the head of the queue.</p><p>All defined processing phases as well as their allowed transitions are illustrated in the diagram below.</p><pre><code class="lang-txt"> .-------------.
  |   INITIAL   |
  |-------------|
  | Unprocessed |
@@ -70,7 +72,8 @@ the requests that are at the head of the queue.</p><pre><code class="lang-txt"> 
 <h2 id="processing-extensions">Processing Extensions</h2><p><a href="../../class/Extension.html">Extension</a>s are reusable components designed to accomplish specific tasks like storing content 
 on local file system or scanning content for certain words. Extensions can attach handlers to 
 any of the processing phases. Most of Kermit&#39;s core functionality is implemented based on this extension
-mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling.</p><p>(Incomplete) List of core extensions:</p><ul>
+mechanism. Core extensions provide functionality for request filtering, rate limiting and throttling. 
+List of core extensions:</p><ul>
 <li><a href="../../class/ExtensionPointConnector.html">RequestFilter</a></li>
 <li><a href="../../class/ExtensionPointConnector.html">ExtensionPointConnector</a></li>
 <li><a href="../../class/RequestLookup.html">RequestLookup</a></li>
@@ -165,24 +168,22 @@ Kermit = new Crawler
         }    
       ]
 </code></pre><p>There are a number of <a href="../../file/src/kermit/Logging.conf.coffee.html">predefined log configurations</a> that can be used.
-It is also easily possible to roll up a custom configuration following the code examples from that file.</p><h2 id="scheduling-of-urls">Scheduling of URLs</h2><p>[Coming soon]</p><h2 id="core-extensions">Core extensions</h2>
-<ul>
-<li><a href="../../class/QueueWorker.html">QueueWorker</a></li>
-<li><a href="../../class/RequestFilter.html">RequestFilter</a></li>
-<li><a href="../../class/RequestStreamer.html">RequestStreamer</a></li>
-</ul>
-<h2 id="feature-extensions">Feature extensions</h2>
+It is also easily possible to roll up a custom configuration following the code examples from that file.</p><h2 id="scheduling-of-urls">Scheduling of URLs</h2><p>To reduce the memory footprint, not every URL submission will create a request item immediately (as request items are
+persistent, ie. increase queue size and affect query performance).
+Therefore, a <a href="../../class/Scheduler.html">Scheduler</a> is used to keep track of submitted URLs and 
+schedule a request when the load limits allow.</p><h2 id="feature-extensions">Feature extensions</h2>
 <ul>
 <li><a href="../../class/RequestStreamer.html">ResourceDiscovery</a></li>
 <li><a href="../../class/RequestStreamer.html">Monitoring</a></li>
 <li><a href="../../class/RequestStreamer.html">OfflineStorage</a></li>
 <li><a href="../../class/RequestStreamer.html">OfflineServer</a></li>
 </ul>
-<h2 id="custom-extensions">Custom Extensions</h2><p>[Coming soon]</p>
+<h2 id="custom-extensions">Custom Extensions</h2><p>This will become a guide for implementing your own extensions. Until then, please have a look
+at the code of the various available extensions. It&#39;s fairly easy to get started.</p>
       </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -43,7 +43,7 @@
       <div class='docstring'>
   <p>The Queue Connector establishes a system of queues where each state
 of the RequestItem state machine is represented in its own queue.
-It also enriches each request, such that its state transitions
+It also enriches each item, such that its state transitions
 are propagated to the queuing system automatically.</p>
 </div>
 <div class='tags'>
@@ -67,11 +67,11 @@ are propagated to the queuing system automatically.</p>
       <a href='#apply-dynamic'>
         #
 (void)
-<b>apply</b><span>(request)</span>
+<b>apply</b><span>(item)</span>
       </a>
     </span>
     <span class='desc'>
-      Enrich each request with methods that propagate its state transitions to the queue system
+      Enrich each item with methods that propagate its state transitions to the queue system
 
     </span>
   </li>
@@ -109,11 +109,11 @@ are propagated to the queuing system automatically.</p>
     <p class='signature' id='apply-dynamic'>
       #
 (void)
-<b>apply</b><span>(request)</span>
+<b>apply</b><span>(item)</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Enrich each request with methods that propagate its
+  <p>Enrich each item with methods that propagate its
 state transitions to the queue system</p>
 </div>
 <div class='tags'>
@@ -122,7 +122,7 @@ state transitions to the queue system</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

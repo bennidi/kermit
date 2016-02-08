@@ -36,11 +36,11 @@
       <h2>Overview</h2>
       <div class='docstring'>
   <p>The Crawler coordinates execution of submitted <a href='../class/RequestItem.html'>RequestItem</a> by applying all <a href='../class/Extension.html'>Extension</a>s
-matching the request&#39;s current phase.</p><p>All functionality for request handling, such as filtering, queueing, streaming, storing, logging etc.
+matching the item&#39;s current phase.</p><p>All functionality for item handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>Extensions are added to extension points during initialization. Core extensions are added automatically,
 user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of {RequestPhase}.
-Each ExtensionPoint wraps the processing steps carried out when the request phase changes
-to a new value. The phase transitions implicitly define a request flow illustrated in the
+Each ExtensionPoint wraps the processing steps carried out when the item phase changes
+to a new value. The phase transitions implicitly define a item flow illustrated in the
 diagram below.</p>
   <div class='examples'>
     <h3>Examples:</h3>
@@ -54,7 +54,10 @@ diagram below.</p>
     Logging : LogConfig.detailed
     Queueing   : {} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
     Streaming: {} # Options for the [Streamer]
-    Filtering  : {} # Options for request filtering, [RequestFilter],[DuplicatesFilter]</code></pre>
+    Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
+    Scheduling : {} # Options for the [Scheduler]
+      maxWaiting: 50
+      msPerUrl: 50</code></pre>
   </div>
 </div>
 <div class='tags'>
@@ -207,7 +210,7 @@ to all contained extensions</p>
         <tt><a href='../class/RequestItem.html'>RequestItem</a></tt>
       )
       &mdash;
-      <span class='desc'>The created request </span>
+      <span class='desc'>The created item </span>
     </li>
   </ul>
 </div>
@@ -241,7 +244,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 09:54:07 by
+  February 08, 16 11:05:19 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
