@@ -56,7 +56,7 @@ List of core extensions:
 
 * [RequestFilter](../../class/ExtensionPointConnector.html)
 * [ExtensionPointConnector](../../class/ExtensionPointConnector.html)
-* [RequestLookup](../../class/RequestLookup.html)
+* [RequestItemMapper](../../class/RequestItemMapper.html)
 * [QueueConnector](../../class/QueueConnector.html)
 * [QueueWorker](../../class/QueueWorker.html)
 * [RequestStreamer](../../class/Spooler.html)
@@ -65,11 +65,11 @@ List of core extensions:
 * [Cleanup](../../class/Cleanup.html)
 
 
-# Tutorial
+## Tutorial
 The following sections are meant to walk you through the most fundamental parts of the API from a user's
 perspective.
 
-## Instantiation
+### Instantiation
 
 Instantiation of a Crawler is very simple as Kermit comes with a lot of default options.
 An absolute minimal example looks like this:
@@ -187,26 +187,20 @@ Kermit = new Crawler
 There are a number of [predefined log configurations](../../file/src/kermit/Logging.conf.coffee.html) that can be used.
 It is also easily possible to roll up a custom configuration following the code examples from that file.
 
-## Scheduling of URLs
+### Scheduling of URLs
 To reduce the memory footprint, not every URL submission will create a request item immediately (as request items are
 persistent, ie. increase queue size and affect query performance).
 Therefore, a [Scheduler](../../class/Scheduler.html) is used to keep track of submitted URLs and 
 schedule a request when the load limits allow.
 
-
-## Core extensions
-
-* [QueueWorker](../../class/QueueWorker.html)
-* [RequestFilter](../../class/RequestFilter.html)
-* [RequestStreamer](../../class/RequestStreamer.html)
-
 ## Feature extensions
 
-* [ResourceDiscovery](../../class/RequestStreamer.html)
-* [Monitoring](../../class/RequestStreamer.html)
-* [OfflineStorage](../../class/RequestStreamer.html)
-* [OfflineServer](../../class/RequestStreamer.html)
+* [ResourceDiscovery](../../class/ResourceDiscovery.html)
+* [Monitoring](../../class/Monitoring.html)
+* [OfflineStorage](../../class/OfflineStorage.html)
+* [OfflineServer](../../class/OfflineServer.html)
 
 
 ## Custom Extensions
-[Coming soon]
+This will become a guide for implementing your own extensions. Until then, please have a look
+at the code of the various available extensions. It's fairly easy to get started.

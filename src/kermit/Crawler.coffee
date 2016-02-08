@@ -245,7 +245,7 @@ class Scheduler
     if @queue.itemsWaiting().length <  @opts.maxWaiting
       @crawler.execute url, meta
     else
-      @queue.schedule url, meta
+      @queue.scheduleUrl url, meta
 
   # Called by Crawler at startup
   # @private

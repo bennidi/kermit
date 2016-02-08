@@ -3,11 +3,8 @@ lokijs = require 'lokijs'
 _ = require 'lodash'
 
 ###
- Provides access to a queue like system that allows to access {RequestItem}s by their
- phase.
-
- Currently implemented on top of beautiful [http://lokijs.org lokijs]
- => Queues are emulated with dynamic views on a single item collection.
+ Provides access to a queue like system that allows to access {RequestItem}s using lokijs query interface.
+ Queues are emulated with dynamic views on a single item collection.
 ###
 class QueueManager
 
@@ -16,8 +13,11 @@ class QueueManager
     @store =  new lokijs @file
     @initialize()
 
+  # List of phases considered "in-progress"
   inProgress = [Phase.SPOOLED, Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE]
+  # List of phases considered "waiting"
   waiting = [Phase.INITIAL, Phase.SPOOLED]
+  # List of phases considered "unfinished"
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
   # Initialize this queue manager
@@ -43,7 +43,10 @@ class QueueManager
       .applyFind phase: 'processing'
       .applySimpleSort 'tsModified', true
 
-  itemsByPhase : (phases = Phase.ALL, result = {}) ->
+  # Count the number of items per phase
+  # @return [Object] An object with a property for each phase associated with the
+  # number of items in that phase
+  itemCountByPhase : (phases = Phase.ALL, result = {}) ->
     result[phase] = @items.getDynamicView(phase).data().length for phase in phases
     result
 
@@ -53,8 +56,10 @@ class QueueManager
     @items.insert(item.state)
     @updateUrl item.url(), 'processing', rId: item.id()
 
+  # Update the url collection such that it reflects the current status of the given URL
+  # @private
   updateUrl: (url, phase, meta) ->
-    record = @urls.find(url : url)
+    record = @urls.find url : url
     if not _.isEmpty record
       record[0].phase = phase
       record[0].meta ?= {}
@@ -63,11 +68,13 @@ class QueueManager
       @urls.update record
     else @urls.insert {url: url, meta:meta, phase: phase}
 
-  schedule: (url, meta) ->
+  # Add a url as scheduled
+  scheduleUrl: (url, meta) ->
     meta ?= {}
     meta.tsModified = new Date().getTime()
     @updateUrl url, 'scheduled', meta
 
+  # Retrieve the next batch of scheduled URLs (FIFO ordered)
   nextUrlBatch: (size = 100) ->
     @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
 
@@ -84,9 +91,13 @@ class QueueManager
   hasUrl: (url, phase) ->
     @urls.find({ url:url, phase: phase}).length > 0
 
+  # Whether the given url has already been visited
   isVisited: (url) -> @hasUrl url, 'visited'
+  # Whether the given url is already scheduled
   isScheduled: (url) -> @hasUrl url, 'scheduled'
+  # Whether the given url is currently processing
   isProcessing: (url) -> @hasUrl url, 'processing'
+  # Whether the given url is known, i.e. one of [scheduled|processing|visited]
   isKnown: (url) ->
     @urls.find( url:url ).length > 0
 
@@ -99,24 +110,20 @@ class QueueManager
     # remove item data from storage
     @items.remove(item.state)
 
+  # Retrieve a set of all items with phases defined as "WAITING"
   itemsWaiting: ->
     @items.getDynamicView('WAITING').data()
 
   # Determines whether there are items left for Spooling
-  hasRequestsWaiting: ->
-    waiting = @items.find phase : $in: waiting
-    waiting.length > 0
+  hasItemsWaiting: ->
+    @itemsWaiting().length > 0
 
-  hasRequestsUnfinished: ->
-    unfinished = @items.find phase : $in: unfinished
-    unfinished.length > 0
-
+  # Retrieve
   itemsProcessing: (pattern) ->
-    ready = @items.find $and: [
+    @items.find $and: [
       {phase : 'FETCHING'},
       {url : $regex: pattern}
     ]
-    ready.length
 
   # Get all {RequestItem}s with phase {INITIAL}
   initial: () ->

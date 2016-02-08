@@ -107,7 +107,7 @@ class Limit
 
   # @nodoc
   isAllowed: ->
-    @limiter.tryRemoveTokens(1) and @queue.itemsProcessing(@regex) < @def.max
+    @limiter.tryRemoveTokens(1) and @queue.itemsProcessing(@regex).length < @def.max
 
   # @nodoc
   matches: (url) ->

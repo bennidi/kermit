@@ -34,7 +34,7 @@ Kermit in a nutshell
     * **Lazy logging**: Log facilities only generate log messages if log level actually exists. This is soon to
     be released as a standalone library, because lazy log message generation is quite useful in general.
     * **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
-  * Thoroughly documented using [codo](https://github.com/coffeedoc/codo): Read the [api-docs](https://open-medicine-initiative.github.io/kermit) 
+  * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
 
 
 # Installation
@@ -59,13 +59,14 @@ user feedback (see section **Contribute**)
 
 # Usage
 
-Read the [tutorial](./doc/main.intro.md) in folder [doc](./doc) . The tutorial is work in progress though
-and you should always refer to the [examples](./src/examples). 
+Read the [tutorial](http://open-medicine-initiative.github.io/kermit/main/index.html) 
+(generated from [main.intro.md](./doc/main.intro.md)).  
+You should always refer to the [examples](./src/examples). 
 
 # Documentation
 
 The code ships with a lot of documentation and it is highly recommended to have a look at
-the sources as well as the generated [API docs](https://open-medicine-initiative.github.io/kermit).
+the sources as well as the generated [API docs](https://open-medicine-initiative.github.io/kermit/main.index.html).
 
 # Contribute
 
