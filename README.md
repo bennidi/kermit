@@ -59,9 +59,46 @@ user feedback (see section **Contribute**)
 
 # Usage
 
-Read the [tutorial](http://open-medicine-initiative.github.io/kermit/main/index.html) 
+For starters, here is an example of a simple setup that will download online content
+to local storage (you can scrape the offline content later).
+
+```cs
+
+new Crawler
+  name: "testicle"
+  extensions : [
+    new ResourceDiscovery
+    new Monitoring
+    new AutoShutdown
+    new Histogrammer
+    new OfflineStorage
+  ]
+  options:
+    Logging: logconf.detailed
+    Queueing:
+      limits : [
+        {
+          pattern : /.*en.wikipedia\.org.*/
+          to : 5
+          per : 'second'
+          max : 10
+        }
+      ]
+    Filtering:
+      allow : [
+        /.*en.wikipedia\.org.*/
+      ]
+      # Anything matcing the whitelist will be visited
+      deny : [
+      ]
+
+Kermit.schedule("http://en.wikipedia.org")
+
+```
+
+For a deeper understanding, read the [tutorial](http://open-medicine-initiative.github.io/kermit/main/index.html) 
 (generated from [main.intro.md](./doc/main.intro.md)).  
-You should always refer to the [examples](./src/examples). 
+You can also find very useful infos in the [examples](./src/examples). 
 
 # Documentation
 

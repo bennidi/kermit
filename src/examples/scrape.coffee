@@ -5,31 +5,31 @@
 Kermit = new Crawler
   name: "testicle"
   extensions : [
+    new ResourceDiscovery
     new Monitoring
-    new OfflineStorage
     new AutoShutdown
     new Histogrammer
-    #new OfflineServer
-    new ResourceDiscovery
+    new OfflineStorage
   ]
   options:
     Logging: logconf.detailed
     Queueing:
       limits : [
         {
-          pattern : /.*jimmycuadra\.com.*/
-          to : 5
+          pattern : /.*reddit\.com.*/
+          to : 3
           per : 'second'
-          max : 10
+          max : 5
         }
       ]
     Filtering:
       allow : [
-        /.*\.jimmycuadra\.com/
+        /.*reddit\.com.*/
       ]
+# Anything matcing the whitelist will be visited
       deny : [
       ]
 
-Kermit.schedule("http://www.jimmycuadra.com")
+Kermit.schedule("http://reddit.com")
 
 
