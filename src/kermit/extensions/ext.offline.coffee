@@ -20,14 +20,13 @@ toLocalPath = (basedir = "", url) ->
   url = url.replace 'www', ''
   uri = URI(url)
   uri.normalize()
-  #normalizedPath = if uri.path().endsWith "/" then uri.path().substring(0, uri.path().length - 1) else uri.path()
-  #uri.path normalizedPath
   uri.filename("index.html") if (!uri.suffix() or not byExtension[uri.suffix()])
   domainWithoutTld = uri.domain().replace ".#{uri.tld()}", ''
   subdomain = uri.subdomain()
   subdomain = "/#{subdomain}" if not _.isEmpty subdomain
+  separator = if uri.query() then '-' else ''
   lastDot = uri.path().lastIndexOf '.'
-  augmentedPath = [uri.path().slice(0, lastDot), uri.query(), uri.path().slice(lastDot)].join('');
+  augmentedPath = [uri.path().slice(0, lastDot), separator, uri.query(), uri.path().slice(lastDot)].join('');
   "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
 
 # Store item results in local repository for future serving from filesystem
@@ -76,12 +75,16 @@ class OfflineServer extends Extension
     @mitm.on 'connect', (socket, opts) =>
       url = opts.uri?.href
       localFilePath = toLocalPath @opts.basedir, url
-      return socket.bypass() if opts.host is 'localhost'
+      if opts.host is 'localhost'
+        @log.debug? "Bypassing connection to host=localhost"
+        return socket.bypass()
       if not fileExists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
+      @log.debug "Connection to #{url} redirects to #{localFilePath}"
     # Redirect items to local server
-    @mitm.on 'item', (item, response) =>
+    @mitm.on 'request', (item, response) =>
+      @log.debug? "Receiving item"
       url = "http://#{item.headers.host}#{item.url}"
       localUrl = toLocalPath "http://localhost:3000", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']

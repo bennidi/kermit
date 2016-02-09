@@ -9,7 +9,7 @@ Kermit = new Crawler
     new OfflineStorage
     new AutoShutdown
     new Histogrammer
-    # new OfflineServer
+    #new OfflineServer
     new ResourceDiscovery
   ]
   options:
@@ -25,11 +25,9 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        #/.*jimmycuadra\.com.*/
         /.*\.jimmycuadra\.com/
       ]
       deny : [
-        /.*\.jimmycuadra\.com\/.+/
       ]
 
 Kermit.schedule("http://www.jimmycuadra.com")

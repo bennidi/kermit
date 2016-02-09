@@ -249,7 +249,7 @@ class RequestItem
   timeToComplete : () ->
     return -1 if not @isComplete()
     try
-      @stamps('INITIAL')[0] - @stamps('COMPLETE')[0]
+      @stamps('COMPLETE')[0] - @stamps('INITIAL')[0]
     catch error
       # This error occurs if a stamp did not exist
       -1
