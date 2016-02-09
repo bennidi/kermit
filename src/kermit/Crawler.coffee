@@ -103,13 +103,14 @@ class Crawler
 
   # Run shutdown logic on all extensions
   shutdown: () ->
-    @scheduler.shutdown()
     for extension in _(@extensions).reverse().value()
       try
         @log.info? "Shutdown of #{extension.name}"
         extension.shutdown?()
       catch error
         @log.error? "Shutdown error in #{extension.name}", {error : error.toString() stack: error.stack()}
+    @scheduler.shutdown()
+    @queue.shutdown()
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item

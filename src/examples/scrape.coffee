@@ -1,5 +1,5 @@
 {Crawler, ext, logconf} = require '../kermit/kermit.modules.coffee'
-{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer} = ext
+{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer} = ext
 
 # opts: rateLimit, item depth
 Kermit = new Crawler
@@ -7,6 +7,8 @@ Kermit = new Crawler
   extensions : [
     new Monitoring
     new OfflineStorage
+    new AutoShutdown
+    new Histogrammer
     # new OfflineServer
     new ResourceDiscovery
   ]
@@ -23,10 +25,11 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra.*/
+        #/.*jimmycuadra\.com.*/
+        /.*\.jimmycuadra\.com/
       ]
       deny : [
-        /.*return_to.*/
+        /.*\.jimmycuadra\.com\/.+/
       ]
 
 Kermit.schedule("http://www.jimmycuadra.com")

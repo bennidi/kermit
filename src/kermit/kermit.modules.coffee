@@ -8,6 +8,8 @@ kermit.ext = obj.merge {}, require './extensions/ext.discovery'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.htmlprocessor'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.offline'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.monitoring'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.autoshutdown'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.histogramming'
 kermit.logconf = require './Logging.conf'
 
 module.exports = kermit

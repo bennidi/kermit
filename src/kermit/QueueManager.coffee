@@ -21,6 +21,7 @@ class QueueManager
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
   # Initialize this queue manager
+  # @private
   initialize: () ->
     # One collection for all items and dynamic views for various item phase
     @items = @store.addCollection 'items'
@@ -118,6 +119,10 @@ class QueueManager
   hasItemsWaiting: ->
     @itemsWaiting().length > 0
 
+  # Determines whether there are items left for Spooling
+  hasUnfinishedItems: ->
+    @items.find(phase: $in: unfinished).length > 0
+
   # Retrieve
   itemsProcessing: (pattern) ->
     @items.find $and: [
@@ -135,6 +140,8 @@ class QueueManager
   spooled: (batchSize = 20) ->
     @items.getDynamicView(Phase.SPOOLED).branchResultset().limit(batchSize).data()
 
+  shutdown: () ->
+    @store.saveDatabase()
 
 module.exports = {
   QueueManager
