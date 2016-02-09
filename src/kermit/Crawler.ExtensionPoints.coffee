@@ -45,7 +45,7 @@ class ExtensionPoint
         else
           extension.handlers[@phase].call(extension, item)
       catch error
-        @log.error error.toString(), { trace: error.stack, tags: [extension.name]}
+        @log.error? error.toString(), { trace: error.stack, tags: [extension.name]}
         item.error(error)
     item
 

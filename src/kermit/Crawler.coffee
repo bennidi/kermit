@@ -121,7 +121,6 @@ class Crawler
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
-    @log.debug? "Scheduling #{url}"
     @scheduler.schedule url, meta
 
   # Pretty print this crawler
@@ -231,12 +230,13 @@ class Scheduler
 
   # @nodoc
   constructor: (@crawler, @queue, @config) ->
+    @log = @crawler.log
     filterOpts =
       allow : _.filter @config.options.Filtering.allow, _.isRegExp
       deny : _.filter @config.options.Filtering.deny, _.isRegExp
     delete filterOpts.allow if _.isEmpty filterOpts.allow
     delete filterOpts.deny if _.isEmpty filterOpts.deny
-    @urlFilter = new UrlFilter filterOpts, @crawler.log
+    @urlFilter = new UrlFilter filterOpts, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
 
   # @private
@@ -246,6 +246,7 @@ class Scheduler
     if @queue.itemsWaiting().length <  @opts.maxWaiting
       @crawler.execute url, meta
     else
+      @log.debug? "Scheduling #{url}"
       @queue.scheduleUrl url, meta
 
   # Called by Crawler at startup

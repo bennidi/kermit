@@ -43,7 +43,10 @@ class OfflineStorage extends Extension
         path = toLocalPath @basedir , item.url()
         if @shouldStore path
           @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
-          item.pipeline().stream ContentType([/.*/g]), fse.createOutputStream path
+          target = fse.createOutputStream path
+          #target.on "error", (error) =>
+          #  @log.error? "Error storing file #{path}", {error:error, trace:error.stack}
+          item.pipeline().stream ContentType([/.*/g]), target
 
   shouldStore: (path) ->
     @log.debug? "#{path} already exists" if exists = fileExists path

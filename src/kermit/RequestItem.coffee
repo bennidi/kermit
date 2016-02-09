@@ -273,7 +273,7 @@ class RequestItem
   # @return {RequestItem} This item
   # @throw Error if item does have other phase than SPOOLED
   ready: ->
-    if @isSPOOLED() then @phase(ProcessingPhase.READY);this
+    if @isSpooled() then @phase(ProcessingPhase.READY);this
     else throw new Error "Transition from #{@state.phase} to READY not allowed"
 
   # Change the items phase to FETCHING
@@ -316,7 +316,7 @@ class RequestItem
   isInitial: () -> @state.phase is ProcessingPhase.INITIAL
   # Check whether this item has phase SPOOLED
   # @return {Boolean} True if phase is SPOOLED, false otherwise
-  isSPOOLED: () -> @state.phase is ProcessingPhase.SPOOLED
+  isSpooled: () -> @state.phase is ProcessingPhase.SPOOLED
   # Check whether this item has phase READY
   # @return {Boolean} True if phase is READY, false otherwise
   isReady: () -> @state.phase is ProcessingPhase.READY
@@ -356,7 +356,7 @@ class RequestItem
         when 'INITIAL','SPOOLED','READY'
           """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""
         when 'COMPLETE'
-          """COMPLETE => GET #{@state.url} (phase=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
+          """COMPLETE => GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
         else "Unknown phase"
 
 module.exports = {

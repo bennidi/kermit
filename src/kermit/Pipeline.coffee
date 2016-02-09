@@ -20,7 +20,7 @@ _ = require 'lodash'
 class Pipeline
 
   # Create a new Pipeline for the given {RequestItem}
-  constructor : (@log, @crawlRequest) ->
+  constructor : (@log, @item) ->
     @incoming = new PassThrough() # stream.PassThrough serves as connector
     @destinations = {} # map destination listeners using regex on mimetype
     @guards = {}
@@ -34,6 +34,9 @@ class Pipeline
     id = obj.randomId()
     @guards[id] = guard
     @destinations[id] = stream
+    stream.on "error", (error) =>
+      @log.error? "Error in downstream #{stream.constructor.name}", {error:error, trace:error.stack}
+      @item.error(error)
 
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
@@ -48,15 +51,15 @@ class Pipeline
     if _.isEmpty streams # For some responses a matching destination might not be found
       # In that case the item phase is simply set to 'FETCHED' to continue processing
       @log.debug? "No matching destinations found. Skipping.", tags:['Pipeline']
-      @crawlRequest.fetched()
+      @item.fetched() unless @item.isError()
     else
       @log.debug? "Attached #{streams}", tags:['Pipeline']
       incomingMessage
         .on 'error', (error) =>
           @log.error? "Error while streaming", {error:error, trace:error.stack}
-          @crawlRequest.error(error)
+          @item.error(error)
         .on 'end', =>
-          @crawlRequest.fetched()
+          @item.fetched() unless @item.isError()
       # Start streaming
       incomingMessage.pipe @incoming
 

@@ -16,7 +16,7 @@ Kermit = new Crawler
     Queueing:
       limits : [
         {
-          pattern : /.*reddit\.com.*/
+          pattern : /.*jimmycuadra\.com.*/
           to : 3
           per : 'second'
           max : 5
@@ -24,12 +24,13 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        /.*reddit\.com.*/
+        /.*jimmycuadra\.com.*/
       ]
 # Anything matcing the whitelist will be visited
       deny : [
+       # /.*github.*/
       ]
 
-Kermit.schedule("http://reddit.com")
+Kermit.schedule("http://jimmycuadra.com")
 
 
