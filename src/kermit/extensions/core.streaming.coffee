@@ -19,6 +19,12 @@ class RequestStreamer extends Extension
   # Create a new options object with the default configuration
   @defaultOpts = () ->
     agents : {}
+    agentOptions:
+      maxSockets: 15
+      keepAlive: true
+      maxFreeSockets: 150
+      keepAliveMsecs: 3000
+      ciphers: "AES256-GCM-SHA384" # Disallow expensive Diffie-Hellman, see blog post of paypal engineering
     Tor :
       enabled : false
       port : 9050
@@ -30,17 +36,13 @@ class RequestStreamer extends Extension
     super READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
     if @opts.Tor.enabled
-      agentOptions =
-        socksHost: options.Tor.host, # Defaults to 'localhost'.
-        socksPort: options.Tor.port # Defaults to 1080.
-      @opts.agents.https = new socks5Https agentOptions
-      @opts.agents.http = new socks5Http agentOptions
+      agentOptions.socksHost = options.Tor.host # Defaults to 'localhost'.
+      agentOptions.socksPort = options.Tor.port # Defaults to 1080.
+      @opts.agents.https = new socks5Https @opts.agentOptions
+      @opts.agents.http = new socks5Http @opts.agentOptions
     else
-      agentOptions =
-        maxSockets: 20
-        ciphers: "AES128-SHA" # Disallow expensive Diffie-Hellman key exchange algorithm because it tends to eat up lots of memory
-      @opts.agents.http = new http.Agent agentOptions
-      @opts.agents.https = new https.Agent agentOptions
+      @opts.agents.http = new http.Agent @opts.agentOptions
+      @opts.agents.https = new https.Agent @opts.agentOptions
 
   apply: (crawlRequest) ->
     url = crawlRequest.url()

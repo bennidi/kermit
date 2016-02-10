@@ -34,15 +34,7 @@ class QueueManager
     addRequestView phase for phase in Phase.ALL
     @items_waiting = @items.addDynamicView 'WAITING'
       .applyFind phase: $in : waiting
-    @urls.addDynamicView 'visited'
-      .applyFind phase: 'visited'
-      .applySimpleSort 'tsModified', true
-    @urls.addDynamicView 'scheduled'
-      .applyFind phase: 'scheduled'
-      .applySimpleSort 'tsModified', true
-    @urls.addDynamicView 'processing'
-      .applyFind phase: 'processing'
-      .applySimpleSort 'tsModified', true
+
 
   # Count the number of items per phase
   # @return [Object] An object with a property for each phase associated with the
@@ -60,12 +52,12 @@ class QueueManager
   # Update the url collection such that it reflects the current status of the given URL
   # @private
   updateUrl: (url, phase, meta) ->
-    record = @urls.find url : url
+    record = @urls.by 'url' , url
     if not _.isEmpty record
-      record[0].phase = phase
-      record[0].meta ?= {}
-      record[0].meta[key] = value for key, value of meta
-      record[0].meta['tsModified'] = new Date().getTime()
+      record.phase = phase
+      record.meta ?= {}
+      record.meta[key] = value for key, value of meta
+      record.meta['tsModified'] = new Date().getTime()
       @urls.update record
     else @urls.insert {url: url, meta:meta, phase: phase}
 
@@ -73,11 +65,11 @@ class QueueManager
   scheduleUrl: (url, meta) ->
     meta ?= {}
     meta.tsModified = new Date().getTime()
-    @updateUrl url, 'scheduled', meta
+    @urls.insert {url: url, meta:meta, phase: 'scheduled'}
 
   # Retrieve the next batch of scheduled URLs (FIFO ordered)
   nextUrlBatch: (size = 100) ->
-    @urls.getDynamicView('scheduled').branchResultset().limit(size).data()
+    @urls.find(phase:'scheduled').limit(size).data()
 
 
   # Update a known item
