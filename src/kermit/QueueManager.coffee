@@ -3,15 +3,9 @@ lokijs = require 'lokijs'
 _ = require 'lodash'
 
 ###
- Provides access to a queue like system that allows to access {RequestItem}s using lokijs query interface.
- Queues are emulated with dynamic views on a single item collection.
+ Provides access to a queue like system that allows to access {RequestItem}s and URLs.
 ###
 class QueueManager
-
-  # Construct a new QueueManager with its own data file
-  constructor: (@file) ->
-    @store =  new lokijs @file
-    @initialize()
 
   # List of phases considered "in-progress"
   inProgress = [Phase.SPOOLED, Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE]
@@ -20,17 +14,17 @@ class QueueManager
   # List of phases considered "unfinished"
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
-  # Initialize this queue manager
-  # @private
-  initialize: () ->
+  # Construct a new QueueManager with its own data file
+  constructor: (@file) ->
+    @store =  new lokijs @file
     # One collection for all items and dynamic views for various item phase
     @items = @store.addCollection 'items'
-    @urls = @store.addCollection 'urls', unique: ['url']
+    @urls = new UrlManager
     # One view per distinct phase value
     addRequestView = (phase) =>
       @items.addDynamicView phase
-        .applyFind phase: phase
-        .applySimpleSort "stamps.#{phase}", true
+      .applyFind phase: phase
+      .applySimpleSort "stamps.#{phase}", true
     addRequestView phase for phase in Phase.ALL
     @items_waiting = @items.addDynamicView 'WAITING'
       .applyFind phase: $in : waiting
@@ -47,59 +41,19 @@ class QueueManager
   # @param item {RequestItem} The item to be inserted
   insert: (item) ->
     @items.insert(item.state)
-    @updateUrl item.url(), 'processing', rId: item.id()
-
-  # Update the url collection such that it reflects the current status of the given URL
-  # @private
-  updateUrl: (url, phase, meta) ->
-    record = @urls.by 'url' , url
-    if not _.isEmpty record
-      record.phase = phase
-      record.meta ?= {}
-      record.meta[key] = value for key, value of meta
-      record.meta['tsModified'] = new Date().getTime()
-      @urls.update record
-    else @urls.insert {url: url, meta:meta, phase: phase}
-
-  # Add a url as scheduled
-  scheduleUrl: (url, meta) ->
-    meta ?= {}
-    meta.tsModified = new Date().getTime()
-    @urls.insert {url: url, meta:meta, phase: 'scheduled'}
-
-  # Retrieve the next batch of scheduled URLs (FIFO ordered)
-  nextUrlBatch: (size = 100) ->
-    @urls.find(phase:'scheduled').limit(size).data()
-
+    @urls.processing item.url(), rId: item.id()
 
   # Update a known item
   # @param item {RequestItem} The item to be updated
   update: (item) ->
     @items.update(item.state)
 
-  # Check whether the given url has already been processed or
-  # is on its way to being processed
-  # @param item {RequestItem} The item to be inserted
-  # @return {Boolean} True, if the url was found, false otherwise
-  hasUrl: (url, phase) ->
-    @urls.find({ url:url, phase: phase}).length > 0
-
-  # Whether the given url has already been visited
-  isVisited: (url) -> @hasUrl url, 'visited'
-  # Whether the given url is already scheduled
-  isScheduled: (url) -> @hasUrl url, 'scheduled'
-  # Whether the given url is currently processing
-  isProcessing: (url) -> @hasUrl url, 'processing'
-  # Whether the given url is known, i.e. one of [scheduled|processing|visited]
-  isKnown: (url) ->
-    @urls.find( url:url ).length > 0
-
   # Handle a item that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
   # @param item {RequestItem} The item to be inserted
   completed: (item) ->
     # remember that url has been processed successfully
-    @updateUrl item.url(), 'visited'
+    @urls.visited item.url()
     # remove item data from storage
     @items.remove(item.state)
 
@@ -132,8 +86,62 @@ class QueueManager
   spooled: (batchSize = 20) ->
     @items.getDynamicView(Phase.SPOOLED).branchResultset().limit(batchSize).data()
 
+  # @private
+  # Save the current state to file
   shutdown: () ->
     @store.saveDatabase()
+
+
+###
+  Manage the collection of URLs that are
+    scheduled => to be processed in the future
+    processing => being processed in form of a {RequestItem}
+    visited => completed processing (RequestItem reached phase COMPLETE)
+###
+class UrlManager
+
+  Datastore = require 'nedb' # Use nedb as backend
+  sync = require 'synchronize'
+
+  # Create a new URL manager
+  constructor:() ->
+    @urls = new Datastore
+    @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
+    @count =
+      scheduled : 0
+      visited : 0
+
+  # Transition the given URL from 'scheduled' to 'processing'.
+  # Inserts a new entry if no scheduled URL has been found.
+  processing: (url, phase, meta) ->
+    @urls.update { url:  url, phase: 'scheduled'}, { $set: {phase : phase, meta:meta}},{}, (err, updates) =>
+      if updates is 0 # Not found -> wasn't previously scheduled but executed directly
+        @urls.insert {url:url, phase:phase, meta:meta}, ()->
+      else
+        @count.scheduled--
+
+  # Add the given URL to the collection of scheduled URLs
+  schedule: (url, meta) ->
+    # Insertion of duplicate URL will result in unique constraint violation
+    @urls.insert {url:url, phase:'scheduled', meta:meta}, (err, result) =>
+      if not err
+        @log.debug? "Scheduled #{url}"
+        @count.scheduled++
+
+  # Mark a known URL as visited (silently ignores cases of unknown URLs)
+  visited: (url) ->
+    @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @count.visited++ unless err
+
+  # Execute callback if URL is not known
+  ifUnknown: (url, callback) ->
+    @urls.findOne url:url, (err, doc) ->
+      callback() unless doc
+
+  # Retrieve the next batch of scheduled URLs (FIFO ordered)
+  scheduled: (size = 100, callback) ->
+    @urls.find(phase:'scheduled').limit(size).exec (err, urls) ->
+      callback urls unless err
+
 
 module.exports = {
   QueueManager

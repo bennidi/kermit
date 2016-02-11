@@ -7,7 +7,7 @@ class AutoShutdown extends Extension
     @queue = @context.queue
     watchdog = () =>
       try
-        @context.crawler.shutdown() unless @queue.nextUrlBatch().length > 0 or @queue.hasUnfinishedItems()
+        @context.crawler.shutdown() unless @queue.urls.counters.scheduled > 0 or @queue.hasUnfinishedItems()
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
     @wdog = setInterval watchdog, 5000

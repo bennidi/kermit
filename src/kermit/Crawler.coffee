@@ -227,6 +227,7 @@ class Scheduler
   @defaultOptions: () ->
     maxWaiting : 50
     msPerUrl : 50
+    minWaiting: 10
 
   # @nodoc
   constructor: (@crawler, @queue, @config) ->
@@ -240,14 +241,14 @@ class Scheduler
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
 
   # @private
+  # @nodoc
   schedule: (url, meta) ->
-    if not @urlFilter.isAllowed(url) or @queue.isKnown url
-      return
-    if @queue.itemsWaiting().length <  @opts.maxWaiting
-      @crawler.execute url, meta
+    return if not @urlFilter.isAllowed(url)
+    if @queue.itemsWaiting().length < @opts.minWaiting
+      @queue.urls.ifUnknown url, () => @crawler.execute url, meta
     else
       @log.debug? "Scheduling #{url}"
-      @queue.scheduleUrl url, meta
+      @queue.urls.schedule url, meta
 
   # Called by Crawler at startup
   # @private
@@ -255,9 +256,9 @@ class Scheduler
     pushUrls = () =>
       waiting = @queue.itemsWaiting().length
       if waiting < @opts.maxWaiting
-        urls = @queue.nextUrlBatch(@opts.maxWaiting - waiting)
-        @crawler.log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
-        @crawler.execute entry.url, entry.meta for entry in urls
+        @queue.urls.scheduled @opts.maxWaiting - waiting, (urls) =>
+          @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
+          @crawler.execute entry.url, entry.meta for entry in urls
     @executor = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
     @executor.unref()
 
