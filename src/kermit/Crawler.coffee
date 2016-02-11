@@ -4,7 +4,7 @@
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
 {QueueManager} = require './QueueManager'
-{RequestFilter, UrlFilter} = require './extensions/core.filter'
+{UrlFilter} = require './extensions/core.filter'
 {INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, Phase, RequestItem} = require './RequestItem'
 {LogHub, LogConfig} = require './Logging'
 {obj} = require './util/tools'
@@ -68,7 +68,6 @@ class Crawler
 
     # Core extensions that need to run BEFORE user extensions
     ExtensionPoint.addExtensions this, [
-      new RequestFilter @config.options.Filtering
       new ExtensionPointConnector
       new RequestItemMapper
       new QueueConnector @config.options.Queueing
@@ -116,11 +115,13 @@ class Crawler
   # @return [RequestItem] The created item
   execute: (url, meta) ->
     @log.debug? "Executing #{url}"
+    #meta = obj.addProperty 'parents', 0, meta
     item = new RequestItem url, meta, @log
     ExtensionPoint.execute @, Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
-  schedule: (url, meta) ->
+  schedule: (url, meta = {}) ->
+    #meta = obj.addProperty 'parents', 0, meta
     @scheduler.schedule url, meta
 
   # Pretty print this crawler
@@ -232,18 +233,13 @@ class Scheduler
   # @nodoc
   constructor: (@crawler, @queue, @config) ->
     @log = @crawler.log
-    filterOpts =
-      allow : _.filter @config.options.Filtering.allow, _.isRegExp
-      deny : _.filter @config.options.Filtering.deny, _.isRegExp
-    delete filterOpts.allow if _.isEmpty filterOpts.allow
-    delete filterOpts.deny if _.isEmpty filterOpts.deny
-    @urlFilter = new UrlFilter filterOpts, @log
+    @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
 
   # @private
   # @nodoc
   schedule: (url, meta) ->
-    return if not @urlFilter.isAllowed(url)
+    return if not @urlFilter.isAllowed url, meta
     if @queue.itemsWaiting().length < @opts.minWaiting
       @queue.urls.ifUnknown url, () => @crawler.execute url, meta
     else

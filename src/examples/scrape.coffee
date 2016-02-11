@@ -19,11 +19,11 @@ Kermit = new Crawler
         maxSockets: 15
         keepAlive:true
         maxFreeSockets: 150
-        keepAliveMsecs: 3000
+        keepAliveMsecs: 1000
     Queueing:
       limits : [
         {
-          pattern : /.*jimmycuadra.*/
+          pattern : /.*en.wikipedia.*/
           to : 5
           per : 'second'
           max : 20
@@ -31,13 +31,15 @@ Kermit = new Crawler
       ]
     Filtering:
       allow : [
-        /.*jimmycuadra.*/
+        /.*en.wikipedia.*/
+
       ]
 # Anything matcing the whitelist will be visited
       deny : [
        # /.*github.*/
+        (url, meta) -> meta.parents > 1
       ]
 
-Kermit.schedule("http://jimmycuadra.com")
+Kermit.schedule("https://en.wikipedia.org/wiki/Web_scraping")
 
 

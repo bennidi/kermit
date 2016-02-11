@@ -41,7 +41,7 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "Received #{@status} type=#{@headers['content-type']} length=#{@headers['content-length']} server=#{@headers['server']}", tags:['Pipeline']
+    @log.debug? "Response(#{@status}) from #{@headers['server']} => type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipeline']
     # Connect all matching destinations
     streams = []
     for id, guard of @guards
@@ -53,7 +53,7 @@ class Pipeline
       @log.debug? "No matching destinations found. Skipping.", tags:['Pipeline']
       @item.fetched() unless @item.isError()
     else
-      @log.debug? "Attached #{streams}", tags:['Pipeline']
+      @log.debug? "Streaming to #{streams}", tags:['Pipeline']
       incomingMessage
         .on 'error', (error) =>
           @log.error? "Error while streaming", {error:error, trace:error.stack}

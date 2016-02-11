@@ -44,7 +44,7 @@ _ = require 'lodash'
 
 @see Crawler for a list of core extensions applied at each phase
 @see ProcessingPhase and its subclasses for descriptions of
-
+@abstract
 ###
 class ProcessingPhase
   # @property [String] See {INITIAL}
@@ -151,14 +151,15 @@ and will be cleaned up. This ProcessingPhase runs: User extensions, {Cleanup}
 class CANCELED extends ProcessingPhase
 
 ###
-  The RequestItem is the central object in the process of fetching a single URL. The {Crawler} will
-  funnel each item through the different processing phases - applying all {Extension}s registered
+  The RequestItem is the central object in the processing of a single URL. The {Crawler} will
+  funnel each item through the different {ProcessingPhase}s - applying all {Extension}s registered
   for the particular phase.
+
   During its lifecycle the item is enriched with listeners and properties by the {Extension}s
   that take care of its processing.
-  Any information necessary for processing is usually to the item in order
-  to centralize state. Any property added to its internal state {RequestItem#state} will be persistent
-  after the next phase transition.
+
+  (Meta-)Information necessary for its processing is usually attached to the item in order
+  to centralize state.
 
 ###
 class RequestItem
@@ -184,12 +185,13 @@ class RequestItem
 
   # Create a new item for the given url and
   # with the given metadata attached
-  constructor: (url, meta = {parents : 0} , @log) ->
+  constructor: (url, meta , @log) ->
     @changeListeners = {}
     @state =
       id : obj.randomId(20)
       stamps: {} # collect timestamps for tracking of meaningful state changes
-      meta : meta
+      parents : 0
+    @state = obj.merge @state, meta
     @phase ProcessingPhase.INITIAL
     @url url
 
@@ -348,7 +350,8 @@ class RequestItem
   # A item might have been created by another item (its parent).
   # That parent might in turn have been created by another item and so on.
   # @return {Number} The number of parents of this item
-  parents: () -> 0
+  parents: () ->
+    @state.parents
 
   # Generate a human readable representation of this item
   toString: () ->

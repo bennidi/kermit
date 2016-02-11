@@ -52,6 +52,9 @@ class RequestStreamer extends Extension
     httpRequest.get url, options
       .on 'response', (response) ->
         crawlRequest.pipeline().import response
+      .on 'error', (error) =>
+        @log.error? "Error while issuing of request", {msg: error.msg, trace:error.stack, tags: ['RequestStreamer']}
+        crawlRequest.error()
 
 
 # Export a function to create the core plugin with default extensions

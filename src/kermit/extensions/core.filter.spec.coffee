@@ -1,4 +1,4 @@
-{RequestFilter, ByPattern, MimeTypes} = require './core.filter'
+{UrlFilter, ByPattern, MimeTypes} = require './core.filter'
 {RequestItem} = require '../RequestItem'
 {MockContext} =  require '../util/spec.utils'
 
@@ -6,36 +6,23 @@ describe  'Request filter',  ->
   describe 'is used for flexible filtering of items', ->
 
     it '# allows filtering by Url patterns', ->
-      filter = new RequestFilter
+      filter = new UrlFilter {
         allow : [ByPattern /.*shouldBeAllowed.*/]
         deny : [
-          ByPattern /.*shouldBeDenied.*/g,
-          MimeTypes.CSS,
-          (item) -> item.predecessors() >= 1 and not WithinDomain(/.*shouldBeAllowed.*/)(item)
-        ]
-      filter.initialize(new MockContext)
+          /.*shouldBeDenied.*/
+          MimeTypes.CSS
+        ]}, new MockContext().log
 
-      shouldBeAllowed = new RequestItem "www.shouldBeAllowed.org/some/path/with?query=true", new MockContext
       allowed = [
-        shouldBeAllowed
+        "www.shouldBeAllowed.org/some/path/with?query=true"
       ]
       denied = [
-        new RequestItem "www.shouldBeDenied.org/some/path/with?query=true", new MockContext
-        new RequestItem "www.shouldBeDenied.org/some/path/denied.css", new MockContext
+        "www.shouldBeDenied.org/some/path/with?query=true"
+        "www.shouldBeDenied.org/some/path/denied.css"
       ]
 
-      expect(item.isInitial()).to.be.true() for item in allowed
-      expect(item.isInitial()).to.be.true() for item in denied
-
-      filter.apply(item) for item in allowed
-      filter.apply(item) for item in denied
-
-      for item in allowed
-        expect(item.isInitial()).to.be.true()
-
-      for item in denied
-        expect(item.isInitial()).to.be.false()
-        expect(item.isCanceled()).to.be.true()
+      expect(filter.isAllowed url).to.be.true() for url in allowed
+      expect(filter.isAllowed url).to.be.false() for url in denied
 
 
 

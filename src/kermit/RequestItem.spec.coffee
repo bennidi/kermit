@@ -23,11 +23,6 @@ describe  'Requests',  ->
       TestRequest.phase('STATE3')
       expect(receivedPhaseChanges).to.contain 'STATE1','STATE2','STATE3'
 
-    it '# should respond to different errors with corresponding state transitions', ->
-      item = new RequestItem 'localhost'
-      item.error('TIMEOUT')
-      # TODO assertions
-
 
     it '# can change its uri', ->
       item = new RequestItem('localhost')
@@ -47,5 +42,4 @@ describe  'Requests',  ->
       item.state.stamps =
         INITIAL : [1243242342]
         TESTING : [1243242342,1243242342,1243242343,1243242345,1243242348]
-      console.log item.toString()
       expect(item.toString()).to.contain "0ms,1ms,2ms,3ms"

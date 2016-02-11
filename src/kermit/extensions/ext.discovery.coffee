@@ -33,8 +33,8 @@ class ResourceDiscovery extends Extension
         onResult : (results, item) =>
           resources = _.reject (cleanUrl item, url.href for url in results.resources), _.isEmpty
           links = _.reject (cleanUrl item, url.href for url in results.links), _.isEmpty
-          @context.schedule url, parents:item.parents()+1  for url in resources
-          @context.schedule url, parents:item.parents()+1  for url in links
+          @context.schedule url, parents:item.parents()+1 for url in resources
+          @context.schedule url, parents:item.parents()+1 for url in links
     ]
     super
       READY: @processor.attach

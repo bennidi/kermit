@@ -7,6 +7,10 @@ module.exports =
     normalize: (url) -> URI(url).normalize().toString()
     create: (url) -> URI(url)
   obj :
+    addProperty: (name, value, object) ->
+      object ?= {}
+      object[name] ?= value
+      object
     print : (object, depth = 2, colorize = false) ->
       util.inspect object, false, depth, colorize
     merge : (a,b) ->

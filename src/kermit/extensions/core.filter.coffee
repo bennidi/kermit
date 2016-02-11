@@ -8,8 +8,7 @@ _ = require 'lodash'
 # @see https://coffeescript-cookbook.github.io/chapters/regular_expressions/searching-for-substrings CS Cookbook: Seaching for substrings
 class Filters
 
-  @ByPattern: (pattern) ->
-    (item) -> pattern.test item.url()
+  @ByPattern: (pattern) -> (url, meta) -> pattern.test url
 
   @MimeTypes:
     CSS : Filters.ByPattern /.*\.css/g
@@ -17,18 +16,15 @@ class Filters
     PDF : Filters.ByPattern /.*\.pdf/g
   @AllUrls : Filters.ByPattern /.*/g
 
-  @match : (item, filters) ->
+  @match : (url, meta, filters) ->
     for filter in filters
-      return true if filter(item)
-    false
-
-  @matchUrl : (url, patterns) ->
-    for pattern in patterns
-      return true if pattern.test url
+      return true if filter(url, meta)
     false
 
 ###
-  Filter URLs by means of regular expressions. Supports white-listing and black-listing.
+  Filter URLs by means of regular expressions of filter functions, i.e Function[String,Object]:Boolean.
+  Supports white-listing and black-listing.
+
 ###
 class UrlFilter
 
@@ -41,46 +37,24 @@ class UrlFilter
   constructor: (opts = {}, @log) ->
     {obj} = require '../util/tools'
     @opts = obj.overlay UrlFilter.defaultOpts(), opts
-    @log.debug? "", @opts
-
-  # Check the given URL for matching entries in blacklist/whitelist
-  # @param url {String} The URL to be checked
-  isAllowed: (url) ->
-    if (not _.isEmpty @opts.allow) and not Filters.matchUrl url, @opts.allow
-      @log.debug? "#{url} not on whitelist", tags:['UrlFilter']
-      return false
-    if Filters.matchUrl  url, @opts.deny
-      @log.debug? "#{url} on blacklist", tags:['UrlFilter']
-      return false
-    true
-# Filter newly created items based on a flexible set of filter functions.
-class RequestFilter extends Extension
-
-  @defaultOpts : () ->
-    allow : [()->true] # allow all by default
-    deny : []
-
-  # @nodoc
-  constructor: (opts = {} ) ->
-    super INITIAL : @apply
-    @opts = @merge RequestFilter.defaultOpts(), opts
+    # Filters can be regular expressions (evaluated on
     @opts.allow = _.map @opts.allow, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
     @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
 
-  # Apply defined filters
-  # Cancels the item if it is not whitelisted or blacklisted
-  # @param item {RequestItem} The item to filter
-  apply: (item) ->
-    if not Filters.match(item, @opts.allow)
-      @log.trace? "#{item.url()} not on whitelist", tags: ['RequestFilter']
-      return item.cancel()
-    if Filters.match(item, @opts.deny)
-      @log.trace? "#{item.url()} on blacklist", tags: ['RequestFilter']
-      return item.cancel()
+
+  # Check the given URL for matching entries in blacklist/whitelist
+  # @param url {String} The URL to be checked
+  isAllowed: (url, meta) ->
+    if (not _.isEmpty @opts.allow) and not Filters.match url, meta, @opts.allow
+      @log.debug? "#{url} not on whitelist", tags:['UrlFilter']
+      return false
+    if Filters.match  url, meta, @opts.deny
+      @log.debug? "#{url} on blacklist", tags:['UrlFilter']
+      return false
+    true
 
 module.exports = {
   UrlFilter
-  RequestFilter
   Filters
   ByPattern : Filters.ByPattern
   MimeTypes : Filters.MimeTypes
