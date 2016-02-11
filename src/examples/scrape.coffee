@@ -23,21 +23,21 @@ Kermit = new Crawler
     Queueing:
       limits : [
         {
-          pattern : /.*en.wikipedia\.org.*/
-          to : 3
+          pattern : /.*jimmycuadra.*/
+          to : 5
           per : 'second'
           max : 20
         }
       ]
     Filtering:
       allow : [
-        /.*en.wikipedia\.org.*/
+        /.*jimmycuadra.*/
       ]
 # Anything matcing the whitelist will be visited
       deny : [
        # /.*github.*/
       ]
 
-Kermit.schedule("http://en.wikipedia.org")
+Kermit.schedule("http://jimmycuadra.com")
 
 

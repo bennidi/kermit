@@ -51,7 +51,7 @@ class Crawler
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @log.info? "#{obj.print @config}", tags: ['Config']
-    @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.filename}"
+    @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.filename}", @log
     @scheduler = new Scheduler this, @queue, @config
     # Create the root context of this crawler
     @context = new CrawlerContext
@@ -247,7 +247,6 @@ class Scheduler
     if @queue.itemsWaiting().length < @opts.minWaiting
       @queue.urls.ifUnknown url, () => @crawler.execute url, meta
     else
-      @log.debug? "Scheduling #{url}"
       @queue.urls.schedule url, meta
 
   # Called by Crawler at startup

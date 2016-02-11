@@ -15,11 +15,11 @@ class QueueManager
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
   # Construct a new QueueManager with its own data file
-  constructor: (@file) ->
+  constructor: (@file, @log) ->
     @store =  new lokijs @file
     # One collection for all items and dynamic views for various item phase
     @items = @store.addCollection 'items'
-    @urls = new UrlManager
+    @urls = new UrlManager @log
     # One view per distinct phase value
     addRequestView = (phase) =>
       @items.addDynamicView phase
@@ -104,10 +104,10 @@ class UrlManager
   sync = require 'synchronize'
 
   # Create a new URL manager
-  constructor:() ->
+  constructor:(@log) ->
     @urls = new Datastore
     @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
-    @count =
+    @counter =
       scheduled : 0
       visited : 0
 
@@ -118,7 +118,11 @@ class UrlManager
       if updates is 0 # Not found -> wasn't previously scheduled but executed directly
         @urls.insert {url:url, phase:phase, meta:meta}, ()->
       else
-        @count.scheduled--
+        @counter.scheduled--
+
+  # Compute the number of URLs in given phase
+  count: (phase) ->
+    @counter[phase]
 
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->
@@ -126,11 +130,11 @@ class UrlManager
     @urls.insert {url:url, phase:'scheduled', meta:meta}, (err, result) =>
       if not err
         @log.debug? "Scheduled #{url}"
-        @count.scheduled++
+        @counter.scheduled++
 
   # Mark a known URL as visited (silently ignores cases of unknown URLs)
   visited: (url) ->
-    @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @count.visited++ unless err
+    @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @counter.visited++ unless err
 
   # Execute callback if URL is not known
   ifUnknown: (url, callback) ->
