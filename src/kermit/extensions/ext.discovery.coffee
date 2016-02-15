@@ -4,7 +4,7 @@
 URI = require 'urijs'
 _ = require 'lodash'
 {HtmlExtractor} = require '../Extractor'
-tools = require '../util/tools'
+{uri} = require '../util/tools'
 
 
 # Scan result data for links to other resources (css, img, js, html) and schedule
@@ -31,27 +31,22 @@ class ResourceDiscovery extends Extension
             'href':  ($link) -> $link.attr 'href'
           ]
         onResult : (results, item) =>
-          resources = _.reject (cleanUrl item, url.href for url in results.resources), _.isEmpty
-          links = _.reject (cleanUrl item, url.href for url in results.links), _.isEmpty
-          @context.schedule url, parents:item.parents()+1 for url in resources
-          @context.schedule url, parents:item.parents()+1 for url in links
+          base = item.url()
+          @context.schedule url, parents:item.parents()+1 for url in _.reject (_.map results.resources, (item) => @tryLog -> uri.clean base, item.href), _.isNull
+          @context.schedule url, parents:item.parents()+1 for url in _.reject (_.map results.links, (item) => @tryLog -> uri.clean base, item.href), _.isNull
     ]
     super
       READY: @processor.attach
       FETCHED: @processor.process
 
-  # utility function to sanitize URLs
-  cleanUrl = (item, url)  ->
-    return "" if not url
-    base = URI item.url()
-    cleaned = url
-    if cleaned
-      # Handle //de.wikinews.org/wiki/Hauptseite
-      cleaned = url.replace /\/\//g, base.scheme() + "://" if cleaned.startsWith "//"
-      # Handle relative urls with leading slash, i.e. /wiki/Hauptseite
-      cleaned = URI(url).absoluteTo(base).toString() if cleaned.startsWith "/"
-      # Drop in-page anchors, i.e. #info or self references, i.e. "/"
-      cleaned = "" if (url.startsWith "#") or url is "/" or (url.startsWith "mailto") or (url.startsWith "javascript")
-    tools.uri.normalize cleaned
+  tryLog : (f) ->
+    try
+      result = f()
+    catch error
+      result = error
+      @log.error? "Error:#{error.msg}, trace: #{error.stack}"
+    result
+
+
 
 module.exports = {ResourceDiscovery}

@@ -2,7 +2,7 @@
 Translation of gist https://gist.github.com/nimasdj/801b0b1a50112ea6a997
 Total: 1223 extensions as of 16 November 2015
 ###
-extensions =
+byFileExtension =
   '3dm' : ['x-world/x-3dmf']
   '3dmf' : ['x-world/x-3dmf']
   '3dml' : ['text/vnd.in3d.3dml']
@@ -1228,4 +1228,4 @@ extensions =
   '123' : ['application/vnd.lotus-1-2-3']
 
 module.exports =
-  byExtension : extensions
+  MimebyFileExtension : byFileExtension

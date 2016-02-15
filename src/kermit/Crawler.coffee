@@ -7,8 +7,7 @@
 {UrlFilter} = require './extensions/core.filter'
 {INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, Phase, RequestItem} = require './RequestItem'
 {LogHub, LogConfig} = require './Logging'
-{obj} = require './util/tools'
-
+{obj, uri} = require './util/tools'
 _ = require 'lodash'
 fse = require 'fs-extra'
 
@@ -228,7 +227,6 @@ class Scheduler
   @defaultOptions: () ->
     maxWaiting : 50
     msPerUrl : 50
-    minWaiting: 10
 
   # @nodoc
   constructor: (@crawler, @queue, @config) ->
@@ -239,11 +237,8 @@ class Scheduler
   # @private
   # @nodoc
   schedule: (url, meta) ->
-    return if not @urlFilter.isAllowed url, meta
-    if @queue.itemsWaiting().length < @opts.minWaiting
-      @queue.urls.ifUnknown url, () => @crawler.execute url, meta
-    else
-      @queue.urls.schedule url, meta
+    console.log url
+    @queue.urls.schedule url, meta unless url is null or not @urlFilter.isAllowed url, meta
 
   # Called by Crawler at startup
   # @private

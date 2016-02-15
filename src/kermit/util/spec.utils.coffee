@@ -70,9 +70,28 @@ class ResponseStreamLogger extends Extension
     super INITIAL: (item) ->
       item.pipeline().stream ContentType([/.*/]), new LogStream shouldLog
 
+class CountingStream extends stream.Transform
+
+  constructor: (@cnt = 0) -> super
+
+  _transform: (chunk, enc, next) ->
+    @cnt++
+    @push chunk
+    next()
+
+class LogStream extends stream.Writable
+
+  constructor: (@shouldLog = true) -> super
+
+  _write: (chunk, enc, next) ->
+    console.log chunk.toString() if @shouldLog
+    next()
+
 module.exports = {
   RejectingExtension
   TransitionRecorder
   MockContext
   ResponseStreamLogger
+  CountingStream
+  LogStream
 }

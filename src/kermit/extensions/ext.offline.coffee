@@ -7,6 +7,7 @@ fs = require 'fs'
 Mitm = require 'mitm'
 URI = require 'urijs'
 _ = require 'lodash'
+{uri} = require '../util/tools'
 
 fileExists = (path) ->
   try
@@ -16,31 +17,27 @@ fileExists = (path) ->
     false
 
 
-toLocalPath = (basedir = "", url) ->
-  url = url.replace 'www', ''
-  uri = URI(url)
-  uri.normalize()
-  uri.filename("index.html") if (!uri.suffix() or not byExtension[uri.suffix()])
-  domainWithoutTld = uri.domain().replace ".#{uri.tld()}", ''
-  subdomain = uri.subdomain()
-  subdomain = "/#{subdomain}" if not _.isEmpty subdomain
-  separator = if uri.query() then '-' else ''
-  lastDot = uri.path().lastIndexOf '.'
-  augmentedPath = [uri.path().slice(0, lastDot), separator, uri.query(), uri.path().slice(lastDot)].join('');
-  "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
+
 
 # Store item results in local repository for future serving from filesystem
 class OfflineStorage extends Extension
+
+  @errors =
+    OSNODIR : """
+      Extension OfflineStorage needs the basedir to be specified as root for storage of files.
+      Please provide property basedir (withoud trailing slash) in the options.
+    """
 
   @defaultOpts = () ->
     ifFileExists : 'skip' # [skip,update,rename?]
 
   constructor: (opts = {}) ->
     @opts = @merge OfflineStorage.defaultOpts(), opts
+    throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @opts.basedir
     super
       READY: (item) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-        path = toLocalPath @basedir , item.url()
+        path = uri.toLocalPath @opts.basedir , item.url()
         if @shouldStore path
           @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
           target = fse.createOutputStream path
@@ -51,10 +48,6 @@ class OfflineStorage extends Extension
   shouldStore: (path) ->
     @log.debug? "#{path} already exists" if exists = fileExists path
     @opts.ifFileExists is 'update' or not exists
-
-  initialize: (context) ->
-    super context
-    @basedir = context.config.basePath()
 
 
 class OfflineServer extends Extension

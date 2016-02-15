@@ -1,8 +1,10 @@
-DOCUMENTATION
- + Complete coffeedoc of QueueManager and core extensions
- + Carefully document all options. Rewrite all examples as tests and refer to them from main README
- + 
- 
+AVOIDING DETECTION
++ SIMPLE => Extension: Introduce Random pauses (Keep items in state FETCHING with random setInterval)
++ SIMPLE => Go more in direction of Depth-first instead of Breadth-First traversal
++ HARDCORE => Rescheduler sits at INITIAL and reschedules requests to URLS that have lower priorities
++ ADVANCED => Extension: ResultVerifier (check for bad results, like "you're-a-robot" page)
+  + Pauses execution (suspend to disk). Can be resumed later on (i.e. after IP change) 
+
 
 IDEAS / FEATURES
  + Implement rest-api for remote control (request submission, pause/resume, shutdown) (via Extension)
@@ -12,11 +14,10 @@ IDEAS / FEATURES
  + Add overall request timings to Monitoring
  + Extension that takes care of automatic shutdown when crawling finished.
 
-TASKS
-  
 TEST
- + Rate limiting
- + Filtering
+ + Tools that operate on objects and URLs (<=important)
+ + QueueManager and Scheduler (includes filtering)
+ + Integration tests against local storage and copy of single wikipedia page
   
 POLISH
  + Offline Storage

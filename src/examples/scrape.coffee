@@ -3,13 +3,15 @@
 
 # opts: rateLimit, item depth
 Kermit = new Crawler
-  name: "testicle"
+  name: "wikipedia"
+  basedir : '/tmp/kermit'
   extensions : [
     new ResourceDiscovery
     new Monitoring
     new AutoShutdown
     new Histogrammer
     new OfflineStorage
+      basedir: '/tmp/kermit/wikipedia/storage'
     #new OfflineServer
   ]
   options:
@@ -23,23 +25,21 @@ Kermit = new Crawler
     Queueing:
       limits : [
         {
-          pattern : /.*en.wikipedia.*/
+          pattern : /.*en.wikipedia\.org.*/
           to : 5
           per : 'second'
-          max : 20
+          max : 5
         }
       ]
     Filtering:
       allow : [
-        /.*en.wikipedia.*/
-
+        /.*en.wikipedia\.org.*/
       ]
 # Anything matcing the whitelist will be visited
       deny : [
-       # /.*github.*/
-        (url, meta) -> meta.parents > 1
+        /.*debug=false/
       ]
 
-Kermit.schedule("https://en.wikipedia.org/wiki/Web_scraping")
+Kermit.execute("https://en.wikipedia.org/wiki/Web_scraping")
 
 

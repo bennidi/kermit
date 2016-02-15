@@ -107,7 +107,7 @@ class UrlManager
   constructor:(@log) ->
     @urls = new Datastore
     @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
-    @counter =
+    @counter = # Maintain counters for URLs per phase to reduce load on db
       scheduled : 0
       visited : 0
 
@@ -120,7 +120,7 @@ class UrlManager
       else
         @counter.scheduled--
 
-  # Compute the number of URLs in given phase
+  # Returns the number of URLs in given phase
   count: (phase) ->
     @counter[phase]
 
