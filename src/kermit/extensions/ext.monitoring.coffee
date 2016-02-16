@@ -39,9 +39,9 @@ class Monitoring extends Extension
       #sync.fiber () =>
       try
         start = new Date()
-        stats =  _.merge {}, @counters, {current: FETCHING: @qs.items().getDynamicView('FETCHING').data().length}
+        stats =  _.merge {}, @counters, {current: FETCHING: @qs.items().fetching().length}
         stats.items.ACCEPTED = stats.items.INITIAL - stats.items.CANCELED
-        waiting = @qs.items().items.find(phase: $in: ['INITIAL', 'SPOOLED']).length
+        waiting = @qs.items().waiting().length
         scheduled = @qs.urls().count 'scheduled'
         duration = new Date() - start
         @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.items.COMPLETE}", tags : ['Stats', 'Count']

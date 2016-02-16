@@ -2,6 +2,7 @@ _ = require 'lodash'
 util = require 'util'
 URI = require 'urijs'
 {MimebyFileExtension} = require './mimetypes'
+sync = require 'synchronize'
 
 
 class URIHelper
@@ -83,7 +84,17 @@ class ObjectHelper
     id += Math.random().toString(36).substr(2) while id.length < length
     id.substr 0, length
 
+###
+  Wrapper around synchronize.js - can be used as Mixin as well.
+###
+class Synchronizer
+
+  synchronized: (fn) -> sync.fiber fn
+  await: sync.await
+  defer: sync.defer
+
 module.exports =
   uri: URIHelper
   obj : ObjectHelper
+  Synchronizer: Synchronizer
   streams: require './tools.streams'

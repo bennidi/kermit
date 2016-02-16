@@ -1,19 +1,19 @@
-{obj} = require './util/tools'
+{obj, Synchronizer} = require './util/tools'
 {Phase} = require './RequestItem.Phases'
 lokijs = require 'lokijs'
 _ = require 'lodash'
 Datastore = require 'nedb' # Use nedb as backend
-coned = require 'co-nedb'
+sync = require 'synchronize'
 
 class QueueSystem
 
   @defaultOptions: () ->
-    filename: obj.randomId()
+    filename: "/tmp/#{obj.randomId()}"
 
   constructor: (options = {}) ->
     @options = obj.merge QueueSystem.defaultOptions(), options
     @_ = {}
-    @_.items = new RequestItemStore @options.filename, @options.log
+    @_.items = new RequestItemStore @options.filename + "items.json", @options.log
     @_.urls = new UrlStore @options.log
 
   # Handle a item that successfully completed processing
@@ -65,14 +65,6 @@ class RequestItemStore
     @items_waiting = @items.addDynamicView 'WAITING'
       .applyFind phase: $in : waiting
 
-
-  # Count the number of items per phase
-  # @return [Object] An object with a property for each phase associated with the
-  # number of items in that phase
-  countByPhase : (phases = Phase.ALL, result = {}) ->
-    result[phase] = @items.getDynamicView(phase).data().length for phase in phases
-    result
-
   # Insert a item into the queue
   # @param item {RequestItem} The item to be inserted
   insert: (item) -> @items.insert item.state
@@ -86,6 +78,9 @@ class RequestItemStore
 
   # Retrieve a set of all items with phases defined as "WAITING"
   waiting: -> @items.getDynamicView('WAITING').data()
+
+  # Retrieve a set of all items with phases defined as "WAITING"
+  fetching: -> @items.getDynamicView(Phase.FETCHING).data()
 
   # Determines whether there are items left for Spooling
   hasWaiting: -> @itemsWaiting().length > 0
@@ -122,11 +117,13 @@ class RequestItemStore
     visited => completed processing (RequestItem reached phase COMPLETE)
 ###
 class UrlStore
+  @include Synchronizer
 
   # Create a new URL manager
   constructor:(@log) ->
-    @urls = new Datastore
+    @urls = new Datastore autoload:true
     @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
+    #sync @urls, 'find'
     @counter = # Maintain counters for URLs per phase to reduce load on db
       scheduled : 0
       visited : 0
@@ -146,7 +143,6 @@ class UrlStore
 
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->
-    # Insertion of duplicate URL will result in unique constraint violation
     @urls.insert {url:url, phase:'scheduled', meta:meta}, (err, result) =>
       if not err
         @log.debug? "Scheduled #{url}"
@@ -156,15 +152,9 @@ class UrlStore
   visited: (url) ->
     @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @counter.visited++ unless err
 
-  # Execute callback if URL is not known
-  ifUnknown: (url, callback) ->
-    @urls.findOne url:url, (err, doc) ->
-      callback() unless doc
-
   # Retrieve the next batch of scheduled URLs (FIFO ordered)
-  scheduled: (size = 100, callback) ->
-    @urls.find(phase:'scheduled').limit(size).exec (err, urls) ->
-      callback urls unless err
+  scheduled: (size = 100) ->
+    @await @urls.find(phase:'scheduled').limit(size).exec @defer()
 
 
 module.exports = {

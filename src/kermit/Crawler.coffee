@@ -1,4 +1,4 @@
-{obj, uri} = require './util/tools'
+{obj, uri, Synchronizer} = require './util/tools'
 {Extension} = require './Extension'
 {ExtensionPoint} = require './Crawler.ExtensionPoints'
 {CrawlerContext} = require './Crawler.Context'
@@ -185,6 +185,10 @@ class CrawlerConfig
   @private
 ###
 class Scheduler
+  @include Synchronizer
+
+
+  #sync = require 'synchronize'
 
   @defaultOptions: () ->
     maxWaiting : 50
@@ -207,7 +211,8 @@ class Scheduler
     pushUrls = () =>
       waiting = @qs.items().waiting().length
       if waiting < @opts.maxWaiting
-        @qs.urls().scheduled @opts.maxWaiting - waiting, (urls) =>
+        @synchronized =>
+          urls = @qs.urls().scheduled @opts.maxWaiting - waiting
           @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
           @crawler.execute entry.url, entry.meta for entry in urls
     @executor = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
