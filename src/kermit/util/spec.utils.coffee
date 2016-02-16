@@ -1,6 +1,6 @@
 {Extension} = require '../Extension'
 {Phase} = require '../RequestItem'
-{QueueManager} = require '../QueueManager'
+{QueueSystem} = require '../QueueManager'
 through = require 'through2'
 stream = require 'stream'
 {ContentType} = require '../Pipeline'
@@ -52,7 +52,7 @@ class MockContext
   schedule: (item, url) -> item.subitem url
   config:
     basePath : () -> "somepath"
-  queue: new QueueManager
+  queue: new QueueSystem
   share: (property, value ) =>
     @[property] = value
   crawler :

@@ -1,5 +1,6 @@
 _ = require 'lodash'
 {obj} = require './util/tools'
+{CrawlerContext} = require './Crawler.Context'
 
 ###
 {Extension}s are the core abstraction for adding actual item processing functionality
@@ -42,10 +43,12 @@ class Extension
   # @param [CrawlerContext] context The context provided by the crawler
   # @throw Error if it does not find the context to be providing what it expects.
   initialize: (context) ->
+    throw new Error "Initialization of an extension requires a context object" unless context
     @context = context
     @log = context.log
-    if !context
-      throw new Error "Initialization of an extension requires a context object"
+    @qs = context.qs
+    @initialized = true
+
 
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
@@ -65,10 +68,10 @@ class Extension
   # actual item processing starts
   # @throw Error if the configuration is invalid in any way
   verify: () ->
-    if !@name
-      throw new Error "An extension requires a name"
-    if !@context
-      throw new Error "An extension requires a context object"
+    throw new Error "Extension not properly initialized" unless @initialized
+    throw new Error "An extension requires a name" unless @name
+    throw new Error "An extension requires a context object" unless @context
+
 
   # @return {String} Human readable description of this extension
   toString: () ->

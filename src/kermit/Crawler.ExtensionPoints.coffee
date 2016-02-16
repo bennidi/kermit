@@ -1,4 +1,4 @@
-{Phase} = require './RequestItem'
+{Phase} = require './RequestItem.Phases'
 ###
  Provide a mechanism to add functionality to the provider of the extension point (=> {Crawler})
  Extension points act as containers for {Extension}s - the primary abstraction for containment

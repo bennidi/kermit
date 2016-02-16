@@ -1,7 +1,7 @@
 {Crawler} = require './Crawler'
 {RejectingExtension, TransitionRecorder, ResponseStreamLogger} = require './util/spec.utils'
 {ResponseStreamLogger} = require './util/spec.utils'
-{Phase} = require './RequestItem'
+{Phase} = require './RequestItem.Phases'
 {ByPattern} = require './extensions/core.filter'
 
 describe  'Crawler',  ->

@@ -35,18 +35,17 @@ class Monitoring extends Extension
   # Add stats counter at intervals
   initialize: (context) ->
     super context
-    @queue = @context.queue
     statsLogger = () =>
       #sync.fiber () =>
       try
         start = new Date()
-        stats =  _.merge {}, @counters, {current: FETCHING: @queue.items.getDynamicView('FETCHING').data().length}
+        stats =  _.merge {}, @counters, {current: FETCHING: @qs.items().getDynamicView('FETCHING').data().length}
         stats.items.ACCEPTED = stats.items.INITIAL - stats.items.CANCELED
-        waiting = @queue.items.find(phase: $in: ['INITIAL', 'SPOOLED']).length
-        scheduled = @queue.urls.count 'scheduled'
+        waiting = @qs.items().items.find(phase: $in: ['INITIAL', 'SPOOLED']).length
+        scheduled = @qs.urls().count 'scheduled'
         duration = new Date() - start
         @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.items.COMPLETE}", tags : ['Stats', 'Count']
-        durations = ("#{phase}(#{times.min},#{times.max},#{times.avg})" for phase,times of stats.durations)
+        durations = ("#{phase}(#{times.min},#{times.max},#{times.avg})" for phase, times of stats.durations)
         @log.info? "#{durations}", tags : ['Stats', 'Duration']
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack

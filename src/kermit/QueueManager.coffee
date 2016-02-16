@@ -1,11 +1,48 @@
-{Phase} = require './RequestItem'
+{obj} = require './util/tools'
+{Phase} = require './RequestItem.Phases'
 lokijs = require 'lokijs'
 _ = require 'lodash'
+Datastore = require 'nedb' # Use nedb as backend
+coned = require 'co-nedb'
+
+class QueueSystem
+
+  @defaultOptions: () ->
+    filename: obj.randomId()
+
+  constructor: (options = {}) ->
+    @options = obj.merge QueueSystem.defaultOptions(), options
+    @_ = {}
+    @_.items = new RequestItemStore @options.filename, @options.log
+    @_.urls = new UrlStore @options.log
+
+  # Handle a item that successfully completed processing
+  # (run cleanup and remember the url as successfully processed).
+  # @param item {RequestItem} The item to be inserted
+  completed: (item) ->
+  # remember that url has been processed successfully
+    @_.urls.visited item.url()
+    # remove item data from storage
+    @_.items.remove(item.state)
+
+  initial: (item) ->
+    @_.items.insert item
+    @_.urls.processing item.url()
+
+  items: () ->
+    @_.items
+
+  urls: () ->
+    @_.urls
+
+  shutdown: () ->
+    @_.urls.shutdown?()
+    @_.items.shutdown?()
 
 ###
  Provides access to a queue like system that allows to access {RequestItem}s and URLs.
 ###
-class QueueManager
+class RequestItemStore
 
   # List of phases considered "in-progress"
   inProgress = [Phase.SPOOLED, Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE]
@@ -19,7 +56,6 @@ class QueueManager
     @store =  new lokijs @file
     # One collection for all items and dynamic views for various item phase
     @items = @store.addCollection 'items'
-    @urls = new UrlManager @log
     # One view per distinct phase value
     addRequestView = (phase) =>
       @items.addDynamicView phase
@@ -33,52 +69,39 @@ class QueueManager
   # Count the number of items per phase
   # @return [Object] An object with a property for each phase associated with the
   # number of items in that phase
-  itemCountByPhase : (phases = Phase.ALL, result = {}) ->
+  countByPhase : (phases = Phase.ALL, result = {}) ->
     result[phase] = @items.getDynamicView(phase).data().length for phase in phases
     result
 
   # Insert a item into the queue
   # @param item {RequestItem} The item to be inserted
-  insert: (item) ->
-    @items.insert(item.state)
-    @urls.processing item.url(), rId: item.id()
+  insert: (item) -> @items.insert item.state
 
   # Update a known item
   # @param item {RequestItem} The item to be updated
-  update: (item) ->
-    @items.update(item.state)
+  update: (item) -> @items.update item.state
 
-  # Handle a item that successfully completed processing
-  # (run cleanup and remember the url as successfully processed).
-  # @param item {RequestItem} The item to be inserted
-  completed: (item) ->
-    # remember that url has been processed successfully
-    @urls.visited item.url()
-    # remove item data from storage
-    @items.remove(item.state)
+  # Remove an item from the store
+  remove: (item) -> @items.remove item
 
   # Retrieve a set of all items with phases defined as "WAITING"
-  itemsWaiting: ->
-    @items.getDynamicView('WAITING').data()
+  waiting: -> @items.getDynamicView('WAITING').data()
 
   # Determines whether there are items left for Spooling
-  hasItemsWaiting: ->
-    @itemsWaiting().length > 0
+  hasWaiting: -> @itemsWaiting().length > 0
 
   # Determines whether there are items left for Spooling
-  hasUnfinishedItems: ->
-    @items.find(phase: $in: unfinished).length > 0
+  hasUnfinished: -> @items.find(phase: $in: unfinished).length > 0
 
   # Retrieve
-  itemsProcessing: (pattern) ->
+  processing: (pattern) ->
     @items.find $and: [
       {phase : 'FETCHING'},
       {url : $regex: pattern}
     ]
 
   # Get all {RequestItem}s with phase {INITIAL}
-  initial: () ->
-    @items.getDynamicView(Phase.INITIAL).data()
+  initial: () -> @items.getDynamicView(Phase.INITIAL).data()
 
   # Retrieve the next batch of {SPOOLED} items
   # @param batchSize {Number} The maximum number of items to be returned
@@ -98,10 +121,7 @@ class QueueManager
     processing => being processed in form of a {RequestItem}
     visited => completed processing (RequestItem reached phase COMPLETE)
 ###
-class UrlManager
-
-  Datastore = require 'nedb' # Use nedb as backend
-  sync = require 'synchronize'
+class UrlStore
 
   # Create a new URL manager
   constructor:(@log) ->
@@ -148,5 +168,5 @@ class UrlManager
 
 
 module.exports = {
-  QueueManager
+  QueueSystem
 }

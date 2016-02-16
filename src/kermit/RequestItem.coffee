@@ -1,6 +1,6 @@
+{obj, uri} = require './util/tools'
 URI = require 'urijs'
 {Pipeline} = require './Pipeline'
-{obj, uri} = require './util/tools'
 _ = require 'lodash'
 
 ###

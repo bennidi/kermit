@@ -15,20 +15,14 @@ class QueueConnector extends Extension
   constructor: () ->
     super INITIAL : @apply
 
-  # Create a queue system and re-expose in context
-  initialize: (context) ->
-    super context
-    @queue = context.queue
-
   # @nodoc
-  updateQueue : (item) =>
-    @queue.update(item)
+  updateQueue : (item) => @qs.items().update item
 
   # Enrich each item with methods that propagate its
   # state transitions to the queue system
   apply: (item) ->
-    @queue.insert item
     item.onChange 'phase', @updateQueue
+    @qs.initial item
 
 # Process items that have been SPOOLED for fetching.
 # Takes care that concurrency and rate limits are met.
@@ -52,9 +46,8 @@ class QueueWorker extends Extension
   # @nodoc
   initialize: (context) ->
     super context
-    @queue = context.queue # Request state is fetched from the queue
     @items = context.items # Request object is resolved from shared item map
-    @limits = new RateLimits @opts.limits, @context.log, @queue # Rate limiting is applied here
+    @limits = new RateLimits @opts.limits, @context.log, @qs # Rate limiting is applied here
     @spooler = setInterval @processRequests, 100 # Request spooling runs regularly
     @batch = [] # Local batch of items to be put into READY state
 
@@ -67,7 +60,7 @@ class QueueWorker extends Extension
   # @nodoc
   localBatch: () ->
     currentBatch = _.filter @batch, (item) -> item.phase is 'SPOOLED'
-    if not _.isEmpty currentBatch then currentBatch else @batch = @queue.spooled(100)
+    if not _.isEmpty currentBatch then currentBatch else @batch = @qs.items().spooled(100)
 
   # @nodoc
   proceed : (item) ->
@@ -85,8 +78,8 @@ class QueueWorker extends Extension
 ###
 class RateLimits
 
-  constructor: (limits =[], @log, queue) ->
-    @limits = (new Limit limitDef, queue for limitDef in limits)
+  constructor: (limits =[], @log, qs) ->
+    @limits = (new Limit limitDef, qs for limitDef in limits)
 
   # Check whether applicable rate limits allow this URL to pass
   isAllowed : (url) ->
@@ -101,13 +94,13 @@ class RateLimits
 class Limit
 
   # @nodoc
-  constructor: (@def, @queue) ->
+  constructor: (@def, @qs) ->
     @regex = @def.pattern
     @limiter = new RateLimiter @def.to , @def.per
 
   # @nodoc
   isAllowed: ->
-    @limiter.tryRemoveTokens(1) and @queue.itemsProcessing(@regex).length < @def.max
+    @limiter.tryRemoveTokens(1) and @qs.items().processing(@regex).length < @def.max
 
   # @nodoc
   matches: (url) ->

@@ -1,6 +1,7 @@
 {obj} = require './util/tools'
 kermit = require './Crawler'
 kermit = obj.merge kermit, require './RequestItem'
+kermit = obj.merge kermit, require './RequestItem.Phases'
 kermit = obj.merge kermit, require './Extension'
 kermit = obj.merge kermit, require './Crawler.ExtensionPoints'
 kermit.filters = require './extensions/core.filter'

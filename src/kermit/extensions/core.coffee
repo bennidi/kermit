@@ -38,8 +38,7 @@ class RequestItemMapper extends Extension
 
   # @nodoc
   constructor: () ->
-    super
-      INITIAL : (item) => @items[item.id()] = item
+    super INITIAL : (item) => @items[item.id()] = item
 
   # Expose a map that allows to lookup a {RequestItem} object by id
   initialize: (context) ->
@@ -61,7 +60,7 @@ class Cleanup extends Extension
   # Do cleanup work to prevent memory leaks
   complete: (item) ->
     delete @context.items[item.id()] # Remove from Lookup table to allow GC
-    @context.queue.completed(item) # Remove from
+    @context.qs.completed item # Remove from
     item.cleanup()
     @log.trace? item.toString()
 

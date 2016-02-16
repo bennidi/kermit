@@ -1,13 +1,15 @@
+{obj, uri} = require './util/tools'
 {Extension} = require './Extension'
 {ExtensionPoint} = require './Crawler.ExtensionPoints'
+{CrawlerContext} = require './Crawler.Context'
 {ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
-{QueueManager} = require './QueueManager'
+{QueueSystem} = require './QueueManager'
 {UrlFilter} = require './extensions/core.filter'
-{INITIAL,SPOOLED,READY,FETCHING,FETCHED,COMPLETE,CANCELED,ERROR, Phase, RequestItem} = require './RequestItem'
+{Phase} = require './RequestItem.Phases'
+{RequestItem} = require './RequestItem'
 {LogHub, LogConfig} = require './Logging'
-{obj, uri} = require './util/tools'
 _ = require 'lodash'
 fse = require 'fs-extra'
 
@@ -50,14 +52,14 @@ class Crawler
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @log.info? "#{obj.print @config}", tags: ['Config']
-    @queue = new QueueManager "#{@config.basePath()}/#{@config.options.Queueing.filename}", @log
-    @scheduler = new Scheduler this, @queue, @config
+    @qs = new QueueSystem filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}", log:@log
+    @scheduler = new Scheduler this, @qs, @config
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
       crawler: @ # re-expose this crawler
       log    : @log
-      queue : @queue
+      qs : @qs
       scheduler: @scheduler
 
     # Create and add extension points
@@ -108,7 +110,7 @@ class Crawler
       catch error
         @log.error? "Shutdown error in #{extension.name}", {error : error.toString() stack: error.stack()}
     @scheduler.shutdown()
-    @queue.shutdown()
+    @qs.shutdown()
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
@@ -126,46 +128,6 @@ class Crawler
   # Pretty print this crawler
   toString: () ->
     "Crawler: " # TODO: List extension points and content
-
-# A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
-# of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
-#
-# Any Extension or ExtensionPoint may modify the context to expose additional functionality
-# to other Extensions or ExtensionPoints
-class CrawlerContext
-
-  # Construct a new CrawlerContext
-  #
-  # @param [Object] config The configuration object for this context
-  # @option config [Crawler] crawler The crawler that created this context
-  # @option config [Function] execute A function handle to execute an extension point
-  # @option config [bunyan.Logger] log A logger to handle log messages
-  constructor: (config) ->
-    @crawler = config.crawler
-    @log = config.log
-    @config = config.crawler.config
-    @queue = config.queue
-
-  # @see [Crawler#schedule]
-  schedule : (url, meta) ->
-    @crawler.schedule url, meta
-
-  # Access to execution logic of
-  # @see [Crawler#execute]
-  execute : (url, meta) =>
-    @crawler.execute url, meta
-
-  executeRequest : (item) ->
-    ExtensionPoint.execute @crawler, item.phase(), item
-
-  # Create a child context that shares all properties with its parent context.
-  # The child context exposes a method to share properties with all other child contexts
-  # @return [CrawlerContext] A new child context of this context
-  fork: () ->
-    child = Object.create this
-    child.share = (property, value) =>
-      @[property] = value
-    child
 
 ###
   The central object for configuring an instance of {Crawler}.
@@ -229,7 +191,7 @@ class Scheduler
     msPerUrl : 50
 
   # @nodoc
-  constructor: (@crawler, @queue, @config) ->
+  constructor: (@crawler, @qs, @config) ->
     @log = @crawler.log
     @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
@@ -237,16 +199,15 @@ class Scheduler
   # @private
   # @nodoc
   schedule: (url, meta) ->
-    console.log url
-    @queue.urls.schedule url, meta unless url is null or not @urlFilter.isAllowed url, meta
+    @qs.urls().schedule url, meta unless url is null or not @urlFilter.isAllowed url, meta
 
   # Called by Crawler at startup
   # @private
   start: () ->
     pushUrls = () =>
-      waiting = @queue.itemsWaiting().length
+      waiting = @qs.items().waiting().length
       if waiting < @opts.maxWaiting
-        @queue.urls.scheduled @opts.maxWaiting - waiting, (urls) =>
+        @qs.urls().scheduled @opts.maxWaiting - waiting, (urls) =>
           @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
           @crawler.execute entry.url, entry.meta for entry in urls
     @executor = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl

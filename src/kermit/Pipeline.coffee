@@ -1,9 +1,8 @@
-through = require 'through2'
+{obj} = require('./util/tools')
 {PassThrough} = require 'stream'
 {HtmlExtractor} = require './Extractor'
 {DevNull} = require './util/tools.streams'
 _ = require 'lodash'
-{obj} = require('./util/tools')
 
 ###
   The pipeline is a convenience abstraction that allows to attach writable streams as destinations
