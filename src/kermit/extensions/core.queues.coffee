@@ -48,8 +48,9 @@ class QueueWorker extends Extension
     super context
     @items = context.items # Request object is resolved from shared item map
     @limits = new RateLimits @opts.limits, @context.log, @qs # Rate limiting is applied here
-    @spooler = setInterval @processRequests, 100 # Request spooling runs regularly
     @batch = [] # Local batch of items to be put into READY state
+    @messenger.subscribe 'commands.stop', () => clearInterval @pump
+    @messenger.subscribe 'commands.start', () => @pump = setInterval @processRequests, 100
 
   # This is run at intervals to process waiting items
   # @private
@@ -65,11 +66,6 @@ class QueueWorker extends Extension
   # @nodoc
   proceed : (item) ->
     item.ready() if @limits.isAllowed item.url()
-
-  # Stop the continuous execution of item spooling
-  shutdown: ->
-    clearInterval @spooler
-
 
 ###
   Wrapper for rate limit configurations passed as options to the {QueueWorker}

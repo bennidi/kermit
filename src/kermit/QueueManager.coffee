@@ -51,6 +51,7 @@ class RequestItemStore
   # List of phases considered "unfinished"
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
+
   # Construct a new QueueManager with its own data file
   constructor: (@file, @log) ->
     @store =  new lokijs @file
@@ -87,6 +88,8 @@ class RequestItemStore
 
   # Determines whether there are items left for Spooling
   hasUnfinished: -> @items.find(phase: $in: unfinished).length > 0
+
+  inPhases : (phases)  -> @items.find(phase: $in: phases)
 
   # Retrieve
   processing: (pattern) ->
@@ -131,9 +134,15 @@ class UrlStore
   # Transition the given URL from 'scheduled' to 'processing'.
   # Inserts a new entry if no scheduled URL has been found.
   processing: (url, phase, meta) ->
-    @urls.update { url:  url, phase: 'scheduled'}, { $set: {phase : phase, meta:meta}},{}, (err, updates) =>
+    update = phase : 'processing'
+    update['meta'] = meta if meta
+    @urls.update { url:  url, phase: 'scheduled'}, { $set: update},{}, (err, updates) =>
       if updates is 0 # Not found -> wasn't previously scheduled but executed directly
-        @urls.insert {url:url, phase:phase, meta:meta}, ()->
+        record =
+          url:url
+          phase:'processing'
+        record['meta'] = meta if meta
+        @urls.insert record, ()->
       else
         @counter.scheduled--
 
@@ -143,7 +152,11 @@ class UrlStore
 
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->
-    @urls.insert {url:url, phase:'scheduled', meta:meta}, (err, result) =>
+    record =
+      url:url
+      phase:'scheduled'
+    record['meta'] = meta if meta
+    @urls.insert record, (err, result) =>
       if not err
         @log.debug? "Scheduled #{url}"
         @counter.scheduled++

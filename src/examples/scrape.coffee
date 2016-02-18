@@ -1,15 +1,22 @@
 {Crawler, ext, logconf} = require '../kermit/kermit.modules.coffee'
-{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer} = ext
+{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, RandomizedDelay} = ext
+{RemoteControl} = ext
 
 # opts: rateLimit, item depth
 Kermit = new Crawler
   name: "wikipedia"
   basedir : '/tmp/kermit'
+  autostart: false
   extensions : [
     new ResourceDiscovery
     new Monitoring
-    new AutoShutdown
+    #new AutoShutdown
     new Histogrammer
+    new RemoteControl
+   # new RandomizedDelay
+   #   ratio: 1
+   #   averageDelayInMs: 5000
+   #   interval: 10000
     new OfflineStorage
       basedir: '/tmp/kermit/wikipedia/storage'
     #new OfflineServer
@@ -39,7 +46,4 @@ Kermit = new Crawler
       deny : [
         /.*debug=false/
       ]
-
-Kermit.execute("https://en.wikipedia.org/wiki/Web_scraping")
-
 

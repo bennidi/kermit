@@ -11,6 +11,8 @@ kermit.ext = obj.merge kermit.ext, require './extensions/ext.offline'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.monitoring'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.autoshutdown'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.histogramming'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.RandomizedDelay'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.RemoteControl'
 kermit.logconf = require './Logging.conf'
 
 module.exports = kermit

@@ -1,6 +1,6 @@
 _ = require 'lodash'
 {obj} = require './util/tools'
-{CrawlerContext} = require './Crawler.Context'
+{CrawlerContext, ContextAware} = require './Crawler.Context'
 
 ###
 {Extension}s are the core abstraction for adding actual item processing functionality
@@ -28,7 +28,7 @@ and respective {ExtensionPoint}s.
 @see RequestItem
   
 ###
-class Extension
+class Extension extends ContextAware
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
@@ -44,9 +44,8 @@ class Extension
   # @throw Error if it does not find the context to be providing what it expects.
   initialize: (context) ->
     throw new Error "Initialization of an extension requires a context object" unless context
-    @context = context
-    @log = context.log
-    @qs = context.qs
+    # Reexpose most common objects
+    @importContext context
     @initialized = true
 
 
@@ -55,10 +54,6 @@ class Extension
   merge : (a,b) ->
     {obj} = require './util/tools'
     obj.overlay a,b
-
-  # Run shutdown logic of this extension (if any)
-  # @abstract
-  shutdown : () ->
 
   # Get all {RequestPhase} values handled by this extension
   targets: () ->

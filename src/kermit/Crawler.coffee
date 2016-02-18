@@ -1,7 +1,7 @@
 {obj, uri, Synchronizer} = require './util/tools'
 {Extension} = require './Extension'
 {ExtensionPoint} = require './Crawler.ExtensionPoints'
-{CrawlerContext} = require './Crawler.Context'
+{CrawlerContext, ContextAware} = require './Crawler.Context'
 {ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
@@ -51,17 +51,16 @@ class Crawler
     # Use default options where no user defined options are given
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
-    @log.info? "#{obj.print @config}", tags: ['Config']
+    @log.info? "#{obj.print @config, 3}", tags: ['Config']
     @qs = new QueueSystem filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}", log:@log
-    @scheduler = new Scheduler this, @qs, @config
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
       crawler: @ # re-expose this crawler
       log    : @log
       qs : @qs
-      scheduler: @scheduler
 
+    @scheduler = new Scheduler @context, @config
     # Create and add extension points
     @extpoints = {}
     @extpoints[phase] = new ExtensionPoint @context, phase for phase in Phase.ALL
@@ -84,49 +83,59 @@ class Crawler
       new Completer
       new Cleanup]
     @initialize()
+
     # Usually this handler is considered back practice but in case of processing errors
     # of single items, operation should continue.
     process.on 'uncaughtException', (error) =>
     # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually allow the process to exit
       @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
+    @start() if @config.autostart
 
   # Initializes this extension point with the given context. Initialization cascades
   # to all contained extensions
   # @private
-  initialize: () ->
-    @scheduler.start()
+  initialize: ->
     for extension in @extensions
       extension.initialize(@context.fork())
       extension.verify()
       @log.info? extension.toString(), tags: ['Config']
 
+  start: ->
+    @log.info? "Starting Crawler"
+    @context.messenger.publish 'commands.start'
+    
+      
   # Run shutdown logic on all extensions
-  shutdown: () ->
-    for extension in _(@extensions).reverse().value()
-      try
-        @log.info? "Shutdown of #{extension.name}"
-        extension.shutdown?()
-      catch error
-        @log.error? "Shutdown error in #{extension.name}", {error : error.toString() stack: error.stack()}
-    @scheduler.shutdown()
-    @qs.shutdown()
+  stop: ->
+    @log.info? "Stopping Crawler"
+    # Prevent new work from being submitted
+    @context.execute = -> throw new Error "The crawler has been stopped!"
+    @context.schedule = -> throw new Error "The crawler has been stopped!"
+    # Stop all extensions and Scheduler
+    @context.messenger.publish 'commands.stop', {}
+    @wdog = setInterval (=>
+      notFinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
+      if notFinished.length is 0
+        clearInterval @wdog
+        @qs.shutdown()
+      ), 500
+
+  shutdown: -> @stop()
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
   execute: (url, meta) ->
     @log.debug? "Executing #{url}"
-    #meta = obj.addProperty 'parents', 0, meta
     item = new RequestItem url, meta, @log
     ExtensionPoint.execute @, Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
-  schedule: (url, meta = {}) ->
-    #meta = obj.addProperty 'parents', 0, meta
+  schedule: (url, meta) ->
     @scheduler.schedule url, meta
 
   # Pretty print this crawler
-  toString: () ->
+  toString: ->
     "Crawler: " # TODO: List extension points and content
 
 ###
@@ -135,43 +144,40 @@ class Crawler
 ###
 class CrawlerConfig
 
-  # Create an object containing the default configuration options
-  @defaultOpts : () ->
-    name      : "kermit"
-    basedir   : "/tmp/sloth"
-    extensions: [] # Clients can add extensions
-    options   : # Options of each core extension can be customized here
-      Logging   : LogConfig.detailed
-      Queueing   : {filename : "#{obj.randomId()}-queue.json"} # Options for the queuing system, see [QueueWorker] and [QueueConnector]
-      Streaming: {} # Options for the {Streamer}
-      Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
-      Scheduling  : {} # Options for URL scheduling [Scheduler]
+
 
   ###
   @param config [Object] The configuration parameters
   @option config [String] name The name of the crawler
+  @option config [Boolean] autostart Whether the start command is issued after initialization
   @option config [String] basedir The base directory used for all data (logs, offline storage etc.)
   @option config [Array<Extension>] extensions An array of user {Extension}s to be installed
   @option config.options [Object] Queueing Options for {QueueWorker} and {QueueConnector}
   @option config.options [Object] Streaming Options for {RequestStreamer}
   @option config.options [Object] Filtering Options for {RequestFilter} and {UrlFilter}
   @option config.options [Object] Logging The configuration for the {LogHub}
-
-
   ###
   constructor: (config = {}) ->
-    config = obj.overlay CrawlerConfig.defaultOpts(), config
-    @name = config.name
-    @basedir = config.basedir
-    @extensions = config.extensions
-    @options = config.options
+    @name      = "kermit"
+    @basedir   = "/tmp/sloth"
+    @autostart = true
+    @extensions = [] # Clients can add extensions
+    @options   = # Options of each core extension can be customized here
+      Logging   : LogConfig.detailed
+      Queueing   :
+        filename : "#{obj.randomId()}-queue.json" # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+        limits : []
+      Streaming: {} # Options for the {Streamer}
+      Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
+      Scheduling  : {} # Options for URL scheduling [Scheduler]
+    obj.merge @, config
     @options.Logging = switch
-      when _.isFunction config.options.Logging then config.options.Logging "#{@basePath()}/logs"
-      when _.isObject config.options.Logging then config.options.Logging
+      when _.isFunction config.options?.Logging then config.options.Logging "#{@basePath()}/logs"
+      when _.isObject config.options?.Logging then config.options.Logging
       else LogConfig.detailed "#{@basePath()}/logs"
 
   # @return [String] The configured base path of this crawler
-  basePath: () -> "#{@basedir}/#{@name}"
+  basePath: -> "#{@basedir}/#{@name}"
 
 ###
 
@@ -186,19 +192,22 @@ class CrawlerConfig
 ###
 class Scheduler
   @include Synchronizer
+  @include ContextAware
 
-
-  #sync = require 'synchronize'
-
-  @defaultOptions: () ->
+  @defaultOptions: ->
     maxWaiting : 50
     msPerUrl : 50
 
   # @nodoc
-  constructor: (@crawler, @qs, @config) ->
-    @log = @crawler.log
+  constructor: (@context, @config) ->
+    @importContext @context
     @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
+    @messenger.subscribe 'commands.start', @start
+    @messenger.subscribe 'commands.stop', =>
+      @log.debug "Stopping Url scheduler #{@feeder}"
+      clearInterval @feeder
+
 
   # @private
   # @nodoc
@@ -207,21 +216,17 @@ class Scheduler
 
   # Called by Crawler at startup
   # @private
-  start: () ->
-    pushUrls = () =>
+  start: =>
+    pushUrls = =>
       waiting = @qs.items().waiting().length
       if waiting < @opts.maxWaiting
         @synchronized =>
           urls = @qs.urls().scheduled @opts.maxWaiting - waiting
           @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
           @crawler.execute entry.url, entry.meta for entry in urls
-    @executor = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
-    @executor.unref()
+    @feeder = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
+    @feeder.unref()
 
-  # @nodoc
-  # @private
-  shutdown: () ->
-    clearInterval @executor
 
 module.exports = {
   Crawler

@@ -35,7 +35,7 @@ class Monitoring extends Extension
   # Add stats counter at intervals
   initialize: (context) ->
     super context
-    statsLogger = () =>
+    statsLogger = =>
       #sync.fiber () =>
       try
         start = new Date()
@@ -49,13 +49,12 @@ class Monitoring extends Extension
         @log.info? "#{durations}", tags : ['Stats', 'Duration']
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack
-    if @opts.enabled
-      @log.info? "Statistics enabled at interval #{@opts.interval}"
-      @stats = setInterval statsLogger, @opts.interval
+    @messenger.subscribe 'commands.start', =>
+      if @opts.enabled
+        @log.info? "Statistics enabled at interval #{@opts.interval}"
+        @stats = setInterval statsLogger, @opts.interval
+    @messenger.subscribe 'commands.stop', => clearInterval @stats
 
-  # Remove stats generator
-  shutdown:() ->
-    clearInterval @stats
 
   # Count the item (phase)
   count : (phase) ->

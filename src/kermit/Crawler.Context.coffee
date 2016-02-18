@@ -1,4 +1,5 @@
 {ExtensionPoint} = require './Crawler.ExtensionPoints'
+postal = require 'postal'
 
 # A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
 # of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
@@ -18,6 +19,9 @@ class CrawlerContext
     @log = config.log
     @config = config.crawler.config
     @qs = config.qs
+    @messenger =
+      subscribe : (cmd, handler) -> postal.subscribe {channel: 'main', topic: cmd, callback: handler}
+      publish :  (cmd, data) -> postal.publish {channel: 'main', topic: cmd, data: data}
 
   # @see [Crawler#schedule]
   schedule : (url, meta) ->
@@ -40,4 +44,16 @@ class CrawlerContext
       @[property] = value
     child
 
-module.exports = {CrawlerContext}
+class ContextAware
+
+  importContext : (context) ->
+    @context = context
+    @log = context.log
+    @qs = context.qs
+    @crawler = context.crawler
+    @messenger = context.messenger
+
+module.exports = {
+  CrawlerContext
+  ContextAware
+}

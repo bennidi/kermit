@@ -65,7 +65,8 @@ class OfflineServer extends Extension
     super context
     @opts.basedir = context.config.basePath()
     @server =  new LocalHttpServer @opts.port, @opts.basedir + "/"
-    @server.start()
+    @messenger.subscribe 'commands.start', () => @server.start()
+    @messenger.subscribe 'commands.stop', () => @server.stop()
     @mitm = Mitm()
     # Don't intercept connections to localstorage
     @mitm.on 'connect', (socket, opts) =>
@@ -86,10 +87,6 @@ class OfflineServer extends Extension
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
       response.writeHead 302, 'Location': localUrl
       response.end()
-
-
-  shutdown: () ->
-    @server.stop()
 
 module.exports = {
   OfflineStorage

@@ -75,7 +75,9 @@ class ObjectHelper
   @print : (object, depth = 2, colorize = false) ->
     util.inspect object, false, depth, colorize
   @merge : (a,b) ->
-    _.merge a , b , (a,b) -> if _.isArray b then b.concat a
+    _.merge a , b , (a,b) -> switch
+      when _.isArray(b) and not _.isEmpty a then b.concat a
+      when _.isArray b then b
   @overlay : (a,b) ->
     _.merge a , b , (a,b) -> if _.isArray a then b
   @randomId : (length=8) ->
@@ -86,6 +88,8 @@ class ObjectHelper
 
 ###
   Wrapper around synchronize.js - can be used as Mixin as well.
+
+  https://mixmax.com/blog/node-fibers-using-synchronize-js
 ###
 class Synchronizer
 

@@ -33,3 +33,13 @@ POLISH
   
   
      
+Pause & Resume Feature
+
++ Individual base path for all components
++ Store & Load databases from files
++ Replace lokijs with nedb
++ Write tests for QueueSystem interface
++ Implement REST remote control (add commands for pause/resume/start/stop)
++ Shutdown procedure:
+ + Wait for all requests in state FETCHING/FETCHED to be COMPLETED/CANCELED/ERROR
+ + Store

@@ -289,7 +289,7 @@ class RequestItem
   # Change the items phase to FETCHED
   # @return {RequestItem} This item
   # @throw Error if item item does have other phase than FETCHING
-  fetched: () ->
+  fetched: () =>
     if @isFetching() then @phase(ProcessingPhase.FETCHED);this
     else throw new Error "Transition from #{@state.phase} to FETCHED not allowed"
 
