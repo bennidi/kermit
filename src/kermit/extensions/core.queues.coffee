@@ -61,7 +61,7 @@ class QueueWorker extends Extension
   # @nodoc
   localBatch: () ->
     currentBatch = _.filter @batch, (item) -> item.phase is 'SPOOLED'
-    if not _.isEmpty currentBatch then currentBatch else @batch = @qs.items().spooled(100)
+    if not _.isEmpty currentBatch then currentBatch else @batch = @qs.items().spooled()
 
   # @nodoc
   proceed : (item) ->

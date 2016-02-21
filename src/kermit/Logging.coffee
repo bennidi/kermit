@@ -163,8 +163,9 @@ class LogHub
       when destination.appender.type instanceof Function then new destination.appender.type destination.appender
       else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
-      if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but itemed by destination #{obj.print destination}"
+      if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but requested by destination #{obj.print destination}"
       formatter = destination.formatter or LogFormats.llog()
+      appender.sink.setMaxListeners 25
       @dispatcher[level]
         .pipe new LogFormatHandler formatter, level
         .pipe appender.sink

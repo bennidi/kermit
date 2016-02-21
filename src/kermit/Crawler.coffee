@@ -118,7 +118,7 @@ class Crawler
       notFinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
       if notFinished.length is 0
         clearInterval @wdog
-        @qs.shutdown()
+        @qs.save()
       ), 500
 
   shutdown: -> @stop()

@@ -6,13 +6,13 @@
 Kermit = new Crawler
   name: "wikipedia"
   basedir : '/tmp/kermit'
-  autostart: false
+  autostart: true
   extensions : [
     new ResourceDiscovery
     new Monitoring
     #new AutoShutdown
     new Histogrammer
-    new RemoteControl
+   # new RemoteControl
    # new RandomizedDelay
    #   ratio: 1
    #   averageDelayInMs: 5000
@@ -47,3 +47,4 @@ Kermit = new Crawler
         /.*debug=false/
       ]
 
+Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
