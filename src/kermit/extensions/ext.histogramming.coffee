@@ -2,7 +2,7 @@
 
 class Histogrammer extends Extension
 
-  constructor: () ->
+  constructor: ->
     @histogram = {}
     @urlCount = 0
     # collect url, title, keywords, number of links, content-length

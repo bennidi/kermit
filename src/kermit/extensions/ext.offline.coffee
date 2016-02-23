@@ -16,74 +16,82 @@ fileExists = (path) ->
   catch err
     false
 
-
-
-
-# Store item results in local repository for future serving from filesystem
+###
+ Store downloaded data on local filesystem
+###
 class OfflineStorage extends Extension
 
   @errors =
     OSNODIR : """
       Extension OfflineStorage needs the basedir to be specified as root for storage of files.
-      Please provide property basedir (withoud trailing slash) in the options.
+      Please provide property 'basedir' (withoud trailing slash) in the options.
     """
 
-  @defaultOpts = () ->
+  @defaultOpts = ->
     ifFileExists : 'skip' # [skip,update,rename?]
+    basedir: ''
 
   constructor: (opts = {}) ->
     @opts = @merge OfflineStorage.defaultOpts(), opts
     throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @opts.basedir
+    shouldStore = (path) =>
+      @log.debug? "#{path} already exists" if exists = fileExists path
+      @opts.ifFileExists is 'update' or not exists
     super
       READY: (item) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = uri.toLocalPath @opts.basedir , item.url()
-        if @shouldStore path
+        if shouldStore path
           @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
           target = fse.createOutputStream path
-          #target.on "error", (error) =>
-          #  @log.error? "Error storing file #{path}", {error:error, trace:error.stack}
           item.pipeline().stream ContentType([/.*/g]), target
 
-  shouldStore: (path) ->
-    @log.debug? "#{path} already exists" if exists = fileExists path
-    @opts.ifFileExists is 'update' or not exists
+###
+  Redirect requests to web URLs to local storage. This allows to serve (previously downloaded) content
+  offline.
 
+  IMPORTANT: Do not use with enabled keep-alive option
 
+  @see OfflineStorage
+###
 class OfflineServer extends Extension
 
   LocalHttpServer = require('../util/httpserver').LocalHttpServer
 
-  @defaultOpts = () ->
+  @errors =
+    OSNODIR : """
+      Extension OfflineServer needs the basedir from where files are served.
+      Please provide property 'basedir' (withoud trailing slash) in the options.
+    """
+
+  @defaultOpts = ->
     port : 3000
 
   constructor: (opts = {}) ->
-    super {}
     @opts = @merge OfflineServer.defaultOpts(), opts
+    throw new Error OfflineServer.errors.OSNODIR if _.isEmpty @opts.basedir
 
   initialize: (context) ->
     super context
-    @opts.basedir = context.config.basePath()
     @server =  new LocalHttpServer @opts.port, @opts.basedir + "/"
-    @messenger.subscribe 'commands.start', () => @server.start()
-    @messenger.subscribe 'commands.stop', () => @server.stop()
+    @messenger.subscribe 'commands.start', => @server.start()
+    @messenger.subscribe 'commands.stop', => @server.stop()
     @mitm = Mitm()
-    # Don't intercept connections to localstorage
     @mitm.on 'connect', (socket, opts) =>
-      url = opts.uri?.href
-      localFilePath = toLocalPath @opts.basedir, url
+    # Don't intercept connections to local storage
       if opts.host is 'localhost'
-        @log.debug? "Bypassing connection to host=localhost"
         return socket.bypass()
+      url = opts.uri?.href
+      localFilePath = uri.toLocalPath @opts.basedir, url
+      # Do not redirect if file doesn't exist.
       if not fileExists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
       @log.debug "Connection to #{url} redirects to #{localFilePath}"
     # Redirect items to local server
     @mitm.on 'request', (item, response) =>
-      @log.debug? "Receiving item"
       url = "http://#{item.headers.host}#{item.url}"
-      localUrl = toLocalPath "http://localhost:3000", url
+      localUrl = uri.toLocalPath "http://localhost:3000", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
       response.writeHead 302, 'Location': localUrl
       response.end()

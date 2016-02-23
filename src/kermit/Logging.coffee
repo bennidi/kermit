@@ -49,7 +49,7 @@ class DefaultFormatter extends Formatter
 ###
 class LogFormats
 
-  @llog : () -> new DefaultFormatter
+  @llog : -> new DefaultFormatter
 
 ###
   Log appenders receive formatted log messages and take care of outputting them on their
@@ -64,7 +64,7 @@ class LogAppender
 
   # @private
   # @abstract
-  initialize: () ->
+  initialize: ->
 
 # Write to the local file system (in append mode)
 class FileAppender extends LogAppender
@@ -75,7 +75,7 @@ class FileAppender extends LogAppender
 class ConsoleAppender extends LogAppender
 
   # @nodoc
-  constructor: () -> super sink : process.stdout
+  constructor: -> super sink : process.stdout
 
 ###
   Apply log formatters to log messages before they are passed on to the {LogAppender}s
@@ -103,7 +103,7 @@ class LogFormatHandler extends Transform
 class Appenders
 
   instance = null
-  @get: () ->
+  @get: ->
     instance ?= new Appenders
 
   # @private
@@ -130,7 +130,7 @@ class Appenders
 class LogHub
 
   # Get a default configuration of this log
-  @defaultOpts : () ->
+  @defaultOpts : ->
     appenders : Appenders.get()
     destinations : [
       {
@@ -147,7 +147,7 @@ class LogHub
     @initialize()
 
   #@private
-  initialize: () ->
+  initialize: ->
     fs.mkdirsSync @opts.basedir if @opts.basedir
     @dispatcher = {}
     for level in @opts.levels
@@ -180,7 +180,7 @@ class LogHub
       @dispatcher[lvl]?.push msg
 
   # Create a new {Logger} that logs to this hub
-  logger: () -> new Logger @opts.levels, @
+  logger: -> new Logger @opts.levels, @
 
 ###
   Wrapper around {LogHub} that provides a method for each available log level.

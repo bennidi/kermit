@@ -11,14 +11,14 @@ _ = require 'lodash'
 # a item to retrieve those resources.
 class ResourceDiscovery extends Extension
 
-  @defaultOpts: () ->
+  @defaultOpts: ->
     links : true
     anchors: true
     scripts: true # TODO: implement discovery
     images : true # TODO: implement discovery
 
   # Create a new resource discovery extension
-  constructor: () ->
+  constructor: ->
     @opts = @merge ResourceDiscovery.defaultOpts(), @opts
     @processor = new HtmlProcessor [
       new HtmlExtractor

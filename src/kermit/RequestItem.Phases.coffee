@@ -61,7 +61,7 @@ class ProcessingPhase
   # @property [Array<String>] Collection of all defined phase
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
-  constructor: () ->
+  constructor: ->
     @name = constructor.name
 
   # Retrieve the expected succeeding phase for the given phase

@@ -51,7 +51,7 @@ class MockContext
   execute: (item) -> item
   schedule: (item, url) -> item.subitem url
   config:
-    basePath : () -> "somepath"
+    basePath : -> "somepath"
   queue: new QueueSystem
   share: (property, value ) =>
     @[property] = value

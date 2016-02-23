@@ -1,5 +1,5 @@
 {HtmlExtractor} = require './Extractor'
-{LocalHttpServer} = require './util/httpserver'
+htmlToJson = require 'html-to-json'
 
 process = (extractor, input) ->
   try
@@ -8,11 +8,6 @@ process = (extractor, input) ->
     console.log error
 
 describe  'Html parser',  ->
-  fixtures = new LocalHttpServer
-  before ->
-    fixtures.start()
-  after ->
-    fixtures.stop()
   describe 'transforms HTML into a JSON object using extractors', ->
 
     it '# can parse and extract from an html snippet', ->

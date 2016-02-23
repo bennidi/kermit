@@ -43,6 +43,7 @@ class Extension extends ContextAware
   # @param [CrawlerContext] context The context provided by the crawler
   # @throw Error if it does not find the context to be providing what it expects.
   initialize: (context) ->
+    @name = @constructor.name
     throw new Error "Initialization of an extension requires a context object" unless context
     # Reexpose most common objects
     @importContext context
@@ -56,20 +57,20 @@ class Extension extends ContextAware
     obj.overlay a,b
 
   # Get all {RequestPhase} values handled by this extension
-  targets: () ->
+  targets: ->
     (phase for phase of @handlers)
 
   # Run validity checks of this extension. Called after initialization and before
   # actual item processing starts
   # @throw Error if the configuration is invalid in any way
-  verify: () ->
+  verify: ->
     throw new Error "Extension not properly initialized" unless @initialized
     throw new Error "An extension requires a name" unless @name
     throw new Error "An extension requires a context object" unless @context
 
 
   # @return {String} Human readable description of this extension
-  toString: () ->
+  toString: ->
     phases = (key for key of @handlers)
     "#{@name} [#{phases}] => #{obj.print @opts}"
 

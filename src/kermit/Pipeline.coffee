@@ -28,6 +28,8 @@ class Pipeline
   # guarded by a function that defines whether or not the stream will receive
   # the response data from the incoming message.
   # Any stream that has a matching guard function will receive the data from the incoming message.
+  # Error handlers will be added to the stream and the item will be transitioned to phase {ERROR}
+  # if any streaming error occurs.
   stream: (guard, stream) ->
     throw new Error "Matcher is expected to be of type Function but was #{guard}" unless _.isFunction guard
     id = obj.randomId()
@@ -37,6 +39,8 @@ class Pipeline
       @log.error? "Error in downstream #{stream.constructor.name}", {error:error, trace:error.stack}
       @item.error(error)
 
+  # Import the meta data from the incoming message and attach all mapped streams (with matching guards)
+  # to the response stream.
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
@@ -63,7 +67,7 @@ class Pipeline
       incomingMessage.pipe @incoming
 
   # Delete all references to objects that may occupy large amount of memory
-  cleanup: () ->
+  cleanup: ->
     delete @guards
     delete @destinations
 

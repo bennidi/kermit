@@ -12,7 +12,7 @@ _ = require 'lodash'
 class QueueConnector extends Extension
 
   # @nodoc
-  constructor: () ->
+  constructor: ->
     super INITIAL : @apply
 
   # @nodoc
@@ -28,7 +28,7 @@ class QueueConnector extends Extension
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
-  @defaultOpts = () ->
+  @defaultOpts = ->
     limits : [
         pattern : /.*/
         to : 5
@@ -49,17 +49,17 @@ class QueueWorker extends Extension
     @items = context.items # Request object is resolved from shared item map
     @limits = new RateLimits @opts.limits, @context.log, @qs # Rate limiting is applied here
     @batch = [] # Local batch of items to be put into READY state
-    @messenger.subscribe 'commands.stop', () => clearInterval @pump
-    @messenger.subscribe 'commands.start', () => @pump = setInterval @processRequests, 100
+    @messenger.subscribe 'commands.stop', => clearInterval @pump
+    @messenger.subscribe 'commands.start', => @pump = setInterval @processRequests, 100
 
   # This is run at intervals to process waiting items
   # @private
-  processRequests : () =>
+  processRequests : =>
     # Transition SPOOLED items into READY state unless parallelism threshold is reached
     @proceed @items[item.id] for item in @localBatch()
 
   # @nodoc
-  localBatch: () ->
+  localBatch: ->
     currentBatch = _.filter @batch, (item) -> item.phase is 'SPOOLED'
     if not _.isEmpty currentBatch then currentBatch else @batch = @qs.items().spooled()
 

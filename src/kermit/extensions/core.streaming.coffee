@@ -17,7 +17,7 @@ socks5Http = require 'socks5-http-client/lib/Agent'
 class RequestStreamer extends Extension
 
   # Create a new options object with the default configuration
-  @defaultOpts = () ->
+  @defaultOpts = ->
     agents : {}
     agentOptions:
       maxSockets: 15

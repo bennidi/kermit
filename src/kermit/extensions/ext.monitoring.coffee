@@ -10,7 +10,7 @@ sync = require 'synchronize'
 ###
 class Monitoring extends Extension
 
-  @defaultOpts: () ->
+  @defaultOpts: ->
     interval : 10000
     enabled : true
 
@@ -36,7 +36,7 @@ class Monitoring extends Extension
   initialize: (context) ->
     super context
     statsLogger = =>
-      #sync.fiber () =>
+      #sync.fiber =>
       try
         start = new Date()
         stats =  _.merge {}, @counters, {current: FETCHING: @qs.items().fetching().length}

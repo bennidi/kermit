@@ -66,7 +66,7 @@ class ProcessingPhase
   # @property [Array<String>] Collection of all defined phase
   @ALL: ['INITIAL', 'SPOOLED','READY','FETCHING','FETCHED','COMPLETE','ERROR','CANCELED']
 
-  constructor: () ->
+  constructor: ->
     @name = constructor.name
 
   # Retrieve the expected succeeding phase for the given phase
@@ -210,10 +210,10 @@ class RequestItem
     if url then @state.url = uri.normalize url else @state.url
 
   # @return [String] The synthetic id of this item
-  id: () -> @state.id
+  id: -> @state.id
 
   # Check whether https should be used to fetch this item  
-  useSSL: () ->
+  useSSL: ->
     @url().startsWith 'https'
 
   # Change the phase and notify subscribed listeners
@@ -248,7 +248,7 @@ class RequestItem
       -1
 
   # Calculate processing time from INITIAL to COMPLETE
-  timeToComplete : () ->
+  timeToComplete : ->
     return -1 if not @isComplete()
     try
       @stamps('COMPLETE')[0] - @stamps('INITIAL')[0]
@@ -281,7 +281,7 @@ class RequestItem
   # Change the items phase to FETCHING
   # @return {RequestItem} This item
   # @throw Error if item does have other phase than READY
-  fetching: () ->
+  fetching: ->
     if @isReady() then @phase(ProcessingPhase.FETCHING);this
     else throw new Error "Transition from #{@state.phase} to FETCHING not allowed"
 
@@ -289,7 +289,7 @@ class RequestItem
   # Change the items phase to FETCHED
   # @return {RequestItem} This item
   # @throw Error if item item does have other phase than FETCHING
-  fetched: () =>
+  fetched: =>
     if @isFetching() then @phase(ProcessingPhase.FETCHED);this
     else throw new Error "Transition from #{@state.phase} to FETCHED not allowed"
 
@@ -315,46 +315,46 @@ class RequestItem
 
   # Check whether this item has phase INITIAL
   # @return {Boolean} True if phase is INITIAL, false otherwise
-  isInitial: () -> @state.phase is ProcessingPhase.INITIAL
+  isInitial: -> @state.phase is ProcessingPhase.INITIAL
   # Check whether this item has phase SPOOLED
   # @return {Boolean} True if phase is SPOOLED, false otherwise
-  isSpooled: () -> @state.phase is ProcessingPhase.SPOOLED
+  isSpooled: -> @state.phase is ProcessingPhase.SPOOLED
   # Check whether this item has phase READY
   # @return {Boolean} True if phase is READY, false otherwise
-  isReady: () -> @state.phase is ProcessingPhase.READY
+  isReady: -> @state.phase is ProcessingPhase.READY
   # Check whether this item has phase FETCHING
   # @return {Boolean} True if phase is FETCHING, false otherwise
-  isFetching: () -> @state.phase is ProcessingPhase.FETCHING
+  isFetching: -> @state.phase is ProcessingPhase.FETCHING
   # Check whether this item has phase FETCHED
   # @return {Boolean} True if phase is FETCHED, false otherwise
-  isFetched: () -> @state.phase is ProcessingPhase.FETCHED
+  isFetched: -> @state.phase is ProcessingPhase.FETCHED
   # Check whether this item has phase COMPLETE
   # @return {Boolean} True if phase is COMPLETE, false otherwise
-  isComplete: () -> @state.phase is ProcessingPhase.COMPLETE
+  isComplete: -> @state.phase is ProcessingPhase.COMPLETE
   # Check whether this item has phase CANCELED
   # @return {Boolean} True if phase is CANCELED, false otherwise
-  isCanceled: () -> @state.phase is ProcessingPhase.CANCELED
+  isCanceled: -> @state.phase is ProcessingPhase.CANCELED
   # Check whether this item has phase ERROR
   # @return {Boolean} True if phase is ERROR, false otherwise
-  isError: () -> @state.phase is ProcessingPhase.ERROR
+  isError: -> @state.phase is ProcessingPhase.ERROR
 
   # Clean all item data that potentially occupies much memory
-  cleanup: () ->
+  cleanup: ->
     @_pipeline?.cleanup()
     delete @changeListeners
 
   # Access the {Pipeline} of this item
-  pipeline: () ->
+  pipeline: ->
     @_pipeline ?= new Pipeline @log, @
 
   # A item might have been created by another item (its parent).
   # That parent might in turn have been created by another item and so on.
   # @return {Number} The number of parents of this item
-  parents: () ->
+  parents: ->
     @state.parents
 
   # Generate a human readable representation of this item
-  toString: () ->
+  toString: ->
     pretty = switch @state.phase
         when 'INITIAL','SPOOLED','READY'
           """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""

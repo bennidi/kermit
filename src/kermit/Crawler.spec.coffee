@@ -30,7 +30,7 @@ describe  'Crawler',  ->
       Kermit.shutdown()  
       
     it '# extensions are called for specific phases', (done)->
-      Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
+      Recorder = new TransitionRecorder -> done(); Kermit.shutdown()
       Recorder.validate("http://www.google.com/", [Phase.INITIAL,Phase.SPOOLED, Phase.READY,
         Phase.FETCHING, Phase.FETCHED, Phase.COMPLETE])
       Kermit = new Crawler extensions : [Recorder, new ResponseStreamLogger]
@@ -38,7 +38,7 @@ describe  'Crawler',  ->
 
 
     it '# extensions can prevent a item from being processed', (done)->
-      Recorder = new TransitionRecorder () -> done(); Kermit.shutdown()
+      Recorder = new TransitionRecorder -> done(); Kermit.shutdown()
       Recorder.validate("http://www.google.com/", [Phase.INITIAL])
       Recorder.validate("http://www.github.com/", [Phase.INITIAL])
       Kermit = new Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]

@@ -8,10 +8,12 @@ class AutoShutdown extends Extension
   # @nodoc
   initialize: (context) ->
     super context
-    watchdog = () =>
+    watchdog = =>
       try
         @log.debug "Checking conditions for shutdown"
-        @crawler.stop() unless @qs.urls().count('scheduled') > 0 or @qs.items().unfinished().length > 0
+        if @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
+          clearInterval @wdog
+          @crawler.stop()
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
     @messenger.subscribe 'commands.start', =>

@@ -7,7 +7,7 @@
 class ExtensionPointConnector extends Extension
 
   # @nodoc
-  constructor: () ->
+  constructor: ->
     super INITIAL : (item) =>
       item.context = @context
       item.onChange 'phase', @executePhase
@@ -37,7 +37,7 @@ class Completer extends Extension
 class RequestItemMapper extends Extension
 
   # @nodoc
-  constructor: () ->
+  constructor: ->
     super INITIAL : (item) => @items[item.id()] = item
 
   # Expose a map that allows to lookup a {RequestItem} object by id
@@ -51,7 +51,7 @@ class RequestItemMapper extends Extension
 class Cleanup extends Extension
 
   # @nodoc
-  constructor: () ->
+  constructor: ->
     super
       COMPLETE : @complete
       CANCELED : @canceled

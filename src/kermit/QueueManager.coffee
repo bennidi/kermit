@@ -7,7 +7,7 @@ sync = require 'synchronize'
 
 class QueueSystem
 
-  @defaultOptions: () ->
+  @defaultOptions: ->
     filename: "/tmp/#{obj.randomId()}"
 
   constructor: (options = {}) ->
@@ -29,13 +29,13 @@ class QueueSystem
     @_.items.insert item
     @_.urls.processing item.url()
 
-  items: () ->
+  items: ->
     @_.items
 
-  urls: () ->
+  urls: ->
     @_.urls
 
-  save: () ->
+  save: ->
     @_.urls.save?()
     @_.items.save?()
 
@@ -79,7 +79,7 @@ class RequestItemStore
   # Retrieve the next batch of {SPOOLED} items
   # @param batchSize {Number} The maximum number of items to be returned
   # @return {Array<RequestItem.state>} An arrays of items in state SPOOLED
-  spooled: () -> @items_spooled.data()
+  spooled: -> @items_spooled.data()
 
   # Retrieve a set of all items with phases defined as "WAITING"
   waiting: -> @items_waiting.data()
@@ -99,7 +99,7 @@ class RequestItemStore
 
   # @private
   # Save the current state to file
-  save: () ->
+  save: ->
     @store.saveDatabase()
 
 ###
@@ -114,6 +114,7 @@ class UrlStore
   # Create a new URL manager
   constructor:(@file, @log) ->
     @urls = new Datastore {autoload:true, filename:@file}
+    @urls.persistence.stopAutocompaction() # Avoid regular flushing to disk
     @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
     #sync @urls, 'find'
     @counter = # Maintain counters for URLs per phase to reduce load on db

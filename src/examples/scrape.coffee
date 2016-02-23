@@ -4,47 +4,47 @@
 
 # opts: rateLimit, item depth
 Kermit = new Crawler
-  name: "wikipedia"
+  name: "testrepo"
   basedir : '/tmp/kermit'
   autostart: true
   extensions : [
     new ResourceDiscovery
-    new Monitoring
-    #new AutoShutdown
-    new Histogrammer
+    #new Monitoring
+    new AutoShutdown
+    #new Histogrammer
    # new RemoteControl
    # new RandomizedDelay
    #   ratio: 1
    #   averageDelayInMs: 5000
    #   interval: 10000
     new OfflineStorage
-      basedir: '/tmp/kermit/wikipedia/storage'
-    #new OfflineServer
+      basedir: '/tmp/kermit/roundtrip'
+    new OfflineServer
+      basedir : '/ext/dev/workspace/webcherries/testing/repo-coffeescript'
   ]
   options:
     Logging: logconf.detailed
     Streaming:
       agentOptions:
         maxSockets: 15
-        keepAlive:true
+        keepAlive:false
         maxFreeSockets: 150
         keepAliveMsecs: 1000
     Queueing:
       limits : [
         {
-          pattern : /.*en.wikipedia\.org.*/
-          to : 5
+          pattern : /.*coffeescript\.org.*/
+          to : 100
           per : 'second'
-          max : 5
+          max : 50
         }
       ]
     Filtering:
       allow : [
-        /.*en.wikipedia\.org.*/
+        /.*coffeescript\.org.*/
       ]
-# Anything matcing the whitelist will be visited
+# Anything matching the whitelist will be visited
       deny : [
-        /.*debug=false/
       ]
 
-Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
+Kermit.execute "http://coffeescript.org"

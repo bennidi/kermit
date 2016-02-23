@@ -38,7 +38,7 @@ class CrawlerContext
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts
   # @return [CrawlerContext] A new child context of this context
-  fork: () ->
+  fork: ->
     child = Object.create this
     child.share = (property, value) =>
       @[property] = value

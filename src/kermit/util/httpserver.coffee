@@ -7,7 +7,7 @@ class LocalHttpServer
 
   constructor: (@port = 3000, @basedir = "./fixtures") ->
 
-  start: () ->
+  start: ->
     app = new Koa()
     app.use (next) ->
       @set 'server', 'LocalHttpServer(localhost)' # set header entry "server"
@@ -16,7 +16,7 @@ class LocalHttpServer
     @server = app.listen @port
     console.log "LocalStorageServer listening on port #{@port} and basedir #{@basedir}"
 
-  stop: () ->
+  stop: ->
     @server.close()
     console.log "LocalHttpServer closed"
   

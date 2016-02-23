@@ -29,7 +29,7 @@ class Filters
 class UrlFilter
 
   # Default options
-  @defaultOpts : () ->
+  @defaultOpts : ->
     allow : [] # allows all by default
     deny : [] # denies none by default
 

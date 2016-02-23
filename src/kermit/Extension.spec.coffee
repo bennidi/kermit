@@ -6,7 +6,7 @@ describe  'Extension',  ->
     it '# requires a valid descriptor', ->
       class SimpleExtension extends Extension
 
-        constructor: () ->
+        constructor: ->
           super "Phase", "This is a simple extension that does nothing"
 
       simpleExt = new SimpleExtension
