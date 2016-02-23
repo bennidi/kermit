@@ -36,8 +36,8 @@ class QueueSystem
     @_.urls
 
   save: ->
-    @_.urls.save?()
-    @_.items.save?()
+    @_.urls.save()
+    @_.items.save()
 
 ###
  Provides access to a queue like system that allows to access {RequestItem}s and URLs.
@@ -87,12 +87,13 @@ class RequestItemStore
   # Retrieve a set of all items with phases defined as "WAITING"
   fetching: -> @items.find phase: Phase.FETCHING
 
-  # Determines whether there are items left for Spooling
+  # Retrieve all unfinished ({INITIAL}, {SPOOLED}, {READY}, {FETCHING}, {FETCHED}) items
   unfinished: -> @items.find(phase: $in: unfinished)
 
+  # Retrieve all items in the specified {ProcessingPhases}s
   inPhases : (phases)  -> @items.find(phase: $in: phases)
 
-  # Retrieve
+  # Retrieve items in phase {FETCHING} with url matching the given pattern
   processing: (pattern) ->
     @items_fetching.branchResultset()
       .find(url : $regex: pattern).data() # possible tuning: make "domain" a field and match per domain without regex

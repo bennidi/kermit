@@ -12,6 +12,7 @@
     "chalk": "^1.1.1",
     "codo": "github:open-medicine-initiative/codo",
     "coffee-script": "^1.10.0",
+    "dir-compare": "^1.0.1",
     "esdoc": "^0.4.3",
     "esdoc-es7-plugin": "0.0.3",
     "gulp": "gulpjs/gulp#4.0",

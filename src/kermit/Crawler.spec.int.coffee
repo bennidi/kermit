@@ -1,6 +1,7 @@
 {Crawler, ext} = require './kermit.modules.coffee'
 {ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, RandomizedDelay} = ext
 {RemoteControl} = ext
+dircompare = require 'dir-compare'
 
 describe  'Crawler',  ->
   @timeout 15000
@@ -36,6 +37,13 @@ describe  'Crawler',  ->
               /.*coffeescript\.org.*/
             ]
       Kermit.context.messenger.subscribe "commands.stop", ->
+        options =
+          compareSize: true
+          noDiffSet: true
+        path2 = './testing/repo-coffeescript/org'
+        path1 = './target/testing/repo-coffeescript/org'
+        result = dircompare.compareSync path1, path2, options
+        expect(result.same).to.be.true()
         done()
       Kermit.execute "http://coffeescript.org"
 

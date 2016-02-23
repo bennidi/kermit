@@ -144,8 +144,6 @@ class Crawler
 ###
 class CrawlerConfig
 
-
-
   ###
   @param config [Object] The configuration parameters
   @option config [String] name The name of the crawler
@@ -165,7 +163,7 @@ class CrawlerConfig
     @options   = # Options of each core extension can be customized here
       Logging   : LogConfig.detailed
       Queueing   :
-        filename : "#{obj.randomId()}-queue.json" # Options for the queuing system, see [QueueWorker] and [QueueConnector]
+        filename : "#{obj.randomId()}-queue" # Options for the queuing system, see [QueueWorker] and [QueueConnector]
         limits : []
       Streaming: {} # Options for the {Streamer}
       Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
