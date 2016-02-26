@@ -5,7 +5,7 @@
 {ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
-{QueueSystem} = require './QueueManager'
+{QueueSystem} = require './QueueSystem'
 {UrlFilter} = require './extensions/core.filter'
 {Phase} = require './RequestItem.Phases'
 {RequestItem} = require './RequestItem'
@@ -52,7 +52,9 @@ class Crawler
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @log.info? "#{obj.print @config, 3}", tags: ['Config']
-    @qs = new QueueSystem filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}", log:@log
+    @qs = new QueueSystem
+      filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}",
+      log:@log
     # Create the root context of this crawler
     @context = new CrawlerContext
       config : @config
@@ -87,9 +89,10 @@ class Crawler
     # Usually this handler is considered back practice but in case of processing errors
     # of single items, operation should continue.
     process.on 'uncaughtException', (error) =>
-    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually allow the process to exit
+    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
       @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
+    # TODO:  wait for queue system
     @start() if @config.autostart
 
   # Initializes this extension point with the given context. Initialization cascades
@@ -213,7 +216,7 @@ class Scheduler
     @qs.urls().schedule url, meta unless url is null or not @urlFilter.isAllowed url, meta
 
   # Called by Crawler at startup
-  # @private
+  # @nodoc
   start: =>
     pushUrls = =>
       waiting = @qs.items().waiting().length
@@ -222,7 +225,8 @@ class Scheduler
           urls = @qs.urls().scheduled @opts.maxWaiting - waiting
           @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
           @crawler.execute entry.url, entry.meta for entry in urls
-    @feeder = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl
+    setTimeout pushUrls, 200 # Run once after startup to get going
+    @feeder = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl # run regularly to feed new URLs
     @feeder.unref()
 
 

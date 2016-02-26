@@ -1,4 +1,4 @@
-{obj, uri} = require './tools'
+{obj, uri, files} = require './tools'
 
 describe  'Tools collection',  ->
   describe ' has uri utilities', ->
@@ -38,3 +38,8 @@ describe  'Tools collection',  ->
       expect(uri.toLocalPath base, "http://en.wikipedia.org/wiki/EBay vs. Bidder%27s Edge").to.equal "#{base}/org/wikipedia/en/wiki/EBay vs. Bidder's Edge/index.html"
       expect(uri.toLocalPath base, "https://en.wikipedia.org/wiki/Nokogiri_(software)").to.equal "#{base}/org/wikipedia/en/wiki/Nokogiri_(software)/index.html"
       expect(uri.toLocalPath base, "https://en.wikipedia.org/wiki/Yahoo!_Query_Language").to.equal "#{base}/org/wikipedia/en/wiki/Yahoo!_Query_Language/index.html"
+
+  describe ' file utilities', ->
+    it ' # provides method for checking file existence', ->
+
+      expect(files.exists './fixtures/queuesys/b5hg6ued.items.db').to.be true

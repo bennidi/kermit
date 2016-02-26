@@ -2,7 +2,7 @@ _ = require 'lodash'
 util = require 'util'
 URI = require 'urijs'
 {MimebyFileExtension} = require './mimetypes'
-sync = require 'synchronize'
+
 
 
 class URIHelper
@@ -50,7 +50,7 @@ class URIHelper
   @normalize: (url) -> URI(url).normalize().toString()
 
   #
-  # TODO: Use hash for queries that exceed max lenght of file names in ext4
+  # TODO: Use hash for queries that exceed max length of file names in ext4
   @toLocalPath : (basedir = "", url) ->
     url = url.replace 'www', '' # 'www' is considered superfluous
     url = URIHelper.replaceHtmlEntities url
@@ -65,6 +65,17 @@ class URIHelper
     fullpath = "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
     URI(fullpath).readable()
 
+
+class Files
+  path = require 'path'
+  fs = require 'fs'
+
+  @exists : (fsId) ->
+    try
+      stats = fs.statSync fsId
+      stats?
+    catch err
+      false
 
 class ObjectHelper
 
@@ -87,11 +98,13 @@ class ObjectHelper
     id.substr 0, length
 
 ###
+
   Wrapper around synchronize.js - can be used as Mixin as well.
 
   https://mixmax.com/blog/node-fibers-using-synchronize-js
 ###
 class Synchronizer
+  sync = require 'synchronize'
 
   synchronized: (fn) -> sync.fiber fn
   await: sync.await
@@ -100,5 +113,6 @@ class Synchronizer
 module.exports =
   uri: URIHelper
   obj : ObjectHelper
+  files: Files
   Synchronizer: Synchronizer
   streams: require './tools.streams'

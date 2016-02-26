@@ -2,9 +2,11 @@
 {ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, RandomizedDelay} = ext
 {RemoteControl} = ext
 dircompare = require 'dir-compare'
+{obj} = require './util/tools'
 
 describe  'Crawler',  ->
   @timeout 15000
+  dir = obj.randomId()
   describe 'integration test for ResourceDiscovery,LocalStorage,OfflineServer', ->
     it '# can be instantiated with options for core extensions', (done) ->
       Kermit = new Crawler
@@ -15,9 +17,9 @@ describe  'Crawler',  ->
           new ResourceDiscovery
           new AutoShutdown
           new OfflineStorage
-            basedir: './target/testing/repo-coffeescript'
+            basedir: "./target/testing/repositories/coffeescript-#{dir}"
           new OfflineServer
-            basedir : './testing/repo-coffeescript'
+            basedir : './fixtures/repositories/coffeescript'
         ]
         options:
           Streaming:
@@ -40,9 +42,9 @@ describe  'Crawler',  ->
         options =
           compareSize: true
           noDiffSet: true
-        path2 = './testing/repo-coffeescript/org'
-        path1 = './target/testing/repo-coffeescript/org'
-        result = dircompare.compareSync path1, path2, options
+        fixture = './fixtures/repositories/coffeescript/org'
+        output = "./target/testing/repositories/coffeescript-#{dir}/org"
+        result = dircompare.compareSync fixture, output, options
         expect(result.same).to.be.true()
         done()
       Kermit.execute "http://coffeescript.org"

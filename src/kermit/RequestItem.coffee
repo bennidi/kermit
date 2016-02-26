@@ -97,14 +97,14 @@ class ProcessingPhase
 
 ###
 Process items with phase INITIAL.
-This ProcessingPhase runs: Filtering, Connect to {QueueManager Queueing System}, User extensions
+This ProcessingPhase runs: Filtering, Connect to {QueueSystem Queueing System}, User extensions
 ###
 class INITIAL extends ProcessingPhase
 
 ###
 Process items with phase "SPOOLED".
-Spooled items are waiting in the {QueueManager} for further processing.
-This ProcessingPhase runs: User extensions, {QueueManager}
+Spooled items are waiting in the {QueueSystem} for further processing.
+This ProcessingPhase runs: User extensions, {QueueSystem}
 ###
 class SPOOLED extends ProcessingPhase
 

@@ -1,6 +1,6 @@
 {RequestItem, Phase} = require('./RequestItem')
 {MockContext} = require('./util/spec.utils')
-Queue = require('./QueueManager')
+Queue = require('./QueueSystem')
 
 describe  'Requests',  ->
   describe 'have a lifecycle reflected as a transitions of states', ->

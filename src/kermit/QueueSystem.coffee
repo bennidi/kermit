@@ -1,4 +1,4 @@
-{obj, Synchronizer} = require './util/tools'
+{obj, files, Synchronizer} = require './util/tools'
 {Phase} = require './RequestItem.Phases'
 lokijs = require 'lokijs'
 _ = require 'lodash'
@@ -12,9 +12,23 @@ class QueueSystem
 
   constructor: (options = {}) ->
     @options = obj.merge QueueSystem.defaultOptions(), options
+    @log = options.log
     @_ = {}
-    @_.items = new RequestItemStore @options.filename + ".items.db", @options.log
-    @_.urls = new UrlStore @options.filename + ".urls.db", @options.log
+    itemsReady = false
+    urlsReady = false
+    ready = =>
+      @log.debug? "Queue System fully initialized", tags: ['QSys']
+      @options.onReady?()
+    @options.urlsReady = =>
+      @log.debug? "Url database loaded", tags: ['QSys']
+      urlsReady = true
+      ready() if itemsReady
+    @options.itemsReady = =>
+      @log.debug? "Items database loaded", tags: ['QSys']
+      itemsReady = true
+      ready() if urlsReady
+    @_.items = new RequestItemStore @options
+    @_.urls = new UrlStore @options
 
   # Handle a item that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
@@ -29,6 +43,9 @@ class QueueSystem
     @_.items.insert item
     @_.urls.processing item.url()
 
+  # Add the given URL to the collection of scheduled URLs
+  schedule: (url, meta) ->  @_.urls.schedule url, meta
+
   items: ->
     @_.items
 
@@ -38,6 +55,7 @@ class QueueSystem
   save: ->
     @_.urls.save()
     @_.items.save()
+    @log.info? "Queue System saved to files #{@options.filename}.[items|urls].db"
 
 ###
  Provides access to a queue like system that allows to access {RequestItem}s and URLs.
@@ -52,18 +70,33 @@ class RequestItemStore
   unfinished = [Phase.INITIAL, Phase.SPOOLED, Phase.READY, Phase.FETCHING, Phase.FETCHED]
 
 
-  # Construct a new QueueManager with its own data file
-  constructor: (@file, @log) ->
-    @store =  new lokijs @file
-    # One collection for all items and dynamic views for various item phase
-    @items = @store.addCollection 'items'
-    # Maintain dynamic views for most frequent queries
-    @items_waiting = @items.addDynamicView 'WAITING'
-      .applyFind phase: $in : waiting
-    @items_spooled = @items.addDynamicView 'SPOOLED'
-      .applyFind phase: Phase.SPOOLED
-    @items_fetching = @items.addDynamicView 'FETCHING', persistent: true
-      .applyFind phase: Phase.FETCHING
+  # Construct a new QueueSystem with its own data file
+  constructor: (@options) ->
+    filename = @options.filename + '.items.db'
+    isNewDB = not files.exists filename
+    @store =  new lokijs filename, autosave: false
+    @log = @options.log
+    if isNewDB
+      @log.debug? "Creating new database for request items", tags: ['QSys']
+      # One collection for all items and dynamic views for various item phase
+      @items = @store.addCollection 'items'
+      # Maintain dynamic views for most frequent queries
+      @items_waiting = @items.addDynamicView 'WAITING'
+        .applyFind phase: $in : waiting
+      @items_spooled = @items.addDynamicView 'SPOOLED'
+        .applyFind phase: Phase.SPOOLED
+      @items_fetching = @items.addDynamicView 'FETCHING', persistent: true
+        .applyFind phase: Phase.FETCHING
+      @options.itemsReady()
+    else
+      @log.debug? "Initializing existing database #{filename}", tags: ['QSys']
+      @store.loadDatabase {}, =>
+        @items = @store.getCollection 'items'
+        @items_waiting = @items.getDynamicView 'WAITING'
+        @items_spooled = @items.getDynamicView 'SPOOLED'
+        @items_fetching = @items.getDynamicView 'FETCHING'
+        @options.itemsReady()
+
 
   # Insert a item into the queue
   # @param item {RequestItem} The item to be inserted
@@ -88,10 +121,10 @@ class RequestItemStore
   fetching: -> @items.find phase: Phase.FETCHING
 
   # Retrieve all unfinished ({INITIAL}, {SPOOLED}, {READY}, {FETCHING}, {FETCHED}) items
-  unfinished: -> @items.find(phase: $in: unfinished)
+  unfinished: -> @items.find phase: $in: unfinished
 
   # Retrieve all items in the specified {ProcessingPhases}s
-  inPhases : (phases)  -> @items.find(phase: $in: phases)
+  inPhases : (phases)  -> @items.find phase: $in: phases
 
   # Retrieve items in phase {FETCHING} with url matching the given pattern
   processing: (pattern) ->
@@ -113,14 +146,19 @@ class UrlStore
   @include Synchronizer
 
   # Create a new URL manager
-  constructor:(@file, @log) ->
-    @urls = new Datastore {autoload:true, filename:@file}
+  constructor: (@options) ->
+    @log = @options.log
+    @urls = new Datastore
+      autoload:true
+      filename: @options.filename + '.urls.db'
+      onload : @options.urlsReady
     @urls.persistence.stopAutocompaction() # Avoid regular flushing to disk
     @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
     #sync @urls, 'find'
     @counter = # Maintain counters for URLs per phase to reduce load on db
       scheduled : 0
       visited : 0
+      processing : 0
 
   # Transition the given URL from 'scheduled' to 'processing'.
   # Inserts a new entry if no scheduled URL has been found.
@@ -128,6 +166,7 @@ class UrlStore
     update = phase : 'processing'
     update['meta'] = meta if meta
     @urls.update { url:  url, phase: 'scheduled'}, { $set: update},{}, (err, updates) =>
+      @counter.processing++
       if updates is 0 # Not found -> wasn't previously scheduled but executed directly
         record =
           url:url
@@ -156,7 +195,7 @@ class UrlStore
   visited: (url) ->
     @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @counter.visited++ unless err
 
-  # Retrieve the next batch of scheduled URLs (FIFO ordered)
+  # Retrieve the next batch of scheduled URLs
   scheduled: (size = 100) ->
     @await @urls.find(phase:'scheduled').limit(size).exec @defer()
 

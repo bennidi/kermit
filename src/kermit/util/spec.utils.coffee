@@ -1,6 +1,6 @@
 {Extension} = require '../Extension'
 {Phase} = require '../RequestItem'
-{QueueSystem} = require '../QueueManager'
+{QueueSystem} = require '../QueueSystem'
 through = require 'through2'
 stream = require 'stream'
 {ContentType} = require '../Pipeline'
@@ -47,22 +47,25 @@ class RejectingExtension extends Extension
     @log.info? "Rejecting " + item.url()
     item.cancel("Rejected by RejectingExtension")
 
+log =
+  info : (msg) -> console.log msg
+  debug : (msg) -> console.log msg
+  error : (msg) -> console.log msg
+  trace : (msg) -> console.log msg
+  log : (level, msg) -> console.log msg
+
 class MockContext
   execute: (item) -> item
   schedule: (item, url) -> item.subitem url
   config:
     basePath : -> "somepath"
-  queue: new QueueSystem
+  queue: new QueueSystem log:log
   share: (property, value ) =>
     @[property] = value
   crawler :
     enqueue: (item) -> item
-  log :
-    info : (msg) -> console.log msg
-    debug : (msg) -> console.log msg
-    error : (msg) -> console.log msg
-    trace : (msg) -> console.log msg
-    log : (level, msg) -> console.log msg
+  log : log
+
 
 class ResponseStreamLogger extends Extension
 

@@ -7,14 +7,9 @@ fs = require 'fs'
 Mitm = require 'mitm'
 URI = require 'urijs'
 _ = require 'lodash'
-{uri} = require '../util/tools'
+{uri, files} = require '../util/tools'
 
-fileExists = (path) ->
-  try
-    stats = fs.statSync path
-    stats?
-  catch err
-    false
+
 
 ###
  Store downloaded data on local filesystem
@@ -35,7 +30,7 @@ class OfflineStorage extends Extension
     @opts = @merge OfflineStorage.defaultOpts(), opts
     throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @opts.basedir
     shouldStore = (path) =>
-      @log.debug? "#{path} already exists" if exists = fileExists path
+      @log.debug? "#{path} already exists" if exists = files.exists path
       @opts.ifFileExists is 'update' or not exists
     super
       READY: (item) =>
@@ -84,7 +79,7 @@ class OfflineServer extends Extension
       url = opts.uri?.href
       localFilePath = uri.toLocalPath @opts.basedir, url
       # Do not redirect if file doesn't exist.
-      if not fileExists localFilePath
+      if not files.exists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
       @log.debug "Connection to #{url} redirects to #{localFilePath}"

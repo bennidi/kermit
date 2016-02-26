@@ -1,5 +1,5 @@
 {Phase} = require '../RequestItem'
-storage = require '../QueueManager'
+storage = require '../QueueSystem'
 {Extension} = require '../Extension'
 RateLimiter = require('limiter').RateLimiter
 {obj} = require '../util/tools'
