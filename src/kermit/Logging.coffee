@@ -152,7 +152,7 @@ class LogHub
     @dispatcher = {}
     for level in @opts.levels
       connector = new PassThrough(objectMode : true)
-      connector.setMaxListeners(100) # what number here?
+      connector.setMaxListeners 100 # what number here?
       @dispatcher[level] = connector
     @addDestination destination for destination in @opts.destinations
 
@@ -165,7 +165,7 @@ class LogHub
     for level in destination.levels
       if not @dispatcher[level] then console.log "WARNING: Log level #{level} not defined but requested by destination #{obj.print destination}"
       formatter = destination.formatter or LogFormats.llog()
-      appender.sink.setMaxListeners 25
+      appender.sink.setMaxListeners 50
       @dispatcher[level]
         .pipe new LogFormatHandler formatter, level
         .pipe appender.sink

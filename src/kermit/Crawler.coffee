@@ -51,7 +51,7 @@ class Crawler
     # Use default options where no user defined options are given
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
-    @log.info? "#{obj.print @config, 3}", tags: ['Config']
+    @log.info? "Creating new Crawler with #{obj.print @config, 3}", tags: ['Crawler']
     @qs = new QueueSystem
       filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}",
       log:@log
@@ -76,7 +76,7 @@ class Crawler
       new QueueWorker @config.options.Queueing
       ]
     # Add client extensions
-    @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}"
+    @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
     ExtensionPoint.addExtensions this, @config.extensions
     # Core extensions that need to run AFTER client extensions
     ExtensionPoint.addExtensions this, [
@@ -91,7 +91,6 @@ class Crawler
     process.on 'uncaughtException', (error) =>
     # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
       @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
-
     # TODO:  wait for queue system
     @start() if @config.autostart
 
@@ -102,16 +101,16 @@ class Crawler
     for extension in @extensions
       extension.initialize(@context.fork())
       extension.verify()
-      @log.info? extension.toString(), tags: ['Config']
+      @log.info? extension.toString(), tags: ['Crawler']
 
   start: ->
-    @log.info? "Starting Crawler"
+    @log.info? "Starting", tags: ['Crawler']
     @context.messenger.publish 'commands.start'
     
       
   # Run shutdown logic on all extensions
   stop: ->
-    @log.info? "Stopping Crawler"
+    @log.info? "Stopping", tags: ['Crawler']
     # Prevent new work from being submitted
     @context.execute = -> throw new Error "The crawler has been stopped!"
     @context.schedule = -> throw new Error "The crawler has been stopped!"
