@@ -102,49 +102,42 @@ This ProcessingPhase runs: Filtering, Connect to {QueueSystem Queueing System}, 
 class INITIAL extends ProcessingPhase
 
 ###
-Process items with phase "SPOOLED".
 Spooled items are waiting in the {QueueSystem} for further processing.
 This ProcessingPhase runs: User extensions, {QueueSystem}
 ###
 class SPOOLED extends ProcessingPhase
 
 ###
-Process items with phase "READY".
 Request with phase "READY" are eligible to be fetched by the {Streamer}.
 This ProcessingPhase runs: User extensions.
 ###
 class READY extends ProcessingPhase
 
 ###
-Process items with phase "FETCHING".
 Http(s) call to URL is made and response is being streamed.
 This ProcessingPhase runs: {RequestStreamer}, User extensions.
 ###
 class FETCHING extends ProcessingPhase
 
 ###
-Process items with phase "FETCHED".
 All data has been received and the response is ready for further processing.
 This ProcessingPhase runs: User extensions.
 ###
 class FETCHED extends ProcessingPhase
 
 ###
-Process items with phase "COMPLETE".
 Response processing is finished. This is the terminal phase of a successfully processed
 item. This ProcessingPhase runs: User extensions, {Cleanup}
 ###
 class COMPLETE extends ProcessingPhase
 
 ###
-Process items with phase "ERROR".
 {ExtensionPoint}s will set this phase if an exception occurs during execution of an {Extension}.
 This ProcessingPhase runs: User extensions, {Cleanup}
 ###
 class ERROR extends ProcessingPhase
 
 ###
-Process items with phase "CANCELED".
 Any extension might cancel a item. Canceled items are not elligible for further processing
 and will be cleaned up. This ProcessingPhase runs: User extensions, {Cleanup}
 ###
@@ -165,17 +158,14 @@ class CANCELED extends ProcessingPhase
 class RequestItem
 
   # @nodoc
-  # @private
   notify = (item, property) ->
     listener(item) for listener in listeners(item, property)
     item
   # @nodoc
-  # @private
   listeners = (item, property) ->
     if !item.changeListeners[property]?
       item.changeListeners[property] = []
     item.changeListeners[property]
-
   # @nodoc
   @stampsToString : (stamps) ->
     _.mapValues stamps, (stamps) ->
@@ -355,12 +345,12 @@ class RequestItem
 
   # Generate a human readable representation of this item
   toString: ->
-    pretty = switch @state.phase
-        when 'INITIAL','SPOOLED','READY'
-          """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""
-        when 'COMPLETE'
-          """COMPLETE => GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
-        else "Unknown phase"
+    switch @state.phase
+      when 'INITIAL','SPOOLED','READY'
+        """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""
+      when 'COMPLETE'
+        """COMPLETED GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
+      else "Unknown phase"
 
 module.exports = {
   RequestItem

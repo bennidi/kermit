@@ -224,7 +224,7 @@ class Scheduler
           urls = @qs.urls().scheduled @opts.maxWaiting - waiting
           @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
           @crawler.execute entry.url, entry.meta for entry in urls
-    setTimeout pushUrls, 200 # Run once after startup to get going
+    setTimeout pushUrls, 200 # Run once after startup to get going quickly
     @feeder = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl # run regularly to feed new URLs
     @feeder.unref()
 

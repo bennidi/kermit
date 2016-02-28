@@ -23,26 +23,26 @@ class RemoteControl extends Extension
       $.crawler.schedule @request.body.url, @request.body.meta
       @body = msg: "Scheduled #{@request.body.url}"
       yield next
-    commands.post '/start', (next) =>
+    commands.post '/start', (next) ->
       $.crawler.start()
       @body = msg: "Received start command"
       yield next
-    commands.post '/stop', (next) =>
+    commands.post '/stop', (next) ->
       $.crawler.stop()
       @body = msg: "Received stop command"
       yield next
-    commands.post '/shutdown', (next) =>
+    commands.post '/shutdown', (next) ->
       $.crawler.stop()
-      @body = msg: "Received stop command"
+      @body = msg: "Received shutdown command"
       yield next
     app.use (next) ->
-      $.log.debug? "Received #{JSON.stringify @}"
+      $.log.debug? "Received #{JSON.stringify @request.url}"
       yield next
     app.use bodyparser()
     app.use commands.routes()
     app.use requests.routes()
     @rc = app.listen @options.port
-    @log.info "RemoteControl available at localhost:#{@options.port}", tags: ['REST API']
+    @log.info? "RemoteControl available at localhost:#{@options.port}", tags: ['REST API']
 
 
 module.exports = {RemoteControl}
