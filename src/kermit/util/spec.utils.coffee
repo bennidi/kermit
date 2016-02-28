@@ -55,11 +55,15 @@ log =
   log : (level, msg) -> console.log msg
 
 class MockContext
+  buildQueue = ->
+    qs = new QueueSystem log:log
+    qs.initialize()
+
   execute: (item) -> item
   schedule: (item, url) -> item.subitem url
   config:
     basePath : -> "somepath"
-  queue: new QueueSystem log:log
+  queue: buildQueue()
   share: (property, value ) =>
     @[property] = value
   crawler :

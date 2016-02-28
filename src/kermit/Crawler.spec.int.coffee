@@ -11,7 +11,7 @@ describe  'Crawler',  ->
     it '# can be instantiated with options for core extensions', (done) ->
       Kermit = new Crawler
         name: "testrepo"
-        basedir : '/tmp/kermit'
+        basedir : './target/testing/integration'
         autostart: true
         extensions : [
           new ResourceDiscovery

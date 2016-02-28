@@ -14,11 +14,14 @@ class QueueSystem
     @options = obj.merge QueueSystem.defaultOptions(), options
     @log = options.log
     @_ = {}
+
+  initialize: (done) ->
     itemsReady = false
     urlsReady = false
     ready = =>
       @log.debug? "Queue System fully initialized", tags: ['QSys']
       @options.onReady?()
+      done? null, true
     @options.urlsReady = =>
       @log.debug? "Url database loaded", tags: ['QSys']
       urlsReady = true
@@ -29,6 +32,7 @@ class QueueSystem
       ready() if urlsReady
     @_.items = new RequestItemStore @options
     @_.urls = new UrlStore @options
+    @
 
   # Handle a item that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
@@ -148,20 +152,24 @@ class UrlStore
   # Create a new URL manager
   constructor: (@options) ->
     @log = @options.log
-    @urls = new Datastore
-      autoload:true
-      filename: @options.filename + '.urls.db'
-      onload : @options.urlsReady
-    @urls.persistence.stopAutocompaction() # Avoid regular flushing to disk
-    @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
-    #sync @urls, 'find'
     @counter = # Maintain counters for URLs per phase to reduce load on db
       scheduled : 0
       visited : 0
       processing : 0
+    @urls = new Datastore
+      filename: @options.filename + '.urls.db'
+    @urls.loadDatabase (err) =>
+      @urls.persistence.stopAutocompaction() # Avoid regular flushing to disk
+      @urls.ensureIndex {fieldName: 'url', unique:true}, (err) ->
+      # Schedule operations to update counters
+      @urls.count phase: 'scheduled', (err, count) => @counter.scheduled = count
+      @urls.count phase: 'visited', (err, count) => @counter.visited = count
+      @urls.count phase: 'processing', (err, count) => @counter.processing = count
+      @options.urlsReady()
 
   # Transition the given URL from 'scheduled' to 'processing'.
   # Inserts a new entry if no scheduled URL has been found.
+  # @private
   processing: (url, phase, meta) ->
     update = phase : 'processing'
     update['meta'] = meta if meta
@@ -180,6 +188,9 @@ class UrlStore
   count: (phase) ->
     @counter[phase]
 
+  reschedule :  (url) ->
+    @urls.update { url:  url}, { $set: {phase : 'scheduled'}},{}, (err, updates) => @counter.visited++ unless err
+
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->
     record =
@@ -193,7 +204,11 @@ class UrlStore
 
   # Mark a known URL as visited (silently ignores cases of unknown URLs)
   visited: (url) ->
-    @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) => @counter.visited++ unless err
+    @urls.update { url:  url}, { $set: {phase : 'visited'}},{}, (err, updates) =>
+      if updates > 0 and not err
+        @counter.visited++
+        @counter.processing--
+
 
   # Retrieve the next batch of scheduled URLs
   scheduled: (size = 100) ->

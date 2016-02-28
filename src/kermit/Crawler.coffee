@@ -43,6 +43,7 @@ diagram below.
         msPerUrl: 50
 ###
 class Crawler
+  @include Synchronizer
 
   # Create a new crawler with the given options
   # @param options [Object] The configuration for this crawler.
@@ -51,7 +52,6 @@ class Crawler
     # Use default options where no user defined options are given
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
-    @log.info? "Creating new Crawler with #{obj.print @config, 3}", tags: ['Crawler']
     @qs = new QueueSystem
       filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}",
       log:@log
@@ -61,59 +61,64 @@ class Crawler
       crawler: @ # re-expose this crawler
       log    : @log
       qs : @qs
-
     @scheduler = new Scheduler @context, @config
-    # Create and add extension points
-    @extpoints = {}
-    @extpoints[phase] = new ExtensionPoint @context, phase for phase in Phase.ALL
-    @extensions = []
 
-    # Core extensions that need to run BEFORE user extensions
-    ExtensionPoint.addExtensions this, [
-      new ExtensionPointConnector
-      new RequestItemMapper
-      new QueueConnector @config.options.Queueing
-      new QueueWorker @config.options.Queueing
-      ]
-    # Add client extensions
-    @log.info? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
-    ExtensionPoint.addExtensions this, @config.extensions
-    # Core extensions that need to run AFTER client extensions
-    ExtensionPoint.addExtensions this, [
-      new RequestStreamer @config.options.Streaming
-      new Spooler
-      new Completer
-      new Cleanup]
-    @initialize()
+    addExtensionPoints = =>
+      @extpoints = {}
+      @extpoints[phase] = new ExtensionPoint @context, phase for phase in Phase.ALL
+      @extensions = []
+
+    addExtensions = =>
+      # Core extensions that need to run BEFORE user extensions
+      ExtensionPoint.addExtensions this, [
+        new ExtensionPointConnector
+        new RequestItemMapper
+        new QueueConnector @config.options.Queueing
+        new QueueWorker @config.options.Queueing
+        ]
+      # Add client extensions
+      @log.debug? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
+      ExtensionPoint.addExtensions this, @config.extensions
+      # Core extensions that need to run AFTER client extensions
+      ExtensionPoint.addExtensions this, [
+        new RequestStreamer @config.options.Streaming
+        new Spooler
+        new Completer
+        new Cleanup]
+    initializeExtensions = =>
+      for extension in @extensions
+        extension.initialize(@context.fork())
+        extension.verify()
 
     # Usually this handler is considered back practice but in case of processing errors
     # of single items, operation should continue.
-    process.on 'uncaughtException', (error) =>
-    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
-      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
-    # TODO:  wait for queue system
+    errorHandling = =>
+      process.on 'uncaughtException', (error) =>
+      # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
+        @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
+
+    addExtensionPoints()
+    addExtensions()
+    errorHandling()
+    @qs.initialize()
+    initializeExtensions()
     @start() if @config.autostart
+    @log.info? @toString(), tags:['Crawler']
 
-  # Initializes this extension point with the given context. Initialization cascades
-  # to all contained extensions
-  # @private
-  initialize: ->
-    for extension in @extensions
-      extension.initialize(@context.fork())
-      extension.verify()
-      @log.info? extension.toString(), tags: ['Crawler']
 
+
+  # Start this Crawler
   start: ->
     @log.info? "Starting", tags: ['Crawler']
     @context.messenger.publish 'commands.start'
     
       
-  # Run shutdown logic on all extensions
+  # Run stop logic on all extensions
   stop: ->
     @log.info? "Stopping", tags: ['Crawler']
     # Prevent new work from being submitted
-    @context.execute = -> throw new Error "The crawler has been stopped!"
-    @context.schedule = -> throw new Error "The crawler has been stopped!"
+    @context.execute = -> @log.debug? "The crawler has been stopped! Execution prevented."
+    @context.schedule = -> @log.debug? "The crawler has been stopped! Scheduling prevented."
     # Stop all extensions and Scheduler
     @context.messenger.publish 'commands.stop', {}
     @wdog = setInterval (=>
@@ -138,7 +143,10 @@ class Crawler
 
   # Pretty print this crawler
   toString: ->
-    "Crawler: " # TODO: List extension points and content
+    asString = "Crawler with #{obj.print @config, 3}. Extensions =>"
+    for extension in @extensions
+      asString += "\n#{extension.toString()}"
+    asString
 
 ###
   The central object for configuring an instance of {Crawler}.
@@ -201,6 +209,7 @@ class Scheduler
   # @nodoc
   constructor: (@context, @config) ->
     @importContext @context
+    @nextUrls = []
     @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
     @messenger.subscribe 'commands.start', @start
@@ -219,14 +228,16 @@ class Scheduler
   start: =>
     pushUrls = =>
       waiting = @qs.items().waiting().length
-      if waiting < @opts.maxWaiting
+      missing = @opts.maxWaiting - waiting
+      if missing > 0
         @synchronized =>
-          urls = @qs.urls().scheduled @opts.maxWaiting - waiting
-          @log.debug? "Retrieved url batch of size #{urls.length} for scheduling", tags:['Scheduler']
-          @crawler.execute entry.url, entry.meta for entry in urls
-    setTimeout pushUrls, 200 # Run once after startup to get going quickly
-    @feeder = setInterval pushUrls,  @opts.maxWaiting *  @opts.msPerUrl # run regularly to feed new URLs
-    @feeder.unref()
+          if _.isEmpty @nextUrls
+            @nextUrls = @nextUrls.concat @qs.urls().scheduled 500
+          available = Math.min @nextUrls.length, missing
+          for i in [1..available]
+            next = @nextUrls.pop()
+            @crawler.execute next.url, next.meta unless next is undefined
+    @feeder = setInterval pushUrls,  500 # run regularly to feed new URLs
 
 
 module.exports = {

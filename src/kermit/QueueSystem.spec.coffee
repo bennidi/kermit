@@ -12,6 +12,7 @@ describe  'QueueSystem',  ->
         filename: "./target/testing/queuesystem/#{obj.randomId()}"
         log: context.log
         onReady : ->
+      QS.initialize()
       expect(QS.items().spooled().length).to.equal(0)
       expect(QS.items().waiting().length).to.equal(0)
       expect(QS.items().fetching().length).to.equal(0)
@@ -26,6 +27,7 @@ describe  'QueueSystem',  ->
         filename:filename
         log: context.log
         onReady : ->
+      QS.initialize()
       for cnt in [1..100]
         QS.initial new RequestItem "localhost:8080/testUrl/#{obj.randomId()}/index.html"
       for cnt in [1..100]
@@ -49,4 +51,5 @@ describe  'QueueSystem',  ->
           expect(RestoredQS.items().inPhases(['INITIAL']).length).to.equal(100)
           #expect(RestoredQS.urls().count 'scheduled').to.equal(100)
           done()
+      RestoredQS.initialize()
 

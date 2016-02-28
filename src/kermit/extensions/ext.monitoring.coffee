@@ -2,7 +2,6 @@
 {Extension} = require '../Extension'
 {obj} = require '../util/tools'
 _ = require 'lodash'
-sync = require 'synchronize'
 
 ###
   Generate and log runtime statistics on queueing system and
@@ -36,7 +35,6 @@ class Monitoring extends Extension
   initialize: (context) ->
     super context
     statsLogger = =>
-      #sync.fiber =>
       try
         start = new Date()
         stats =  _.merge {}, @counters, {current: FETCHING: @qs.items().fetching().length}
