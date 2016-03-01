@@ -50,6 +50,7 @@ class Crawler
   # @see CrawlerConfig
   constructor: (options = {}) ->
     # Use default options where no user defined options are given
+    @running = false
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @qs = new QueueSystem
@@ -111,10 +112,12 @@ class Crawler
   start: ->
     @log.info? "Starting", tags: ['Crawler']
     @context.messenger.publish 'commands.start'
+    @running = true
     
       
   # Run stop logic on all extensions
   stop: ->
+    return if not @running
     @log.info? "Stopping", tags: ['Crawler']
     # Prevent new work from being submitted
     @context.execute = -> @log.debug? "The crawler has been stopped! Execution prevented."
@@ -126,6 +129,7 @@ class Crawler
       if notFinished.length is 0
         clearInterval @wdog
         @qs.save()
+        @running = false
       ), 500
 
   shutdown: -> @stop()

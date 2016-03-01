@@ -49,8 +49,8 @@ class QueueWorker extends Extension
     @items = context.items # Request object is resolved from shared item map
     @limits = new RateLimits @opts.limits, @context.log, @qs # Rate limiting is applied here
     @batch = [] # Local batch of items to be put into READY state
-    @messenger.subscribe 'commands.stop', => clearInterval @pump
-    @messenger.subscribe 'commands.start', => @pump = setInterval @processRequests, 100
+    @onStop => clearInterval @pump
+    @onStart => @pump = setInterval @processRequests, 100
 
   # This is run at intervals to process waiting items
   # @private

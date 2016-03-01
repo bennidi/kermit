@@ -15,8 +15,8 @@
 # Exclude logs, dependencies, temporary files
 *.log
 .publish
+.hidden
 logs
-fixtures
 tmp
 node_modules
 target

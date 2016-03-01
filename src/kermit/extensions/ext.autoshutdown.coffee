@@ -10,14 +10,14 @@ class AutoShutdown extends Extension
     super context
     watchdog = =>
       try
-        @log.debug "Checking conditions for shutdown"
+        @log.debug? "Checking conditions for shutdown", tags:['AutoShutdown']
         if @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
           clearInterval @wdog
           @crawler.stop()
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
-    @messenger.subscribe 'commands.start', =>
-      @log.info? "Starting Autoshutdown watchdog"
+    @onStart =>
+      @log.info? "Starting Autoshutdown watchdog", tags:['AutoShutdown']
       @wdog = setInterval watchdog, 5000
       @wdog.unref()
 

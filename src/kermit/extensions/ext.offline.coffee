@@ -69,8 +69,8 @@ class OfflineServer extends Extension
   initialize: (context) ->
     super context
     @server =  new LocalHttpServer @opts.port, @opts.basedir + "/"
-    @messenger.subscribe 'commands.start', => @server.start()
-    @messenger.subscribe 'commands.stop', => @server.stop()
+    @onStart => @server.start()
+    @onStop => @server.stop()
     @mitm = Mitm()
     @mitm.on 'connect', (socket, opts) =>
     # Don't intercept connections to local storage
@@ -86,7 +86,7 @@ class OfflineServer extends Extension
     # Redirect items to local server
     @mitm.on 'request', (item, response) =>
       url = "http://#{item.headers.host}#{item.url}"
-      localUrl = uri.toLocalPath "http://localhost:3000", url
+      localUrl = uri.toLocalPath "http://localhost:#{@opts.port}", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
       response.writeHead 302, 'Location': localUrl
       response.end()

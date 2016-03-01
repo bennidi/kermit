@@ -69,6 +69,12 @@ class Extension extends ContextAware
     throw new Error "An extension requires a context object" unless @context
 
 
+  onStart: (fn) ->
+    @messenger.subscribe 'commands.start', fn
+
+  onStop: (fn) ->
+    @messenger.subscribe 'commands.stop', fn
+
   # @return {String} Human readable description of this extension
   toString: ->
     phases = (key for key of @handlers)

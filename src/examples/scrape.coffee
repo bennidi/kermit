@@ -12,18 +12,18 @@ Kermit = new Crawler
     new Monitoring
     #new AutoShutdown
     #new Histogrammer
-    #new RemoteControl
+    new RemoteControl
    # new RandomizedDelay
    #   ratio: 1
    #   averageDelayInMs: 5000
    #   interval: 10000
     new OfflineStorage
-      basedir: '/tmp/kermit/testrepo'
+      basedir: '/tmp/kermit/wikipedia2'
     #new OfflineServer
     #  basedir : '/ext/dev/workspace/webcherries/testing/repo-coffeescript'
   ]
   options:
-    Logging: logconf.detailed
+    Logging: logconf.basic
     Streaming:
       agentOptions:
         maxSockets: 15
@@ -31,7 +31,7 @@ Kermit = new Crawler
         maxFreeSockets: 150
         keepAliveMsecs: 1000
     Queueing:
-      filename : '/tmp/kermit/testrepo/wikiped2'
+      filename : '/tmp/kermit/testrepo/wikipedia2'
       limits : [
         {
           pattern :  /.*en.wikipedia\.org.*/

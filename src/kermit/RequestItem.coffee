@@ -162,10 +162,7 @@ class RequestItem
     listener(item) for listener in listeners(item, property)
     item
   # @nodoc
-  listeners = (item, property) ->
-    if !item.changeListeners[property]?
-      item.changeListeners[property] = []
-    item.changeListeners[property]
+  listeners = (item, property) -> item.changeListeners[property] ?= []
   # @nodoc
   @stampsToString : (stamps) ->
     _.mapValues stamps, (stamps) ->
@@ -300,6 +297,7 @@ class RequestItem
   # Change the items phase to CANCELED
   # @return {RequestItem} This item
   cancel: ->
+    console.log this
     @state.phase = ProcessingPhase.CANCELED
     notify this, "phase"
 
@@ -331,7 +329,6 @@ class RequestItem
   # Clean all item data that potentially occupies much memory
   cleanup: ->
     @_pipeline?.cleanup()
-    delete @changeListeners
 
   # Access the {Pipeline} of this item
   pipeline: ->
