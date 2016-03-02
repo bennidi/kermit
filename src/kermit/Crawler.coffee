@@ -51,6 +51,7 @@ class Crawler
   constructor: (options = {}) ->
     # Use default options where no user defined options are given
     @running = false
+    @commandQueue =  []
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @qs = new QueueSystem
@@ -93,35 +94,37 @@ class Crawler
 
     # Usually this handler is considered back practice but in case of processing errors
     # of single items, operation should continue.
-    errorHandling = =>
-      process.on 'uncaughtException', (error) =>
-      # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
-        @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
+    process.on 'uncaughtException', (error) =>
+    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
+      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
     addExtensionPoints()
     addExtensions()
-    errorHandling()
-    @qs.initialize()
-    initializeExtensions()
-    @start() if @config.autostart
+
+    @qs.initialize =>
+      # TODO: Move all commands on queue for execution as soon as crawler is initialized
+      initializeExtensions()
+      @start() if @config.autostart
     @log.info? @toString(), tags:['Crawler']
 
 
 
   # Start this Crawler
   start: ->
+    @running = true
+    @log.debug? "Executing commands in queue #{JSON.stringify @commandQueue}"
+    command() for command in @commandQueue
+    @commandQueue = []
     @log.info? "Starting", tags: ['Crawler']
     @context.messenger.publish 'commands.start'
-    @running = true
+
     
       
   # Run stop logic on all extensions
   stop: ->
     return if not @running
+    @running = false
     @log.info? "Stopping", tags: ['Crawler']
-    # Prevent new work from being submitted
-    @context.execute = -> @log.debug? "The crawler has been stopped! Execution prevented."
-    @context.schedule = -> @log.debug? "The crawler has been stopped! Scheduling prevented."
     # Stop all extensions and Scheduler
     @context.messenger.publish 'commands.stop', {}
     @wdog = setInterval (=>
@@ -129,7 +132,6 @@ class Crawler
       if notFinished.length is 0
         clearInterval @wdog
         @qs.save()
-        @running = false
       ), 500
 
   shutdown: -> @stop()
@@ -137,13 +139,23 @@ class Crawler
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
   execute: (url, meta) ->
-    @log.debug? "Executing #{url}"
-    item = new RequestItem url, meta, @log
-    ExtensionPoint.execute @, Phase.INITIAL, item
+    if not @running
+      cmd = => @execute url,meta
+      @commandQueue.push cmd
+      @log.debug? "Queued execution of #{url}. The queued command is transient and executed when start() is called"
+    else
+      @log.debug? "Executing #{url}"
+      item = new RequestItem url, meta, @log
+      ExtensionPoint.execute @, Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
-    @scheduler.schedule url, meta
+    if not @running
+      cmd = => @execute url,meta
+      @commandQueue.push cmd
+      @log.debug? "Queued scheduling of #{url}. The queued command is transient and executed when start() is called"
+    else
+      @scheduler.schedule url, meta
 
   # Pretty print this crawler
   toString: ->
@@ -208,7 +220,7 @@ class Scheduler
 
   @defaultOptions: ->
     maxWaiting : 50
-    msPerUrl : 50
+    interval : 500
 
   # @nodoc
   constructor: (@context, @config) ->
@@ -218,8 +230,8 @@ class Scheduler
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
     @messenger.subscribe 'commands.start', @start
     @messenger.subscribe 'commands.stop', =>
-      @log.debug "Stopping Url scheduler #{@feeder}"
-      clearInterval @feeder
+      @log.debug "Stopping", tags: ['Scheduler']
+      clearInterval @scheduler
 
 
   # @private
@@ -241,7 +253,7 @@ class Scheduler
           for i in [1..available]
             next = @nextUrls.pop()
             @crawler.execute next.url, next.meta unless next is undefined
-    @feeder = setInterval pushUrls,  500 # run regularly to feed new URLs
+    @scheduler = setInterval pushUrls,  @opts.interval # run regularly to feed new URLs
 
 
 module.exports = {

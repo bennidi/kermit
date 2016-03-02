@@ -10,10 +10,13 @@ class AutoShutdown extends Extension
     super context
     watchdog = =>
       try
+        queuesAreEmpty = => @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
         @log.debug? "Checking conditions for shutdown", tags:['AutoShutdown']
-        if @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
-          clearInterval @wdog
-          @crawler.stop()
+        if queuesAreEmpty()
+          process.nextTick =>
+            if queuesAreEmpty() # double check because scheduling is async
+              clearInterval @wdog
+              @crawler.stop()
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
     @onStart =>

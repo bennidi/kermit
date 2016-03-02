@@ -21,7 +21,7 @@ class QueueSystem
     ready = =>
       @log.debug? "Queue System fully initialized", tags: ['QSys']
       @options.onReady?()
-      done? null, true
+      done?()
     @options.urlsReady = =>
       @log.debug? "Url database loaded", tags: ['QSys']
       urlsReady = true

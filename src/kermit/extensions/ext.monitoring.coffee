@@ -65,7 +65,7 @@ class Monitoring extends Extension
       @counters.durations[preceedingPhase].total = duration
       @counters.durations[preceedingPhase].min = duration
       @counters.durations[preceedingPhase].max = duration
-      @counters.durations[preceedingPhase].avg = (@counters.durations[preceedingPhase].avg + duration) / 2
+      @counters.durations[preceedingPhase].avg = duration
     else
       @counters.durations[preceedingPhase].total += duration
       @counters.durations[preceedingPhase].min = Math.min @counters.durations[preceedingPhase].min, duration

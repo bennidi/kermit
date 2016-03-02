@@ -20,10 +20,10 @@ POLISH
 TESTING
  + UrlStore: Counters, Rescheduling
  
-     
+QUESTIONS
+ + How to synchronize the two store callbacks (async library..?)
+ + How to queue calls until ready?    
      
 Pause & Resume Feature
 
-+ Refactor crawler startup (local functions in constructor, use fibre to synchronize)
-+ Implement detection of "bad" web pages
-+ redesign url scheduler methods to use "upsert" command (increase link juice)
++ Implement detection of "bad" web pages without promises
