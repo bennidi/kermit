@@ -87,16 +87,14 @@ class Crawler
         new Spooler
         new Completer
         new Cleanup]
+
     initializeExtensions = =>
       for extension in @extensions
         extension.initialize(@context.fork())
         extension.verify()
 
-    # Usually this handler is considered back practice but in case of processing errors
-    # of single items, operation should continue.
-    process.on 'uncaughtException', (error) =>
-    # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
-      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
+
+
 
     addExtensionPoints()
     addExtensions()
@@ -107,34 +105,43 @@ class Crawler
       @start() if @config.autostart
     @log.info? @toString(), tags:['Crawler']
 
+    # Usually this handler is considered back practice but in case of unhandled errors
+    # of single items (in not so well behaved extensions :) general operation should continue.
+    process.on 'uncaughtException', (error) =>
+      # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
+      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
 
-
-  # Start this Crawler
+  # Start crawling. All queued commands will be executed after "commands.start" message
+  # was sent to all listeners.
   start: ->
     @running = true
-    @log.debug? "Executing commands in queue #{JSON.stringify @commandQueue}"
-    command() for command in @commandQueue
-    @commandQueue = []
     @log.info? "Starting", tags: ['Crawler']
     @context.messenger.publish 'commands.start'
+    command() for command in @commandQueue
+    @commandQueue = []
 
     
-      
-  # Run stop logic on all extensions
-  stop: ->
+  # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
+  # with normal operation. {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
+  # {QueueSystem} will be persisted, then the optional callback will be invoked.
+  stop: (done)->
     return if not @running
     @running = false
     @log.info? "Stopping", tags: ['Crawler']
     # Stop all extensions and Scheduler
     @context.messenger.publish 'commands.stop', {}
     @wdog = setInterval (=>
-      notFinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
-      if notFinished.length is 0
+      unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
+      if _.isEmpty unfinished
         clearInterval @wdog
         @qs.save()
+        done?()
       ), 500
 
-  shutdown: -> @stop()
+  # Stops the crawler then exits.
+  shutdown: ->
+    @stop -> process.exit()
+
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item

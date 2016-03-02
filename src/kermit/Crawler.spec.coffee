@@ -11,7 +11,7 @@ describe  'Crawler',  ->
     it '# can be instantiated without any options', ()->
       Kermit = new Crawler
       expect(Kermit).to.be.a(Crawler)
-      Kermit.shutdown()
+      Kermit.stop()
   
     it '# can be instantiated with options for core extensions', ()->
       Kermit = new Crawler
@@ -27,11 +27,11 @@ describe  'Crawler',  ->
             allow : [
               ByPattern /.*coffeescript\.org/
             ]
-      Kermit.shutdown()
+      Kermit.stop()
 
 
     it '# extensions can prevent an item from being processed', (done)->
-      Recorder = new TransitionRecorder -> done(); Kermit.shutdown()
+      Recorder = new TransitionRecorder -> done(); Kermit.stop()
       Recorder.validate("http://www.google.com/", [Phase.INITIAL])
       Recorder.validate("http://www.github.com/", [Phase.INITIAL])
       Kermit = new Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]

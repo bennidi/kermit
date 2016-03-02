@@ -15,7 +15,7 @@ describe  'Crawler',  ->
         autostart: true
         extensions : [
           new ResourceDiscovery
-          new AutoShutdown
+          new AutoShutdown stopOnly:true
           new OfflineStorage
             basedir: "./target/testing/repositories/coffeescript-#{dir}"
           new OfflineServer
