@@ -17,7 +17,7 @@ Kermit in a nutshell
   * Built around solid js libraries
     * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
     for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
-    * [lokijs](https://www.npmjs.com/package/lokijs) as an efficient backend for request queuing and statistics monitoring
+    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as an efficient backend for request queuing and URL backlog
     * [koa](https://www.npmjs.com/package/koa) as middleware for local [http-server](https://www.npmjs.com/package/koa-static)
      and REST based remote control (<- coming soon)
     * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for syntax friendly dom traversals
@@ -26,14 +26,15 @@ Kermit in a nutshell
   * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register
    [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
   * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
+  * Supports communication using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
   * Comprehensive set of standard extensions for
     * Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filters
     * Queueing system with configurable **rate limits** (regex on URLs)
-    * Pluggable automated **resource discovery** (links, images, resources etc.)
+    * Pluggable automated **resource discovery** (links, images, resources etc.) schedules all URLs found in html(-ish) documents
     * Pluggable **monitoring** to provide traceability
-    * **Lazy logging**: Log facilities only generate log messages if log level actually exists. This is soon to
-    be released as a standalone library, because lazy log message generation is quite useful in general.
-    * **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
+    * Pluggable **REST based remote control** allows to interact with the scraper instance using the REST gui of your choice
+    * **Lazy logging**: Log facilities only generate log messages if log level actually exists.
+    * Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
   * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
 
 
@@ -64,41 +65,62 @@ to local storage (you can scrape the offline content later).
 
 ```cs
 
-new Crawler
-  name: "testicle"
+Kermit = new Crawler
+  name: "example"
+  basedir : '/tmp/kermit'
+  autostart: true
   extensions : [
     new ResourceDiscovery
     new Monitoring
-    new AutoShutdown
-    new Histogrammer
+    # new AutoShutdown # This would exit the process as soon as no work is left in queue
+    # new Histogrammer
+    new RemoteControl # This will start a REST API for interacting with the crawler
+    new RandomizedDelay # Introduce random pauses (reduce risk of bot detection)
+      delays: [
+        ratio: 1/2
+        interval: 10000
+        duration: 30000
+      ]
     new OfflineStorage
+      basedir: '/tmp/kermit/example'
+    # This could be used to serve request from local file system for each URL that hat previously
+    # been downloaded  
+    # new OfflineServer 
+    #  basedir : '/tmp/kermit/some/repository'
   ]
   options:
-    Logging: logconf.detailed
+    Logging: logconf.production
+    Streaming:
+      agentOptions:
+        maxSockets: 15
+        keepAlive:true
+        maxFreeSockets: 150
+        keepAliveMsecs: 1000
     Queueing:
+      # queue.items.db and queue.urls.db will be stored in /tmp/kermit/example
+      filename : '/tmp/kermit/example/queue'
       limits : [
         {
-          pattern : /.*en.wikipedia\.org.*/
-          to : 5
+          pattern :  /.*en.wikipedia\.org.*/
+          to : 1
           per : 'second'
-          max : 10
+          max : 1
         }
       ]
     Filtering:
       allow : [
         /.*en.wikipedia\.org.*/
       ]
-      # Anything matcing the whitelist will be visited
+# Anything matching the whitelist will be visited
       deny : [
       ]
 
-Kermit.schedule("http://en.wikipedia.org")
+Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
 
 ```
 
 For a deeper understanding, read the [tutorial](http://open-medicine-initiative.github.io/kermit/main/index.html) 
-(generated from [main.intro.md](./doc/main.intro.md)).  
-You can also find very useful infos in the [examples](./src/examples). 
+regularly generated from [main.intro.md](./doc/main.intro.md). Also have a look at the [examples](./src/examples). 
 
 # Documentation
 
@@ -107,14 +129,14 @@ the sources as well as the generated [API docs](https://open-medicine-initiative
 
 # Contribute
 
-Because Kermit is currently in beta testing the most important contribution is feedback
-on functionality/bugs. Please provide log excerpts when submitting bug reports.
+Because Kermit is currently in beta testing the most important contribution is feedback on functionality/bugs. 
+Please provide log excerpts when submitting bug reports.
 Another welcome contribution are more extensions. Create a gist of your extension
 code and link it in the wiki page for [Extensions](https://github.com/open-medicine-initiative/kermit/wiki/Extensions)
 Spread the word and invite more developers to use Kermit for freeing data.
 
-# Background info
-Kermit is not only an efficient web scraper, no, Kermit is also a sloth - and one remarkable sloth indeed! 
+# Ethnographic chit-chat on web scraping
+Kermit is not only a convenient web scraper, no, Kermit is also a sloth - and one remarkable sloth indeed! 
 In fact, before Kermit it was not known that sloths actually do have a passion for working with data. 
 They appear as desinterested and unexciting about any form of technology as one could possibly imagine. 
 Only more careful studies have revealed that many of them have a second life as programmers, data analysts,
