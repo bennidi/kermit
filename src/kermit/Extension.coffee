@@ -78,8 +78,8 @@ class Extension extends ContextAware
   # @return {String} Human readable description of this extension
   toString: ->
     phases = (key for key of @handlers)
-    asString = "#{@name} for [#{phases}]"
-    asString += if @opts then ". Options:\n#{obj.print @opts}" else ". No options provided."
+    asString = "#{@name}: phases=[#{phases}] options="
+    asString += if @opts then "#{obj.print @opts}" else "{}"
 
 
 module.exports = {

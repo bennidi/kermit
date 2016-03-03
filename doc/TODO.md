@@ -11,6 +11,9 @@ IDEAS / FEATURES
  + Add overall request timings to Monitoring
  + Extension that takes care of automatic shutdown when crawling finished.
   
+REFACTORING
+  + obj.print() as method in Extension
+  
 POLISH
  + Logging
    + Add new log levels at runtime. Use this for adding log.request with request.log in Completer
@@ -22,7 +25,6 @@ TESTING
  
 QUESTIONS
  + How to synchronize the two store callbacks (async library..?)
- + How to queue calls until ready?    
      
 Pause & Resume Feature
 

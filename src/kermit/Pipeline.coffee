@@ -56,12 +56,13 @@ class Pipeline
       @log.debug? "No matching destinations found. Skipping.", tags:['Pipeline']
       @item.fetched() unless @item.isError()
     else
-      @log.debug? "Streaming to #{streams}", tags:['Pipeline']
+      @log.debug? "Streaming #{@item.id()} to #{streams}", tags:['Pipeline']
       incomingMessage
         .on 'error', (error) =>
-          @log.error? "Error while streaming", {error:error, trace:error.stack}
+          @log.error? "Error while streaming #{@item.id()}", {error:error, trace:error.stack, tags:['Pipeline']}
           @item.error(error)
         .on 'end', =>
+          @log.debug? "Finished streaming #{@item.id()}", tags:['Pipeline']
           @item.fetched() unless @item.isError()
       # Start streaming
       incomingMessage.pipe @incoming

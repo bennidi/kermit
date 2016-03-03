@@ -151,7 +151,7 @@ class Crawler
       @commandQueue.push cmd
       @log.debug? "Queued execution of #{url}. The queued command is transient and executed when start() is called"
     else
-      @log.debug? "Executing #{url}"
+      @log.trace? "Executing #{url}"
       item = new RequestItem url, meta, @log
       ExtensionPoint.execute @, Phase.INITIAL, item
 

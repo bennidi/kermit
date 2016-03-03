@@ -42,9 +42,9 @@ class Monitoring extends Extension
         waiting = @qs.items().waiting().length
         scheduled = @qs.urls().count 'scheduled'
         duration = new Date() - start
-        @log.info? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.items.COMPLETE}", tags : ['Stats', 'Count']
+        @log.trace? "(#{duration}ms) SCHEDULED:#{scheduled} WAITING:#{waiting} FETCHING:#{stats.current.FETCHING} COMPLETE:#{stats.items.COMPLETE}", tags : ['Stats', 'Count']
         durations = ("#{phase}(#{times.min},#{times.max},#{times.avg})" for phase, times of stats.durations)
-        @log.info? "#{durations}", tags : ['Stats', 'Duration']
+        @log.trace? "#{durations}", tags : ['Stats', 'Duration']
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack
     @onStart =>

@@ -13,17 +13,19 @@ Kermit = new Crawler
     #new AutoShutdown
     #new Histogrammer
     new RemoteControl
-   # new RandomizedDelay
-   #   ratio: 1
-   #   averageDelayInMs: 5000
-   #   interval: 10000
+    new RandomizedDelay
+      delays: [
+        ratio: 1
+        interval: 10000
+        duration: 30000
+      ]
     new OfflineStorage
       basedir: '/tmp/kermit/wikipedia2'
     #new OfflineServer
     #  basedir : '/ext/dev/workspace/webcherries/testing/repo-coffeescript'
   ]
   options:
-    Logging: logconf.basic
+    Logging: logconf.production
     Streaming:
       agentOptions:
         maxSockets: 15
@@ -35,9 +37,9 @@ Kermit = new Crawler
       limits : [
         {
           pattern :  /.*en.wikipedia\.org.*/
-          to : 5
+          to : 1
           per : 'second'
-          max : 20
+          max : 1
         }
       ]
     Filtering:

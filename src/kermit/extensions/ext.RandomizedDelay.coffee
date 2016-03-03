@@ -1,4 +1,5 @@
 {Extension} = require '../Extension'
+{obj} = require '../util/tools'
 
 ###
   Reduce risk of bot detection by introducing random pauses in {RequestItem} execution.
@@ -14,6 +15,7 @@ class RandomizedDelay extends Extension
     ]
 
   constructor: (options = {}) ->
+    super {}
     @options = @merge RandomizedDelay.defaultOptions(), options
     @randomizers = []
 
@@ -22,13 +24,19 @@ class RandomizedDelay extends Extension
     delayer = (delay) =>
       =>
         if Math.random() > 1 - delay.ratio # Delay hits
+          @log.trace? "Delaying all fetching items for #{delay.duration}ms", tags:['RandomDelay']
           for entry in @qs.items().fetching() # Now delay all items ...(a)
             item = @context.items[entry.id]
+            continue if item.delayed
+            item.delayed = true # Remember that item has already been delayed
             @log.debug? "Delaying #{entry.url} for #{delay.duration}ms"
             oldFetch = item.fetched # ...(a) by replacing the fetch fnt with delayed version
-            item.fetched = -> setTimeout oldFetch, delay.duration
+            item.fetched = ->
+              @log.debug? "Delayed fetch called for #{entry.url}"
+              setTimeout (-> oldFetch.apply item), delay.duration
     @onStart => # schedule all delays
       for delay in @options.delays
+        @log.info? "Scheduling delay #{obj.print delay}"
         @randomizers.push setInterval delayer(delay), delay.interval
     @onStop => # delete all delays
       clearInterval randomizerId for randomizerId in @randomizers

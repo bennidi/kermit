@@ -2,8 +2,7 @@
 {Phase} = require './RequestItem.Phases'
 lokijs = require 'lokijs'
 _ = require 'lodash'
-Datastore = require 'nedb' # Use nedb as backend
-sync = require 'synchronize'
+Datastore = require 'nedb'
 
 class QueueSystem
 
@@ -199,7 +198,7 @@ class UrlStore
     record['meta'] = meta if meta
     @urls.insert record, (err, result) =>
       if not err
-        @log.debug? "Scheduled #{url}"
+        @log.trace? "Scheduled #{url}"
         @counter.scheduled++
 
   # Mark a known URL as visited (silently ignores cases of unknown URLs)
