@@ -55,11 +55,41 @@
             <a href='../../../../class/ResponseStreamLogger.html'>
               ResponseStreamLogger
             </a>
+            <a href='../../../../class/CountingStream.html'>
+              CountingStream
+            </a>
+            <a href='../../../../class/LogStream.html'>
+              LogStream
+            </a>
           </td>
         </tr>
       </table>
       <h2>Variables Summary</h2>
       <dl class='constants'>
+  <dt id='log-variable'>
+    log
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>{
+  info: function(msg) {
+    return console.log(msg);
+  },
+  debug: function(msg) {
+    return console.log(msg);
+  },
+  error: function(msg) {
+    return console.log(msg);
+  },
+  trace: function(msg) {
+    return console.log(msg);
+  },
+  log: function(level, msg) {
+    return console.log(msg);
+  }
+}</code></pre>
+    
+  </dd>
   <dt id='module.exports-variable'>
     module.exports
     =
@@ -69,14 +99,16 @@
   RejectingExtension: RejectingExtension,
   TransitionRecorder: TransitionRecorder,
   MockContext: MockContext,
-  ResponseStreamLogger: ResponseStreamLogger
+  ResponseStreamLogger: ResponseStreamLogger,
+  CountingStream: CountingStream,
+  LogStream: LogStream
 }</code></pre>
     
   </dd>
 </dl>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:07 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

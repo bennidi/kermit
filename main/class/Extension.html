@@ -33,6 +33,12 @@
           <td>Defined in:</td>
           <td>src&#47;kermit&#47;Extension.coffee</td>
         </tr>
+        <tr>
+          <td>Inherits:</td>
+          <td>
+            <a href='../class/ContextAware.html'>ContextAware</a>
+          </td>
+        </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
@@ -79,14 +85,18 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
         <a href='../class/Completer.html'>Completer</a>
         <a href='../class/RequestItemMapper.html'>RequestItemMapper</a>
         <a href='../class/Cleanup.html'>Cleanup</a>
-        <a href='../class/RequestFilter.html'>RequestFilter</a>
         <a href='../class/QueueConnector.html'>QueueConnector</a>
         <a href='../class/QueueWorker.html'>QueueWorker</a>
         <a href='../class/RequestStreamer.html'>RequestStreamer</a>
-        <a href='../class/HtmlProcessor.html'>HtmlProcessor</a>
+        <a href='../class/RandomizedDelay.html'>RandomizedDelay</a>
+        <a href='../class/RemoteControl.html'>RemoteControl</a>
+        <a href='../class/AutoShutdown.html'>AutoShutdown</a>
+        <a href='../class/ResourceDiscovery.html'>ResourceDiscovery</a>
+        <a href='../class/Histogrammer.html'>Histogrammer</a>
         <a href='../class/Monitoring.html'>Monitoring</a>
         <a href='../class/OfflineStorage.html'>OfflineStorage</a>
         <a href='../class/OfflineServer.html'>OfflineServer</a>
+        <a href='../class/ResultVerification.html'>ResultVerification</a>
         <a href='../class/TransitionRecorder.html'>TransitionRecorder</a>
         <a href='../class/RejectingExtension.html'>RejectingExtension</a>
         <a href='../class/ResponseStreamLogger.html'>ResponseStreamLogger</a>
@@ -120,18 +130,6 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#shutdown-dynamic'>
-        #
-(void)
-<b>shutdown</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Run shutdown logic of this extension (if any) 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
       <a href='#targets-dynamic'>
         #
 (void)
@@ -156,6 +154,28 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
   </li>
   <li>
     <span class='signature'>
+      <a href='#onStart-dynamic'>
+        #
+(void)
+<b>onStart</b><span>(fn)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#onStop-dynamic'>
+        #
+(void)
+<b>onStop</b><span>(fn)</span>
+      </a>
+    </span>
+    <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
       <a href='#toString-dynamic'>
         #
 (String)
@@ -166,6 +186,16 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
     </span>
   </li>
 </ul>
+      <h2>
+        <small>Inherited Method Summary</small>
+        <h3 class='inherited'>
+          Methods inherited from
+          <a href='../class/ContextAware.html'>ContextAware</a>
+        </h3>
+        <p class='inherited'>
+          <a href='../class/ContextAware.html#importContext-dynamic'>#importContext</a>
+        </p>
+      </h2>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -252,27 +282,6 @@ This is used to combine user specified options with default options</p>
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='shutdown-dynamic'>
-      #
-(void)
-<b>shutdown</b><span>()</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <div class='abstract note'>
-    <strong>
-      This
-      method
-      is abstract.
-    </strong>
-    
-  </div>
-  <p>Run shutdown logic of this extension (if any)</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
     <p class='signature' id='targets-dynamic'>
       #
 (void)
@@ -311,6 +320,24 @@ actual item processing starts</p>
 </div>
   </div>
   <div class='method_details'>
+    <p class='signature' id='onStart-dynamic'>
+      #
+(void)
+<b>onStart</b><span>(fn)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='onStop-dynamic'>
+      #
+(void)
+<b>onStop</b><span>(fn)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='toString-dynamic'>
       #
 (String)
@@ -334,7 +361,7 @@ actual item processing starts</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

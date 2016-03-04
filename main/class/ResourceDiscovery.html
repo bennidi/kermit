@@ -35,7 +35,7 @@
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/HtmlProcessor.html'>HtmlProcessor</a>
+            <a href='../class/Extension.html'>Extension</a>
           </td>
         </tr>
       </table>
@@ -64,13 +64,12 @@ a item to retrieve those resources.</p>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#cleanUrl-dynamic'>
+      <a href='#tryLog-dynamic'>
         #
 (void)
-<b>cleanUrl</b><span>(item, url)</span>
+<b>tryLog</b><span>(f)</span>
       </a>
     </span>
-    <span class='bound note title'>Bound</span>
     <span class='desc'>
     </span>
   </li>
@@ -79,14 +78,16 @@ a item to retrieve those resources.</p>
         <small>Inherited Method Summary</small>
         <h3 class='inherited'>
           Methods inherited from
-          <a href='../class/HtmlProcessor.html'>HtmlProcessor</a>
+          <a href='../class/Extension.html'>Extension</a>
         </h3>
         <p class='inherited'>
           <a href='../class/Extension.html#initialize-dynamic'>#initialize</a>
           <a href='../class/Extension.html#merge-dynamic'>#merge</a>
-          <a href='../class/Extension.html#shutdown-dynamic'>#shutdown</a>
           <a href='../class/Extension.html#targets-dynamic'>#targets</a>
           <a href='../class/Extension.html#verify-dynamic'>#verify</a>
+          <a href='../class/Extension.html#onStart-dynamic'>#onStart</a>
+          <a href='../class/Extension.html#onStop-dynamic'>#onStop</a>
+          <a href='../class/ContextAware.html#importContext-dynamic'>#importContext</a>
         </p>
       </h2>
       <h2>Class Method Details</h2>
@@ -120,11 +121,10 @@ a item to retrieve those resources.</p>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='cleanUrl-dynamic'>
+    <p class='signature' id='tryLog-dynamic'>
       #
 (void)
-<b>cleanUrl</b><span>(item, url)</span>
-      <span class='bound note'>Bound</span>
+<b>tryLog</b><span>(f)</span>
       <br>
     </p>
     
@@ -132,7 +132,7 @@ a item to retrieve those resources.</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

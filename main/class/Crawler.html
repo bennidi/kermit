@@ -66,15 +66,26 @@ diagram below.</p>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#initialize-dynamic'>
+      <a href='#start-dynamic'>
         #
 (void)
-<b>initialize</b><span>()</span>
+<b>start</b><span>()</span>
       </a>
     </span>
-    <span class='note private title'>Private</span>
     <span class='desc'>
-      Initializes this extension point with the given context. 
+      Start crawling. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#stop-dynamic'>
+        #
+(void)
+<b>stop</b><span>(done)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Stop crawling. 
     </span>
   </li>
   <li>
@@ -86,7 +97,7 @@ diagram below.</p>
       </a>
     </span>
     <span class='desc'>
-      Run shutdown logic on all extensions 
+      Stops the crawler then exits. 
     </span>
   </li>
   <li>
@@ -164,16 +175,30 @@ diagram below.</p>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='initialize-dynamic'>
+    <p class='signature' id='start-dynamic'>
       #
 (void)
-<b>initialize</b><span>()</span>
-      <span class='note private'>Private</span>
+<b>start</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
-  <p>Initializes this extension point with the given context. Initialization cascades
-to all contained extensions</p>
+  <p>Start crawling. All queued commands will be executed after &quot;commands.start&quot; message
+was sent to all listeners.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='stop-dynamic'>
+      #
+(void)
+<b>stop</b><span>(done)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Stop crawling. Unfinished <a href='../class/RequestItem.html'>RequestItem</a>s will be brought into terminal phase <a href='../class/COMPLETE.html'>COMPLETE</a>, <a href='../class/CANCELED.html'>CANCELED</a>, <a href='../class/ERROR.html'>ERROR</a>
+with normal operation. {UrlScheduler} and <a href='../class/QueueWorker.html'>QueueWorker</a> and all other extensions will receive the &quot;commands.stop&quot; message.
+<a href='../class/QueueSystem.html'>QueueSystem</a> will be persisted, then the optional callback will be invoked.</p>
 </div>
 <div class='tags'>
 </div>
@@ -186,7 +211,7 @@ to all contained extensions</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Run shutdown logic on all extensions</p>
+  <p>Stops the crawler then exits.</p>
 </div>
 <div class='tags'>
 </div>
@@ -244,7 +269,7 @@ to all contained extensions</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

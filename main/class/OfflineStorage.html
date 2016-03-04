@@ -41,10 +41,23 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Store item results in local repository for future serving from filesystem</p>
+  <p>Store downloaded data on local filesystem</p>
 </div>
 <div class='tags'>
 </div>
+      <h2>Variables Summary</h2>
+      <dl class='constants'>
+  <dt id='errors-variable'>
+    errors
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>{
+  OSNODIR: &quot;Extension OfflineStorage needs the basedir to be specified as root for storage of files.\nPlease provide property &#39;basedir&#39; (withoud trailing slash) in the options.&quot;
+}</code></pre>
+    
+  </dd>
+</dl>
       <h2>Class Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -53,31 +66,6 @@
         .
 (void)
 <b>defaultOpts</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-</ul>
-      <h2>Instance Method Summary</h2>
-      <ul class='summary'>
-  <li>
-    <span class='signature'>
-      <a href='#shouldStore-dynamic'>
-        #
-(void)
-<b>shouldStore</b><span>(path)</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#initialize-dynamic'>
-        #
-(void)
-<b>initialize</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
@@ -93,9 +81,11 @@
         <p class='inherited'>
           <a href='../class/Extension.html#initialize-dynamic'>#initialize</a>
           <a href='../class/Extension.html#merge-dynamic'>#merge</a>
-          <a href='../class/Extension.html#shutdown-dynamic'>#shutdown</a>
           <a href='../class/Extension.html#targets-dynamic'>#targets</a>
           <a href='../class/Extension.html#verify-dynamic'>#verify</a>
+          <a href='../class/Extension.html#onStart-dynamic'>#onStart</a>
+          <a href='../class/Extension.html#onStop-dynamic'>#onStop</a>
+          <a href='../class/ContextAware.html#importContext-dynamic'>#importContext</a>
         </p>
       </h2>
       <h2>Class Method Details</h2>
@@ -122,30 +112,9 @@
     
   </div>
 </div>
-      <h2>Instance Method Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='shouldStore-dynamic'>
-      #
-(void)
-<b>shouldStore</b><span>(path)</span>
-      <br>
-    </p>
-    
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='initialize-dynamic'>
-      #
-(void)
-<b>initialize</b><span>(context)</span>
-      <br>
-    </p>
-    
-  </div>
-</div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -35,7 +35,8 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Filter URLs by means of regular expressions. Supports white-listing and black-listing.</p>
+  <p>Filter URLs by means of regular expressions of filter functions, i.e Function[String,Object]:Boolean.
+Supports white-listing and black-listing.</p>
 </div>
 <div class='tags'>
 </div>
@@ -61,7 +62,7 @@
       <a href='#isAllowed-dynamic'>
         #
 (void)
-<b>isAllowed</b><span>(url)</span>
+<b>isAllowed</b><span>(url, meta)</span>
       </a>
     </span>
     <span class='desc'>
@@ -91,7 +92,7 @@
     <p class='signature' id='isAllowed-dynamic'>
       #
 (void)
-<b>isAllowed</b><span>(url)</span>
+<b>isAllowed</b><span>(url, meta)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -116,7 +117,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

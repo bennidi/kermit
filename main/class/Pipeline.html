@@ -81,6 +81,8 @@ to be piped into the stream. The most common scenario is stream attachment based
       </a>
     </span>
     <span class='desc'>
+      Import the meta data from the incoming message and attach all mapped streams (with matching guards) to the response stream.
+
     </span>
   </li>
   <li>
@@ -102,7 +104,7 @@ to be piped into the stream. The most common scenario is stream attachment based
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(log, crawlRequest)</span>
+<b>constructor</b><span>(log, item)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -125,7 +127,9 @@ to be piped into the stream. The most common scenario is stream attachment based
   <p>Attach a stream as (one of multiple) destination(s). The stream is
 guarded by a function that defines whether or not the stream will receive
 the response data from the incoming message.
-Any stream that has a matching guard function will receive the data from the incoming message.</p>
+Any stream that has a matching guard function will receive the data from the incoming message.
+Error handlers will be added to the stream and the item will be transitioned to phase <a href='../class/ERROR.html'>ERROR</a>
+if any streaming error occurs.</p>
 </div>
 <div class='tags'>
 </div>
@@ -137,7 +141,12 @@ Any stream that has a matching guard function will receive the data from the inc
 <b>import</b><span>(incomingMessage)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Import the meta data from the incoming message and attach all mapped streams (with matching guards)
+to the response stream.</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='cleanup-dynamic'>
@@ -155,7 +164,7 @@ Any stream that has a matching guard function will receive the data from the inc
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -35,14 +35,11 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>The RequestItem is the central object in the process of fetching a single URL. The <a href='../class/Crawler.html'>Crawler</a> will
-funnel each item through the different processing phases - applying all <a href='../class/Extension.html'>Extension</a>s registered
-for the particular phase.
-During its lifecycle the item is enriched with listeners and properties by the <a href='../class/Extension.html'>Extension</a>s
-that take care of its processing.
-Any information necessary for processing is usually to the item in order
-to centralize state. Any property added to its internal state {RequestItem#state} will be persistent
-after the next phase transition.</p>
+  <p>The RequestItem is the central object in the processing of a single URL. The <a href='../class/Crawler.html'>Crawler</a> will
+funnel each item through the different <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>s - applying all <a href='../class/Extension.html'>Extension</a>s registered
+for the particular phase.</p><p>During its lifecycle the item is enriched with listeners and properties by the <a href='../class/Extension.html'>Extension</a>s
+that take care of its processing.</p><p>(Meta-)Information necessary for its processing is usually attached to the item in order
+to centralize state.</p>
 </div>
 <div class='tags'>
 </div>
@@ -215,6 +212,7 @@ changes.</p>
 <b>fetched</b><span>()</span>
       </a>
     </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
       Change the items phase to FETCHED 
     </span>
@@ -269,10 +267,10 @@ changes.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#isSPOOLED-dynamic'>
+      <a href='#isSpooled-dynamic'>
         #
 (Boolean)
-<b>isSPOOLED</b><span>()</span>
+<b>isSpooled</b><span>()</span>
       </a>
     </span>
     <span class='desc'>
@@ -406,9 +404,7 @@ changes.</p>
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(url, meta = {
-  parents: 0
-}, log)</span>
+<b>constructor</b><span>(url, meta, log)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -788,6 +784,7 @@ for the given tag. Timestamps are useful to keep track of processing durations.<
       #
 (RequestItem)
 <b>fetched</b><span>()</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
     <div class='docstring'>
@@ -926,10 +923,10 @@ for the given tag. Timestamps are useful to keep track of processing durations.<
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='isSPOOLED-dynamic'>
+    <p class='signature' id='isSpooled-dynamic'>
       #
 (Boolean)
-<b>isSPOOLED</b><span>()</span>
+<b>isSpooled</b><span>()</span>
       <br>
     </p>
     <div class='docstring'>
@@ -1160,7 +1157,7 @@ That parent might in turn have been created by another item and so on.</p>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

@@ -26,6 +26,7 @@
       <h1>
         Class:
         ProcessingPhase
+        <span class='note title'>Abstract</span>
       </h1>
       <table class='box'>
         <tr>
@@ -35,6 +36,14 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
+  <div class='abstract note'>
+    <strong>
+      This
+      class
+      is abstract.
+    </strong>
+    
+  </div>
   <p>A <a href='../class/RequestItem.html'>RequestItem</a> is always in one of the following processing phases. Each item starts with phase {ProcessingPhase.INITIAL} From phase <a href='../class/INITIAL.html'>INITIAL</a> it transitions forward while being processed by the <a href='../class/Extension.html'>Extension</a>s that handle items of that particular phase. The following diagram illustrate the possible phase transitions with the ordinary flow <a href='../class/INITIAL.html'>INITIAL</a> -&gt; <a href='../class/SPOOLED.html'>SPOOLED</a> -&gt; <a href='../class/READY.html'>READY</a> -&gt; <a href='../class/FETCHING.html'>FETCHING</a> -&gt; <a href='../class/FETCHED.html'>FETCHED</a> -&gt; <a href='../class/COMPLETE.html'>COMPLETE</a>. Any item may also end in phases <a href='../class/CANCELED.html'>CANCELED</a> or <a href='../class/ERROR.html'>ERROR</a> depending on the logic of the <a href='../class/Extension.html'>Extension</a>s</p><pre><code class="lang-txt"> .-------------.
  |   INITIAL   |
  |-------------|
@@ -75,17 +84,6 @@
     </li>
   </ul>
 </div>
-      <h2>Direct Known Subclasses</h2>
-      <p class='children'>
-        <a href='../class/INITIAL.html'>INITIAL</a>
-        <a href='../class/SPOOLED.html'>SPOOLED</a>
-        <a href='../class/READY.html'>READY</a>
-        <a href='../class/FETCHING.html'>FETCHING</a>
-        <a href='../class/FETCHED.html'>FETCHED</a>
-        <a href='../class/COMPLETE.html'>COMPLETE</a>
-        <a href='../class/ERROR.html'>ERROR</a>
-        <a href='../class/CANCELED.html'>CANCELED</a>
-      </p>
       <h2>Property Summary</h2>
       <dl class='properties'>
         <dt id='INITIAL-property'>
@@ -258,7 +256,7 @@
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

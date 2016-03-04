@@ -38,6 +38,25 @@
           <td>Defined in:</td>
           <td>src&#47;kermit&#47;util</td>
         </tr>
+        <tr>
+          <td>
+            Classes:
+          </td>
+          <td>
+            <a href='../../../../class/URIHelper.html'>
+              URIHelper
+            </a>
+            <a href='../../../../class/Files.html'>
+              Files
+            </a>
+            <a href='../../../../class/ObjectHelper.html'>
+              ObjectHelper
+            </a>
+            <a href='../../../../class/Synchronizer.html'>
+              Synchronizer
+            </a>
+          </td>
+        </tr>
       </table>
       <h2>Variables Summary</h2>
       <dl class='constants'>
@@ -47,54 +66,10 @@
   </dt>
   <dd>
     <pre><code class='coffeescript'>{
-  uri: {
-    normalize: function(url) {
-      return URI(url).normalize().toString();
-    },
-    create: function(url) {
-      return URI(url);
-    }
-  },
-  obj: {
-    print: function(object, depth, colorize) {
-      if (depth == null) {
-        depth = 2;
-      }
-      if (colorize == null) {
-        colorize = false;
-      }
-      return util.inspect(object, false, depth, colorize);
-    },
-    merge: function(a, b) {
-      return _.merge(a, b, function(a, b) {
-        if (_.isArray(b)) {
-          return b.concat(a);
-        }
-      });
-    },
-    overlay: function(a, b) {
-      return _.merge(a, b, function(a, b) {
-        if (_.isArray(a)) {
-          return b;
-        }
-      });
-    },
-    randomId: function(length) {
-      var id;
-      if (length == null) {
-        length = 8;
-      }
-
-      &#47;*
-      Taken from: https:&#47;&#47;coffeescript-cookbook.github.io&#47;chapters&#47;strings&#47;generating-a-unique-id
-       *&#47;
-      id = &quot;&quot;;
-      while (id.length &lt; length) {
-        id += Math.random().toString(36).substr(2);
-      }
-      return id.substr(0, length);
-    }
-  },
+  uri: URIHelper,
+  obj: ObjectHelper,
+  files: Files,
+  Synchronizer: Synchronizer,
   streams: require(&#39;.&#47;tools.streams&#39;)
 }</code></pre>
     
@@ -102,7 +77,7 @@
 </dl>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

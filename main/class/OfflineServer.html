@@ -39,6 +39,32 @@
           </td>
         </tr>
       </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>Redirect requests to web URLs to local storage. This allows to serve (previously downloaded) content
+offline.</p><p>IMPORTANT: Do not use with enabled keep-alive option</p>
+</div>
+<div class='tags'>
+  <h3>See also:</h3>
+  <ul class='see'>
+    <li>
+      <a href='../class/OfflineStorage.html'>OfflineStorage</a>
+    </li>
+  </ul>
+</div>
+      <h2>Variables Summary</h2>
+      <dl class='constants'>
+  <dt id='errors-variable'>
+    errors
+    =
+  </dt>
+  <dd>
+    <pre><code class='coffeescript'>{
+  OSNODIR: &quot;Extension OfflineServer needs the basedir from where files are served.\nPlease provide property &#39;basedir&#39; (withoud trailing slash) in the options.&quot;
+}</code></pre>
+    
+  </dd>
+</dl>
       <h2>Class Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -66,17 +92,6 @@
     <span class='desc'>
     </span>
   </li>
-  <li>
-    <span class='signature'>
-      <a href='#shutdown-dynamic'>
-        #
-(void)
-<b>shutdown</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-    </span>
-  </li>
 </ul>
       <h2>
         <small>Inherited Method Summary</small>
@@ -87,9 +102,11 @@
         <p class='inherited'>
           <a href='../class/Extension.html#initialize-dynamic'>#initialize</a>
           <a href='../class/Extension.html#merge-dynamic'>#merge</a>
-          <a href='../class/Extension.html#shutdown-dynamic'>#shutdown</a>
           <a href='../class/Extension.html#targets-dynamic'>#targets</a>
           <a href='../class/Extension.html#verify-dynamic'>#verify</a>
+          <a href='../class/Extension.html#onStart-dynamic'>#onStart</a>
+          <a href='../class/Extension.html#onStop-dynamic'>#onStop</a>
+          <a href='../class/ContextAware.html#importContext-dynamic'>#importContext</a>
         </p>
       </h2>
       <h2>Class Method Details</h2>
@@ -127,19 +144,10 @@
     </p>
     
   </div>
-  <div class='method_details'>
-    <p class='signature' id='shutdown-dynamic'>
-      #
-(void)
-<b>shutdown</b><span>()</span>
-      <br>
-    </p>
-    
-  </div>
 </div>
     </div>
     <div id='footer'>
-  February 08, 16 13:26:40 by
+  March 04, 16 18:21:08 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
