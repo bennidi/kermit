@@ -7,24 +7,15 @@
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
 > automated data collection. It was built to lower the barrier of web-scraping complexity by providing
 > clean abstractions and extension points. Kermit especially loves to free data
-> from the claws of corporate ownership. If Kermit wasn't a sloth, he would be a pirate...yargh!
+> from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
 
 Kermit in a nutshell
 ========================
 
   * Written entirely in CoffeeScript. Designed for extensibility and ease of use while maintaining resource efficiency
-  as much as possible (yes, it streams! and its async where possible). It takes care of request scheduling, rate limiting, handling of redirects etc.
-  * Built around solid js libraries
-    * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
-    for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
-    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as an efficient backend for request queuing and URL backlog
-    * [koa](https://www.npmjs.com/package/koa) as middleware for local [http-server](https://www.npmjs.com/package/koa-static)
-     and REST based remote control (<- coming soon)
-    * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for syntax friendly dom traversals
-    * [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
-    * [must](https://www.npmjs.com/package/must) for testing done right - well, I admit that the code base currently lacks testing very much  :-/ (WIP)
+  as much as possible.
   * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register
-   [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
+     [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
   * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
   * Supports communication using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
   * Comprehensive set of standard extensions for
@@ -35,6 +26,15 @@ Kermit in a nutshell
     * Pluggable **REST based remote control** allows to interact with the scraper instance using the REST gui of your choice
     * **Lazy logging**: Log facilities only generate log messages if log level actually exists.
     * Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
+  * Built around solid js libraries
+    * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
+    for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
+    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as an efficient backend for request queuing and URL backlog
+    * [koa](https://www.npmjs.com/package/koa) as middleware for [serving pages](https://www.npmjs.com/package/koa-static) from local storage 
+     and REST based remote control
+    * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for efficient and syntax friendly dom traversals
+    * [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
+    * [must](https://www.npmjs.com/package/must) for testing done right - well, admittedly the code base currently lacks a bit more of testing  :-/ (WIP)
   * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
 
 
@@ -63,7 +63,7 @@ user feedback (see section **Contribute**)
 For starters, here is an example of a simple setup that will download online content
 to local storage (you can scrape the offline content later).
 
-```cs
+```coffeescript
 
 Kermit = new Crawler
   name: "example"
@@ -125,20 +125,20 @@ regularly generated from [main.intro.md](./doc/main.intro.md). Also have a look 
 # Documentation
 
 The code ships with a lot of documentation and it is highly recommended to have a look at
-the sources as well as the generated [API docs](https://open-medicine-initiative.github.io/kermit/main.index.html).
+the sources as well as the [API docs](https://open-medicine-initiative.github.io/kermit/main.index.html).
 
 # Contribute
 
 Because Kermit is currently in beta testing the most important contribution is feedback on functionality/bugs. 
 Please provide log excerpts when submitting bug reports.
 Another welcome contribution are more extensions. Create a gist of your extension
-code and link it in the wiki page for [Extensions](https://github.com/open-medicine-initiative/kermit/wiki/Extensions)
+code and link it in the wiki page for [Extensions](https://github.com/open-medicine-initiative/kermit/wiki/Extensions) or create a PR.
 Spread the word and invite more developers to use Kermit for freeing data.
 
-# Ethnographic chit-chat on web scraping
+# Ethnographical excourse on web scraping sloths
 Kermit is not only a convenient web scraper, no, Kermit is also a sloth - and one remarkable sloth indeed! 
 In fact, before Kermit it was not known that sloths actually do have a passion for working with data. 
-They appear as desinterested and unexciting about any form of technology as one could possibly imagine. 
+They appear as uninterested and unexciting about any form of technology as one could possibly imagine. 
 Only more careful studies have revealed that many of them have a second life as programmers, data analysts,
 number crunchers or, as Kermit, data collectors.
 
