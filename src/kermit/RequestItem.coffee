@@ -297,7 +297,6 @@ class RequestItem
   # Change the items phase to CANCELED
   # @return {RequestItem} This item
   cancel: ->
-    console.log this
     @state.phase = ProcessingPhase.CANCELED
     notify this, "phase"
 

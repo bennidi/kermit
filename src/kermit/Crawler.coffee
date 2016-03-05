@@ -12,6 +12,7 @@
 {LogHub, LogConfig} = require './Logging'
 _ = require 'lodash'
 fse = require 'fs-extra'
+RateLimiter = require('limiter').RateLimiter
 
 
 ###
@@ -93,9 +94,6 @@ class Crawler
         extension.initialize(@context.fork())
         extension.verify()
 
-
-
-
     addExtensionPoints()
     addExtensions()
 
@@ -105,11 +103,14 @@ class Crawler
       @start() if @config.autostart
     @log.info? @toString(), tags:['Crawler']
 
+
     # Usually this handler is considered back practice but in case of unhandled errors
     # of single items (in not so well behaved extensions :) general operation should continue.
+    allowedErrors = new RateLimiter 1,2000
     process.on 'uncaughtException', (error) =>
-      # TODO: Keep track of error rate (errs/sec) and define threshold that will eventually start emergency exit
-      @log.error? "Severe error! Please check log for details", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
+      @log.error? "Caught an uncaught exception", {tags:['Uncaught'], error:error.toString(), stack:error.stack}
+      if not allowedErrors.tryRemoveTokens 1
+        @log.info? "Allowed uncaught error rate exceeded. Initiating shutdown"
 
   # Start crawling. All queued commands will be executed after "commands.start" message
   # was sent to all listeners.

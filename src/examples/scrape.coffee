@@ -13,12 +13,6 @@ Kermit = new Crawler
     #new AutoShutdown
     #new Histogrammer
     new RemoteControl
-    new RandomizedDelay
-      delays: [
-        ratio: 1
-        interval: 10000
-        duration: 30000
-      ]
     new OfflineStorage
       basedir: '/tmp/kermit/wikipedia2'
     #new OfflineServer
@@ -39,7 +33,7 @@ Kermit = new Crawler
           pattern :  /.*en.wikipedia\.org.*/
           to : 1
           per : 'second'
-          max : 1
+          max : 5
         }
       ]
     Filtering:

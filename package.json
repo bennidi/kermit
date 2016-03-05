@@ -47,7 +47,8 @@
     "socks5-http-client": "^1.0.2",
     "socks5-https-client": "^1.1.2",
     "tough-cookie": "^2.2.1",
-    "urijs": "^1.17.0"
+    "urijs": "^1.17.0",
+    "yargs": "^4.2.0"
   },
   "scripts": {
     "test": "gulp test:run"

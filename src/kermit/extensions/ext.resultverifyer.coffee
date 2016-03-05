@@ -5,37 +5,39 @@ URI = require 'urijs'
 _ = require 'lodash'
 {HtmlExtractor} = require '../Extractor'
 {uri} = require '../util/tools'
+{ContentType} = require('../Pipeline')
+{MemoryStream} = require('../util/tools.streams')
 
 
 # Scan result data for bad data patterns (site banned access, captcha etc)
 class ResultVerification extends Extension
 
   @defaultOpts: ->
-    checks : {}
+    bad : []
+    good : []
 
   # Create a new resource discovery extension
   constructor: (@options)->
     @opts = @merge ResultVerification.defaultOpts(), @options
-    checks = {}
-    for check in [0...@options.checks.length]
-      checks['check-'+check] = @options.checks[check]
-    @processor = new HtmlProcessor [
-      new HtmlExtractor
-        name : 'all'
-        select : checks
-        onResult : (results, item) =>
-          for index of checks
-            if _.isEmpty _.collect(results['check-'+index], _.isTrue)
-              @log.debug? "Result of #{item.url()} BAD"
-              item.cancel()
-              @qs.urls().reschedule item.url()
-              @crawler.stop()
-            else
-              @log.debug? "Result of #{item.url()} OK"
-    ]
+    @content = {}
     super
-      READY: @processor.attach
-      FETCHED: @processor.process
-
+      READY: (item) =>
+        target = @content[item.id()] = []
+        # Store response data in-memory for subsequent processing
+        item.pipeline().stream ContentType( [/.*html.*/g] ), new MemoryStream target
+      FETCHED : (item) =>
+        data = @content[item.id()]
+        content = if data.length > 1 then data.join "" else data[0]
+        return if not content
+        for handler in @opts.good
+          if handler item, content
+            @log.debug? "Good content for item #{item.id()}", tags: ['ResultVerification', 'GOOD']
+            return
+        for handler in @opts.bad
+          if handler item, content
+            @log.debug? "Bad content detected for item #{item.id()}", tags: ['ResultVerification', 'BAD']
+            item.cancel()
+            @crawler.shutdown()
+      COMPLETE: (item) => delete @content[item.id()]
 
 module.exports = {ResultVerification}

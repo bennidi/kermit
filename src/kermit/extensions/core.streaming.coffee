@@ -36,8 +36,8 @@ class RequestStreamer extends Extension
     super READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
     if @opts.Tor.enabled
-      agentOptions.socksHost = options.Tor.host # Defaults to 'localhost'.
-      agentOptions.socksPort = options.Tor.port # Defaults to 1080.
+      @opts.agentOptions.socksHost = @opts.Tor.host # Defaults to 'localhost'.
+      @opts.agentOptions.socksPort = @opts.Tor.port # Defaults to 1080.
       @opts.agents.https = new socks5Https @opts.agentOptions
       @opts.agents.http = new socks5Http @opts.agentOptions
     else

@@ -3,6 +3,18 @@
 _ = require 'lodash'
 htmlToJson = require 'html-to-json'
 
+
+class RequestDataStore
+
+  # Attach the processor to receive response data.
+  # Note: Attach to {READY}
+  attach: (item) =>
+    target = @content[item.id()] = []
+    # Store response data in-memory for subsequent processing
+    item.pipeline().stream ContentType( [/.*html.*/g] ), new MemoryStream target
+
+
+
 # Scan result data for links to other resources (css, img, js, html) and schedule
 # a item to retrieve those resources.
 class HtmlProcessor

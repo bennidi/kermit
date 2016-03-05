@@ -25,7 +25,7 @@ class Completer extends Extension
 
   # Create a Completer
   constructor: ->
-    super FETCHED : (item) -> item.complete()
+    super FETCHED : (item) -> item.complete() unless item.isError()
 
 # Add capability to lookup a item object by its id.
 # Note: This is used to find the living item object for a given persistent state
