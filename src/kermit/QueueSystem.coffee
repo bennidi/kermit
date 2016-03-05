@@ -12,7 +12,6 @@ class QueueSystem
   constructor: (options = {}) ->
     @options = obj.merge QueueSystem.defaultOptions(), options
     @log = options.log
-    @_ = {}
 
   initialize: (done) ->
     itemsReady = false
@@ -29,35 +28,35 @@ class QueueSystem
       @log.debug? "Items database loaded", tags: ['QSys']
       itemsReady = true
       ready() if urlsReady
-    @_.items = new RequestItemStore @options
-    @_.urls = new UrlStore @options
+    @_items = new RequestItemStore @options
+    @_urls = new UrlStore @options
     @
 
   # Handle a item that successfully completed processing
   # (run cleanup and remember the url as successfully processed).
   # @param item {RequestItem} The item to be inserted
   completed: (item) ->
-  # remember that url has been processed successfully
-    @_.urls.visited item.url()
+    # remember that url has been processed successfully
+    @_urls.visited item.url()
     # remove item data from storage
-    @_.items.remove(item.state)
+    @_items.remove(item.state)
 
   initial: (item) ->
-    @_.items.insert item
-    @_.urls.processing item.url()
+    @_items.insert item
+    @_urls.processing item.url()
 
   # Add the given URL to the collection of scheduled URLs
-  schedule: (url, meta) ->  @_.urls.schedule url, meta
+  schedule: (url, meta) ->  @_urls.schedule url, meta
 
   items: ->
-    @_.items
+    @_items
 
   urls: ->
-    @_.urls
+    @_urls
 
   save: ->
-    @_.urls.save()
-    @_.items.save()
+    @_urls.save()
+    @_items.save()
     @log.info? "Queue System saved to files #{@options.filename}.[items|urls].db"
 
 ###
@@ -131,7 +130,8 @@ class RequestItemStore
 
   # Retrieve items in phase {FETCHING} with url matching the given pattern
   processing: (pattern) ->
-    @items_fetching.branchResultset()
+    @items_fetching
+      .branchResultset()
       .find(url : $regex: pattern).data() # possible tuning: make "domain" a field and match per domain without regex
 
   # @private

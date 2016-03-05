@@ -142,6 +142,8 @@ class Crawler
   shutdown: ->
     @stop -> process.exit()
 
+  on: (msg, handler) ->
+    @context.messenger.subscribe msg, handler
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item

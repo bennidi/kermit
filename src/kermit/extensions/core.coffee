@@ -10,11 +10,7 @@ class ExtensionPointConnector extends Extension
   constructor: ->
     super INITIAL : (item) =>
       item.context = @context
-      item.onChange 'phase', @executePhase
-
-  # @nodoc
-  executePhase: (item) =>
-    @context.executeRequest item
+      item.onChange 'phase', (item) => @context.processItem item
 
 
 # Handle phase transition {INITIAL} -> {SPOOLED}

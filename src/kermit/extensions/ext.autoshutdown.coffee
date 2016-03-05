@@ -6,10 +6,11 @@
 class AutoShutdown extends Extension
 
   @defaultOpts: ->
-    stopOnly : false
+    mode : 'shutdown'
 
   constructor: (options = {}) ->
     @options = @merge AutoShutdown.defaultOpts(), options
+
 
   # @nodoc
   initialize: (context) ->
@@ -22,7 +23,9 @@ class AutoShutdown extends Extension
           process.nextTick =>
             if queuesAreEmpty() # double check because scheduling is async
               clearInterval @wdog
-              if @options.stopOnly then @crawler.stop() else @crawler.shutdown()
+              switch @options.mode
+                when 'stop' then @crawler.stop()
+                when 'shutdown' then @crawler.shutdown()
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
     @onStart =>

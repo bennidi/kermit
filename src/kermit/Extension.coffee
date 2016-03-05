@@ -50,6 +50,8 @@ class Extension extends ContextAware
     @initialized = true
 
 
+  print: (what) -> obj.print what
+
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
   merge : (a,b) ->

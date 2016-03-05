@@ -15,7 +15,7 @@ describe  'Crawler',  ->
         autostart: true
         extensions : [
           new ResourceDiscovery
-          new AutoShutdown stopOnly:true
+          new AutoShutdown mode:'stop'
           new OfflineStorage
             basedir: "./target/testing/repositories/coffeescript-#{dir}"
           new OfflineServer
@@ -38,7 +38,7 @@ describe  'Crawler',  ->
             allow : [
               /.*coffeescript\.org.*/
             ]
-      Kermit.context.messenger.subscribe "commands.stop", ->
+      Kermit.on "commands.stop", ->
         options =
           compareSize: true
           noDiffSet: true

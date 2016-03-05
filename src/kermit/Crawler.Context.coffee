@@ -29,10 +29,12 @@ class CrawlerContext
 
   # Access to execution logic of
   # @see [Crawler#execute]
-  execute : (url, meta) =>
+  execute : (url, meta) ->
     @crawler.execute url, meta
 
-  executeRequest : (item) ->
+  # @private
+  # @nodoc
+  processItem : (item) ->
     ExtensionPoint.execute @crawler, item.phase(), item
 
   # Create a child context that shares all properties with its parent context.
