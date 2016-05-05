@@ -2,7 +2,7 @@
 <html>
   <head>
   <meta charset='UTF-8'>
-  <title>Kermit(test)</title>
+  <title>Kermit(main)</title>
   <script src='../javascript/application.js'></script>
   <script src='../javascript/search.js'></script>
   <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
@@ -11,75 +11,65 @@
     <div id='base' data-path='../'></div>
 <div id='header'>
   <div id='menu'>
-    <a href='../extra/doc/test.intro.md.html' title='Kermit(test)'>
-      Kermit(test)
+    <a href='../extra/doc/main.intro.md.html' title='Kermit(main)'>
+      Kermit(main)
     </a>
     &raquo;
     <a href='../alphabetical_index.html' title='Index'>
       Index
     </a>
     &raquo;
-    <span class='title'>LogStream</span>
+    <span class='title'>RequestDataStore</span>
   </div>
 </div>
     <div id='content'>
       <h1>
         Class:
-        LogStream
+        RequestDataStore
       </h1>
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;kermit&#47;util&#47;spec.utils.coffee</td>
-        </tr>
-        <tr>
-          <td>Inherits:</td>
-          <td>
-            stream.Writable
-          </td>
+          <td>src&#47;kermit&#47;extensions&#47;ext.htmlprocessor.coffee</td>
         </tr>
       </table>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#_write-dynamic'>
+      <a href='#attach-dynamic'>
         #
 (void)
-<b>_write</b><span>(chunk, enc, next)</span>
+<b>attach</b><span>(item)</span>
       </a>
     </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
+      Attach the processor to receive response data. 
     </span>
   </li>
 </ul>
-      <h2>Constructor Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='constructor-dynamic'>
-      #
-(void)
-<b>constructor</b><span>(shouldLog = true)</span>
-      <br>
-    </p>
-    
-  </div>
-</div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='_write-dynamic'>
+    <p class='signature' id='attach-dynamic'>
       #
 (void)
-<b>_write</b><span>(chunk, enc, next)</span>
+<b>attach</b><span>(item)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Attach the processor to receive response data.
+Note: Attach to <a href='../class/READY.html'>READY</a></p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
     </div>
     <div id='footer'>
-  May 05, 16 18:31:19 by
+  May 05, 16 18:31:20 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
