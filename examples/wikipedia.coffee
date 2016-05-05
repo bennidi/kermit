@@ -1,20 +1,17 @@
-{Crawler, ext, logconf} = require '../kermit/kermit.modules.coffee'
+{Crawler, ext, logconf} = require '../src/kermit/kermit.modules.coffee'
 {ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, RandomizedDelay} = ext
 {RemoteControl} = ext
 
-# opts: rateLimit, item depth
 Kermit = new Crawler
-  name: "testrepo"
+  name: "wikipedia"
   basedir : '/tmp/kermit'
   autostart: true
   extensions : [
     new ResourceDiscovery
     new Monitoring
-    #new AutoShutdown
-    #new Histogrammer
     new RemoteControl
     new OfflineStorage
-      basedir: '/tmp/kermit/wikipedia2'
+      basedir: '/tmp/kermit/wikipedia/content'
     #new OfflineServer
     #  basedir : '/ext/dev/workspace/webcherries/testing/repo-coffeescript'
   ]
@@ -27,11 +24,11 @@ Kermit = new Crawler
         maxFreeSockets: 150
         keepAliveMsecs: 1000
     Queueing:
-      filename : '/tmp/kermit/testrepo/wikipedia2'
+      filename : '/tmp/kermit/wikipedia'
       limits : [
         {
           pattern :  /.*en.wikipedia\.org.*/
-          to : 1
+          to : 20
           per : 'second'
           max : 5
         }
@@ -40,9 +37,6 @@ Kermit = new Crawler
       allow : [
         /.*en.wikipedia\.org.*/
       ]
-# Anything matching the whitelist will be visited
-      deny : [
-      ]
-
+      deny : []
 
 Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"

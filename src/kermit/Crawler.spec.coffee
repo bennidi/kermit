@@ -8,14 +8,11 @@ describe  'Crawler',  ->
   @timeout 3000
   describe 'package', ->
     Kermit = null
-    it '# can be instantiated without any options', ()->
-      Kermit = new Crawler
-      expect(Kermit).to.be.a(Crawler)
-      Kermit.stop()
   
     it '# can be instantiated with options for core extensions', ()->
       Kermit = new Crawler
         name: "testicle"
+        basedir: "./target"
         options:
           Queueing:
             limits : [

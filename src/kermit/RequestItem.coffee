@@ -339,6 +339,8 @@ class RequestItem
   parents: ->
     @state.parents
 
+
+
   # Generate a human readable representation of this item
   toString: ->
     switch @state.phase

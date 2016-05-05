@@ -50,6 +50,8 @@ class Crawler
   # @param options [Object] The configuration for this crawler.
   # @see CrawlerConfig
   constructor: (options = {}) ->
+    throw new Error "Please provide a name property in options. Was: #{options.name}" unless options.name
+    throw new Error "Please provide a basedir property in options. Was: #{options.basedir}" unless options.basedir
     # Use default options where no user defined options are given
     @running = false
     @commandQueue =  []

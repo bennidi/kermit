@@ -49,7 +49,7 @@ class Extension extends ContextAware
     @importContext context
     @initialized = true
 
-
+  # Pretty print an object
   print: (what) -> obj.print what
 
   # Merge two objects recursively.

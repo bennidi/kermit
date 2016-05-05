@@ -1,24 +1,33 @@
 AVOIDING DETECTION
-+ SIMPLE => Go more in direction of Depth-first instead of Breadth-First traversal
-+ ADVANCED => Rescheduler sits at INITIAL and reschedules requests to URLS that have lower priorities
-+ ADVANCED => Extension: ResultVerifier (check for bad results, like "you're-a-robot" page)
-  + Pauses execution (suspend to disk). Can be resumed later on (i.e. after IP change) 
++ Scheduler accepts "users". A user encapsulates the behaviour of how links are traversed.
+This implies a redesign of the scheduler to accept batches of urls. Metadata can be used to set an "owner"
+of a url. Owner propagates downwards (transitive). Users can have different behaviours (depth-first, breadth-first).
+First user is "kermit". Kermit behaves as the scheduler behaves currently.
++ Randomly issue requests to already visited urls (as every user would do)
++ Rotate user agents
 
 
 IDEAS / FEATURES
  + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
  + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
- + Extension that takes care of automatic shutdown when crawling finished.
   
 REFACTORING
-  + obj.print() as method in Extension
+ * Optimize Pipeline such that it does not attach the same (identity) stream multiple times
+ * Extract global in-memory stream storage
+  
   
 POLISH
  + Logging
    + Add new log levels at runtime. Use this for adding log.request with request.log in Completer
    + Add serializers based on types 
  + In QUEUE stats show subcategories (like http/https) per status. Use Regex as general approach
+ 
+ 
+FIX
+  + Introduce log level WARN. Log ResultVerification to WARN
+  + ResultVerification does not properly stop (problem with content-type=undefined)
+  + Add request id to log statement when "executing"
   
 TESTING
  + UrlStore: Counters, Rescheduling
@@ -26,6 +35,3 @@ TESTING
 QUESTIONS
  + How to synchronize the two store callbacks (async library..?)
      
-Pause & Resume Feature
-
-+ Implement detection of "bad" web pages without promises

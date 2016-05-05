@@ -6,35 +6,32 @@
 
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
 > automated data collection. It was built to lower the barrier of web-scraping complexity by providing
-> clean abstractions and extension points. Kermit especially loves to free data
+> clean abstractions and extension points for custom plugins. Kermit especially loves to free data
 > from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
 
 Kermit in a nutshell
 ========================
 
-  * Written entirely in CoffeeScript. Designed for extensibility and ease of use while maintaining resource efficiency
-  as much as possible.
-  * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register
-     [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
   * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
-  * Supports communication using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
+  * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
+  * Integrates communication between components using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
   * Comprehensive set of standard extensions for
     * Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filters
-    * Queueing system with configurable **rate limits** (regex on URLs)
+    * Queueing system with configurable **rate limits** based on regular expression over URLs
     * Pluggable automated **resource discovery** (links, images, resources etc.) schedules all URLs found in html(-ish) documents
-    * Pluggable **monitoring** to provide traceability
+    * Pluggable **monitoring** to provide runtime traceability
     * Pluggable **REST based remote control** allows to interact with the scraper instance using the REST gui of your choice
     * **Lazy logging**: Log facilities only generate log messages if log level actually exists.
     * Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
   * Built around solid js libraries
     * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
     for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
-    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as an efficient backend for request queuing and URL backlog
+    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as efficient backends for request queuing and URL backlog
     * [koa](https://www.npmjs.com/package/koa) as middleware for [serving pages](https://www.npmjs.com/package/koa-static) from local storage 
      and REST based remote control
     * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for efficient and syntax friendly dom traversals
     * [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
-    * [must](https://www.npmjs.com/package/must) for testing done right - well, admittedly the code base currently lacks a bit more of testing  :-/ (WIP)
+    * [must](https://www.npmjs.com/package/must) for testing done right - well, admittedly the code base needs a bit more of testing  :-/ (WIP)
   * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
 
 
@@ -60,6 +57,12 @@ user feedback (see section **Contribute**)
 
 # Usage
 
+To execute a Kermit setup simply do
+
+    $ node kermit.js --script=<relative-path-to-script>
+    
+Run one of the examples in `    
+
 For starters, here is an example of a simple setup that will download online content
 to local storage (you can scrape the offline content later).
 
@@ -73,7 +76,7 @@ Kermit = new Crawler
     new ResourceDiscovery
     new Monitoring
     # new AutoShutdown # This would exit the process as soon as no work is left in queue
-    # new Histogrammer
+    # new Histogrammer # Histogrammer collects metadata on the visited URLs
     new RemoteControl # This will start a REST API for interacting with the crawler
     new RandomizedDelay # Introduce random pauses (reduce risk of bot detection)
       delays: [
@@ -83,9 +86,7 @@ Kermit = new Crawler
       ]
     new OfflineStorage
       basedir: '/tmp/kermit/example'
-    # This could be used to serve request from local file system for each URL that hat previously
-    # been downloaded  
-    # new OfflineServer 
+    # new OfflineServer # Serve request from local file system for each previously downloaded URL  
     #  basedir : '/tmp/kermit/some/repository'
   ]
   options:
