@@ -1,8 +1,7 @@
 # Design overview
 
 The core of kermit is built around the representation of a request to a given URL - [RequestItem](../../class/RequestItem.html) - 
-and the implementation of a series of well-defined **processing phases** applied to each of those items. Items "transition" from one 
-phase to the other, usually from phase [INITIAL](../../class/INITIAL.html) to phase [COMPLETE](../../class/COMPLETE.html).
+and the implementation of a series of well-defined **processing phases** applied to each of those items. Items "transition" from one  phase to the other, usually from phase [INITIAL](../../class/INITIAL.html) to phase [COMPLETE](../../class/COMPLETE.html).
 
 ## Processing Phases
 

@@ -6,21 +6,26 @@
 
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
 > automated data collection. It was built to lower the barrier of web-scraping complexity by providing
-> clean abstractions and extension points for custom plugins. Kermit especially loves to free data
-> from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
+> clean abstractions and extension points for custom plugins.
+> All complexity of request scheduling and coordination, resource discovery, url filtering, duplicate control etc.
+> is dealt with using configurable extensions (yes, most of Kermit's core functionality is built based on its own
+> plugin mechanism!)
+
+> Kermit especially loves to free data from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
+
 
 Kermit in a nutshell
 ========================
 
   * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
   * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
-  * Integrates communication between components using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
+  * Provides communication between components using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
   * Comprehensive set of standard extensions for
-    * Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filters
+    * Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filter functions
     * Queueing system with configurable **rate limits** based on regular expression over URLs
     * Pluggable automated **resource discovery** (links, images, resources etc.) schedules all URLs found in html(-ish) documents
-    * Pluggable **monitoring** to provide runtime traceability
-    * Pluggable **REST based remote control** allows to interact with the scraper instance using the REST gui of your choice
+    * Pluggable **monitoring** to provide runtime statistics for traceability
+    * Pluggable **REST based remote control** allows to interact with a scraper instance using the REST gui of your choice
     * **Lazy logging**: Log facilities only generate log messages if log level actually exists.
     * Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
   * Built around solid js libraries
@@ -34,6 +39,10 @@ Kermit in a nutshell
     * [must](https://www.npmjs.com/package/must) for testing done right - well, admittedly the code base needs a bit more of testing  :-/ (WIP)
   * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
 
+
+Kermit has been designed with care. Have a look at this simplified architectural diagram.
+
+![Kermit architectural diagram](/doc/assets/arcitecture.png?raw=true , "Kermit architecture")
 
 # Installation
     
@@ -57,11 +66,9 @@ user feedback (see section **Contribute**)
 
 # Usage
 
-To execute a Kermit setup simply do
+To execute a Kermit setup simply run
 
     $ node kermit.js --script=<relative-path-to-script>
-    
-Run one of the examples in `    
 
 For starters, here is an example of a simple setup that will download online content
 to local storage (you can scrape the offline content later).

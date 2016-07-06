@@ -16,7 +16,6 @@ REFACTORING
  * Optimize Pipeline such that it does not attach the same (identity) stream multiple times
  * Extract global in-memory stream storage
   
-  
 POLISH
  + Logging
    + Add new log levels at runtime. Use this for adding log.request with request.log in Completer
