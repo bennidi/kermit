@@ -28,10 +28,13 @@ describe  'Crawler',  ->
 
 
     it '# extensions can prevent an item from being processed', (done)->
-      Recorder = new TransitionRecorder -> done(); Kermit.stop()
+      Recorder = new TransitionRecorder -> Kermit.stop();done()
       Recorder.validate("http://www.google.com/", [Phase.INITIAL])
       Recorder.validate("http://www.github.com/", [Phase.INITIAL])
-      Kermit = new Crawler extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
+      Kermit = new Crawler
+        name : "Test Item Rejection"
+        basedir: "./target"
+        extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
       Kermit.execute("http://www.google.com")
       Kermit.execute("http://www.github.com")
 

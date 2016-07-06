@@ -152,3 +152,4 @@ tags on their (mostly imaginary) CV's.
 ##License
 For fun and personal enjoyment of rebellious acts the code is currently released under the [WTFPL](https://en.wikipedia.org/wiki/WTFPL)
 (Do What The Fuck You Want To Public License). See the [License.md](License.md)
+http://unlicense.org/

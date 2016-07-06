@@ -82,6 +82,7 @@ class Crawler
         new QueueWorker @config.options.Queueing
         ]
       # Add client extensions
+      # TODO: Do not allow extensions on phase COMPLETE
       @log.debug? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
       ExtensionPoint.addExtensions this, @config.extensions
       # Core extensions that need to run AFTER client extensions
@@ -263,6 +264,8 @@ class Scheduler
             @nextUrls = @nextUrls.concat @qs.urls().scheduled 500
           available = Math.min @nextUrls.length, missing
           for i in [1..available]
+            # TODO: pop() has performance implications, migrate to fix size array with updating pointer
+            # see https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
             next = @nextUrls.pop()
             @crawler.execute next.url, next.meta unless next is undefined
     @scheduler = setInterval pushUrls,  @opts.interval # run regularly to feed new URLs
