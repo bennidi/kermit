@@ -42,7 +42,7 @@ Kermit in a nutshell
 
 Kermit has been designed with care. Have a look at this simplified architectural diagram.
 
-![Kermit architectural diagram](/doc/assets/arcitecture.png?raw=true , "Kermit architecture")
+![Kermit architectural diagram](/doc/assets/architecture.png?raw=true , "Kermit architecture")
 
 # Installation
     
