@@ -12,8 +12,6 @@ Kermit = new Crawler
     new RemoteControl
     new OfflineStorage
       basedir: '/tmp/kermit/wikipedia/content'
-    #new OfflineServer
-    #  basedir : '/ext/dev/workspace/webcherries/testing/repo-coffeescript'
   ]
   options:
     Logging: logconf.production

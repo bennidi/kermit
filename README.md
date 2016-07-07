@@ -7,9 +7,10 @@
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
 > automated data collection. It was built to lower the barrier of web-scraping complexity by providing
 > clean abstractions and extension points for custom plugins.
+
 > All complexity of request scheduling and coordination, resource discovery, url filtering, duplicate control etc.
-> is dealt with using configurable extensions (yes, most of Kermit's core functionality is built based on its own
-> plugin mechanism!)
+> is dealt with using configurable extensions (YES!, most of Kermit's core functionality is built around its own
+> plugin mechanism).
 
 > Kermit especially loves to free data from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
 
@@ -44,6 +45,8 @@ Kermit has been designed with care. Have a look at this simplified architectural
 
 ![Kermit architectural diagram](/doc/assets/architecture.png?raw=true , "Kermit architecture")
 
+Kermit can handle URL backlogs with 1 Million entries and more. Just give it enough memory (~ 1.3 Gb per Million entries).
+
 # Installation
     
 Currently not available as npm library because it is still in beta. Use the github repository to install
@@ -66,11 +69,11 @@ user feedback (see section **Contribute**)
 
 # Usage
 
-To execute a Kermit setup simply run
+To execute a Kermit script simply run
 
     $ node kermit.js --script=<relative-path-to-script>
 
-For starters, here is an example of a simple setup that will download online content
+For starters, here is a comprehensive example of a script that will download online content
 to local storage (you can scrape the offline content later).
 
 ```coffeescript
@@ -79,6 +82,7 @@ Kermit = new Crawler
   name: "example"
   basedir : '/tmp/kermit'
   autostart: true
+  # Add extensions as you wish
   extensions : [
     new ResourceDiscovery
     new Monitoring
@@ -86,6 +90,8 @@ Kermit = new Crawler
     # new Histogrammer # Histogrammer collects metadata on the visited URLs
     new RemoteControl # This will start a REST API for interacting with the crawler
     new RandomizedDelay # Introduce random pauses (reduce risk of bot detection)
+      # 50% chance for delay evaluated every 10 sec.
+      # Delay will pause crawling for 30 sec.
       delays: [
         ratio: 1/2
         interval: 10000
@@ -97,13 +103,13 @@ Kermit = new Crawler
     #  basedir : '/tmp/kermit/some/repository'
   ]
   options:
-    Logging: logconf.production
-    Streaming:
-      agentOptions:
-        maxSockets: 15
-        keepAlive:true
-        maxFreeSockets: 150
-        keepAliveMsecs: 1000
+    # These are the defaults and can be omitted
+    #Streaming:
+    #  agentOptions:
+    #    maxSockets: 15
+    #    keepAlive:true
+    #    maxFreeSockets: 150
+    #    keepAliveMsecs: 1000
     Queueing:
       # queue.items.db and queue.urls.db will be stored in /tmp/kermit/example
       filename : '/tmp/kermit/example/queue'

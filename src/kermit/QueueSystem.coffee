@@ -208,8 +208,9 @@ class UrlStore
         @counter.visited++
         @counter.processing--
 
-
   # Retrieve the next batch of scheduled URLs
+  # @note Needs to run in a fiber
+  # @see Synchronizer
   scheduled: (size = 100) ->
     @await @urls.find(phase:'scheduled').limit(size).exec @defer()
 
