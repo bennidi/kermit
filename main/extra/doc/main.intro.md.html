@@ -37,8 +37,7 @@
       </nav>
       <div id='filecontents'>
         <h1 id="design-overview">Design overview</h1><p>The core of kermit is built around the representation of a request to a given URL - <a href="../../class/RequestItem.html">RequestItem</a> - 
-and the implementation of a series of well-defined <strong>processing phases</strong> applied to each of those items. Items &quot;transition&quot; from one 
-phase to the other, usually from phase <a href="../../class/INITIAL.html">INITIAL</a> to phase <a href="../../class/COMPLETE.html">COMPLETE</a>.</p><h2 id="processing-phases">Processing Phases</h2><p>Each processing phase contains a set of handlers that do some work on the request item they receive.
+and the implementation of a series of well-defined <strong>processing phases</strong> applied to each of those items. Items &quot;transition&quot; from one  phase to the other, usually from phase <a href="../../class/INITIAL.html">INITIAL</a> to phase <a href="../../class/COMPLETE.html">COMPLETE</a>.</p><h2 id="processing-phases">Processing Phases</h2><p>Each processing phase contains a set of handlers that do some work on the request item they receive.
 These handlers are provided by <a href="../../class/Extension.html">Extension</a>s and are inserted during initialization 
 of the <a href="../../class/Crawler.html">Crawler</a>. 
 The execution of a processing phase for a given item involves the invocation of all handlers (in order of insertion).</p><p>All items are held in a <a href="../../class/QueueManager.html">queueing backend</a> and the node.js event loop is used to to schedule processing callbacks for 
@@ -177,7 +176,7 @@ at the code of the various available extensions. It&#39;s fairly easy to get sta
       </div>
     </div>
     <div id='footer'>
-  May 05, 16 18:31:20 by
+  July 07, 16 09:50:31 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
