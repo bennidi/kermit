@@ -25,7 +25,7 @@ is implemented as {Extension}s to {ExtensionPoint}s.
 Extensions are added to extension points during initialization. Core extensions are added automatically,
 user extensions are specified in the options of the Crawler's constructor.
 
-The crawler defines an extension point for each distinct value of {RequestPhase}.
+The crawler defines an extension point for each distinct value of {ProcessingPhase}.
 Each ExtensionPoint wraps the processing steps carried out when the item phase changes
 to a new value. The phase transitions implicitly define a item flow illustrated in the
 diagram below.
@@ -42,6 +42,12 @@ diagram below.
       Scheduling : {} # Options for the [Scheduler]
         maxWaiting: 50
         msPerUrl: 50
+
+
+
+@event @command.start Fired when crawling is started
+@event @command.ststop Fired when crawling is stopped
+
 ###
 class Crawler
   @include Synchronizer

@@ -22,7 +22,7 @@ class ExtensionPoint
     item
 
   # Construct an extension point
-  # @param phase [String] The phase that corresponds to the respective value of {RequestPhase}
+  # @param phase [String] The phase that corresponds to the respective value of {ProcessingPhase}
   constructor: (@context, @phase) ->
     throw new Error("Please provide the name of the ProcessingPhase") if !@phase
     throw new Error("Please provide a context") if !@context

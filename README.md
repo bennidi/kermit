@@ -113,6 +113,9 @@ Kermit = new Crawler
     Queueing:
       # queue.items.db and queue.urls.db will be stored in /tmp/kermit/example
       filename : '/tmp/kermit/example/queue'
+      # Limits can be configured using regex
+      # There are fallback limits at 10 requests/sec
+      # for any unmatched URL
       limits : [
         {
           pattern :  /.*en.wikipedia\.org.*/
@@ -122,12 +125,12 @@ Kermit = new Crawler
         }
       ]
     Filtering:
+      # Anything matching the whitelist will be visited
       allow : [
         /.*en.wikipedia\.org.*/
       ]
-# Anything matching the whitelist will be visited
-      deny : [
-      ]
+      # All blacklisted entries would be excluded
+      deny : []
 
 Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
 

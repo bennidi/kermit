@@ -8,15 +8,15 @@ _ = require 'lodash'
 {ContentType} = require('../Pipeline')
 {MemoryStream} = require('../util/tools.streams')
 
-
-# Scan result data for bad data patterns (site banned access, captcha etc)
+###
+ Scan result for bad data patterns (site banned access, captcha etc)
+###
 class ResultVerification extends Extension
 
   @defaultOpts: ->
     bad : []
     good : []
 
-  # Create a new resource discovery extension
   constructor: (@options)->
     @opts = @merge ResultVerification.defaultOpts(), @options
     @content = {}

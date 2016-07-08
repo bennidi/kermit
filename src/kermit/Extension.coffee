@@ -13,26 +13,26 @@ It aims to encourage the development of relatively small, testable and reusable
 item processing components.
 
 Each extension can expose handlers for item processing by mapping them to
-one of the defined values of {RequestPhase}.
-Note:
- -  The mapping implicitly associates each extension with the {ExtensionPoint}
-   corresponding to one of {RequestPhase}.ALL
- -  Each extension may expose only one handler per phase value
+one of the defined values of {ProcessingPhase}.
 
-See {Crawler} for the state diagram modeling the values and transitions of {RequestPhase}
+@note The mapping implicitly associates each extension with the {ExtensionPoint} corresponding to one of {ProcessingPhase}.ALL
+@note Each extension may expose only one handler per phase value
+
+See {Crawler} for the state diagram modeling the values and transitions of {ProcessingPhase}
 and respective {ExtensionPoint}s.
 
 @abstract
 @see Crawler
 @see ExtensionPoint
 @see RequestItem
+@see ProcessingPhase
   
 ###
 class Extension extends ContextAware
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
-  # @param handlers [Object] A mapping of {RequestPhase} values
+  # @param handlers [Object] A mapping of {ProcessingPhase} values
   # to handlers that will be invoked for items with that phase
   constructor: (@handlers = {}) ->
     @name = @constructor.name
@@ -58,7 +58,7 @@ class Extension extends ContextAware
     {obj} = require './util/tools'
     obj.overlay a,b
 
-  # Get all {RequestPhase} values handled by this extension
+  # Get all {ProcessingPhase} values handled by this extension
   targets: ->
     (phase for phase of @handlers)
 
@@ -71,6 +71,7 @@ class Extension extends ContextAware
     throw new Error "An extension requires a context object" unless @context
 
 
+  # Register a callback function to be invoked when start command is executed
   onStart: (fn) ->
     @messenger.subscribe 'commands.start', fn
 
