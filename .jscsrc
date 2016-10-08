@@ -1,7 +1,0 @@
-{
-	"preset": "yandex",
-	"disallowMultipleVarDecl": "exceptUndefined",
-	"maximumLineLength": null,
-	"validateIndentation": "\t",
-	"esnext": true
-}

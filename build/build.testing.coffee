@@ -11,7 +11,7 @@ require('coffeescript-mixins').bootstrap() # Enable support for mixins
 
 # This task will run all tests (*.spec.(coffee|es6))
 runSpecs = ->
-  gulp.src ['./src/**/*.spec.*coffee','./src/**/*.spec.es7' ], since: cache.lastMtime 'code'
+  gulp.src ['./src/**/*.spec.coffee','./src/**/*.spec.es7' ], since: cache.lastMtime 'code'
     .pipe cache 'code'
     .pipe mocha reporter:'spec'
     .on 'error', util.log

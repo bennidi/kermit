@@ -135,7 +135,8 @@ class Crawler
   # with normal operation. {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
   # {QueueSystem} will be persisted, then the optional callback will be invoked.
   stop: (done)->
-    return if not @running
+    if not @running
+      return done?()
     @running = false
     @log.info? "Stopping", tags: ['Crawler']
     # Stop all extensions and Scheduler

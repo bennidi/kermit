@@ -8,7 +8,7 @@ describe  'Crawler',  ->
   @timeout 15000
   dir = obj.randomId()
   describe 'integration test for ResourceDiscovery,LocalStorage,OfflineServer', ->
-    it '# can be instantiated with options for core extensions', (done) ->
+    it '# can transparently route requests to local storage when matching content is found', (done) ->
       Kermit = new Crawler
         name: "testrepo"
         basedir : './target/testing/integration'
