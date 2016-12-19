@@ -47,7 +47,7 @@ describe  'Crawler',  ->
         result = dircompare.compareSync fixture, output, options
         expect(result.same).to.be.true()
         done()
-      Kermit.execute "http://coffeescript.org"
+      Kermit.crawl "http://coffeescript.org"
 
 
 

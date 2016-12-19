@@ -37,4 +37,4 @@ Kermit = new Crawler
       ]
       deny : []
 
-Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
+Kermit.crawl "http://en.wikipedia.org/wiki/Web_scraping"

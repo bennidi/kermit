@@ -38,8 +38,8 @@ describe  'Crawler',  ->
         name : "Test Item Rejection"
         basedir: "./target"
         extensions : [Recorder, new RejectingExtension, new ResponseStreamLogger]
-      Kermit.execute("http://www.google.com")
-      Kermit.execute("http://www.github.com")###
+      Kermit.crawl("http://www.google.com")
+      Kermit.crawl("http://www.github.com")###
 
 
 

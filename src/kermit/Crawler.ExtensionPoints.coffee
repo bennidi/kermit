@@ -40,10 +40,8 @@ class ExtensionPoint
     for extension in @extensions
       try
         # An extension may cancel item processing
-        if item.isCanceled()
-          return item
-        else
-          extension.handlers[@phase].call(extension, item)
+        if item.isCanceled()then return item
+        else extension.handlers[@phase].call(extension, item)
       catch error
         @log.error? error.toString(), { trace: error.stack, tags: [extension.name]}
         item.error(error)

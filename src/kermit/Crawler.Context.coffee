@@ -29,8 +29,8 @@ class CrawlerContext
 
   # Access to execution logic of
   # @see [Crawler#execute]
-  execute : (url, meta) ->
-    @crawler.execute url, meta
+  crawl : (url, meta) ->
+    @crawler.crawl url, meta
 
   # @private
   # @nodoc

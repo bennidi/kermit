@@ -158,10 +158,9 @@ class Crawler
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
-  execute: (url, meta) ->
+  crawl: (url, meta) ->
     if not @running
-      cmd = => @execute url,meta
-      @commandQueue.push cmd
+      @commandQueue.push => @crawl url,meta
       @log.debug? "Queued execution of #{url}. The queued command is transient and executed when start() is called"
     else
       @log.trace? "Executing #{url}"
@@ -171,8 +170,7 @@ class Crawler
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
     if not @running
-      cmd = => @execute url,meta
-      @commandQueue.push cmd
+      @commandQueue.push => @crawl url,meta
       @log.debug? "Queued scheduling of #{url}. The queued command is transient and executed when start() is called"
     else
       @scheduler.schedule url, meta
@@ -274,7 +272,7 @@ class Scheduler
             # TODO: pop() has performance implications, migrate to fix size array with updating pointer
             # see https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
             next = @nextUrls.pop()
-            @crawler.execute next.url, next.meta unless next is undefined
+            @crawler.crawl next.url, next.meta unless next is undefined
     @scheduler = setInterval pushUrls,  @opts.interval # run regularly to feed new URLs
 
 
