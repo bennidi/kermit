@@ -21,6 +21,7 @@
     "must": "^0.13.1"
   },
   "dependencies": {
+    "coffee-latte": "^1.0.1",
     "dateformat": "^1.0.12",
     "fs-extra": "^0.26.2",
     "html-to-json": "^0.5.1",
