@@ -67,7 +67,7 @@ class Crawler extends Mixin
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @qs = new QueueSystem
-      filename: "#{@config.home()}/#{@name}",
+      filename: "#{@config.basePath()}/#{@config.options.Queueing.filename}",
       log:@log
     # Create the root context of this crawler
     @context = new CrawlerContext
@@ -207,20 +207,20 @@ class CrawlerConfig
     @extensions = [] # Clients can add extensions
     @options   = # Options of each core extension can be customized here
       Logging   : LogConfig.detailed
-    # Options for the queuing system, see [QueueWorker] and [QueueConnector]
       Queueing   :
+        filename : "#{obj.randomId()}-queue" # Options for the queuing system, see [QueueWorker] and [QueueConnector]
         limits : []
       Streaming: {} # Options for the {Streamer}
       Filtering  : {} # Options for item filtering, [RequestFilter],[DuplicatesFilter]
       Scheduling  : {} # Options for URL scheduling [Scheduler]
     obj.merge @, config
     @options.Logging = switch
-      when _.isFunction config.options?.Logging then config.options.Logging "#{@home()}/logs"
+      when _.isFunction config.options?.Logging then config.options.Logging "#{@basePath()}/logs"
       when _.isObject config.options?.Logging then config.options.Logging
-      else LogConfig.detailed "#{@home()}/logs"
+      else LogConfig.detailed "#{@basePath()}/logs"
 
   # @return [String] The configured base path of this crawler
-  home: -> "#{@basedir}/#{@name}"
+  basePath: -> "#{@basedir}/#{@name}"
 
 ###
 
