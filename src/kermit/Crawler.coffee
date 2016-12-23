@@ -13,7 +13,7 @@
 _ = require 'lodash'
 fse = require 'fs-extra'
 RateLimiter = require('limiter').RateLimiter
-{Mixin} = require 'caramel'
+{Mixin} = require 'coffee-latte'
 
 
 

@@ -2,16 +2,13 @@
 gulp = require 'gulp'
 mocha = require 'gulp-mocha'
 util = require 'gulp-util'
-# http://blog.reactandbethankful.com/posts/2015/05/01/building-with-gulp-4-part-4-incremental-builds/
-cache = require 'gulp-memory-cache'
 
 # Expose assertion libs globally such that tests do not need to require()
 global.expect = require('must')
 
 # This task will run all tests (*.spec.(coffee|es6))
 runSpecs = ->
-  gulp.src ['./src/**/*.spec.coffee','./src/**/*.spec.es7' ], since: cache.lastMtime 'code'
-    .pipe cache 'code'
+  gulp.src ['./src/**/*.spec.coffee','./src/**/*.spec.es7' ]
     .pipe mocha reporter:'spec'
     .on 'error', util.log
 runSpecs.description = "Run tests"

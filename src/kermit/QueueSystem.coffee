@@ -3,7 +3,7 @@
 lokijs = require 'lokijs'
 _ = require 'lodash'
 Datastore = require 'nedb'
-{Mixin} = require 'caramel'
+{Mixin} = require 'coffee-latte'
 
 class QueueSystem
 
