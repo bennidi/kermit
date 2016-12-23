@@ -1,11 +1,8 @@
-{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
-{byExtension} = require '../util/mimetypes'
 {ContentType} = require '../Pipeline'
 fse = require 'fs-extra'
 fs = require 'fs'
 Mitm = require 'mitm'
-URI = require 'urijs'
 _ = require 'lodash'
 {uri, files} = require '../util/tools'
 

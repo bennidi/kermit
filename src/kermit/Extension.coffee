@@ -70,7 +70,6 @@ class Extension extends ContextAware
     throw new Error "An extension requires a name" unless @name
     throw new Error "An extension requires a context object" unless @context
 
-
   # Register a callback function to be invoked when start command is executed
   onStart: (fn) ->
     @messenger.subscribe 'commands.start', fn

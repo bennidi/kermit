@@ -35,7 +35,7 @@ class CrawlerContext
   # @private
   # @nodoc
   processItem : (item) ->
-    ExtensionPoint.execute @crawler, item.phase(), item
+    @crawler.scheduleExecution item.phase(), item
 
   # Create a child context that shares all properties with its parent context.
   # The child context exposes a method to share properties with all other child contexts

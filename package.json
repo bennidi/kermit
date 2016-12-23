@@ -21,7 +21,6 @@
     "must": "^0.13.1"
   },
   "dependencies": {
-    "coffeescript-mixins": "0.0.4",
     "dateformat": "^1.0.12",
     "fs-extra": "^0.26.2",
     "html-to-json": "^0.5.1",

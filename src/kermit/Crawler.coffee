@@ -1,6 +1,6 @@
 {obj, uri, Synchronizer} = require './util/tools'
 {Extension} = require './Extension'
-{ExtensionPoint} = require './Crawler.ExtensionPoints'
+{ExtensionPoint, ExtensionPointProvider} = require './Crawler.ExtensionPoints'
 {CrawlerContext, ContextAware} = require './Crawler.Context'
 {ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
@@ -13,6 +13,8 @@
 _ = require 'lodash'
 fse = require 'fs-extra'
 RateLimiter = require('limiter').RateLimiter
+{Mixin} = require 'caramel'
+
 
 
 ###
@@ -49,8 +51,8 @@ diagram below.
 @event @command.ststop Fired when crawling is stopped
 
 ###
-class Crawler
-  @include Synchronizer
+class Crawler extends Mixin
+  @with Synchronizer, ExtensionPointProvider
 
   # Create a new crawler with the given options
   # @param options [Object] The configuration for this crawler.
@@ -58,6 +60,7 @@ class Crawler
   constructor: (options = {}) ->
     throw new Error "Please provide a name property in options. Was: #{options.name}" unless options.name
     throw new Error "Please provide a basedir property in options. Was: #{options.basedir}" unless options.basedir
+    super options
     # Use default options where no user defined options are given
     @running = false
     @commandQueue =  []
@@ -74,44 +77,36 @@ class Crawler
       qs : @qs
     @scheduler = new Scheduler @context, @config
 
-    addExtensionPoints = =>
-      @extpoints = {}
-      @extpoints[phase] = new ExtensionPoint @context, phase for phase in Phase.ALL
-      @extensions = []
-
-    addExtensions = =>
-      # Core extensions that need to run BEFORE user extensions
-      ExtensionPoint.addExtensions this, [
-        new ExtensionPointConnector
-        new RequestItemMapper
-        new QueueConnector @config.options.Queueing
-        new QueueWorker @config.options.Queueing
-        ]
-      # Add client extensions
-      # TODO: Do not allow extensions on phase COMPLETE
-      @log.debug? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
-      ExtensionPoint.addExtensions this, @config.extensions
-      # Core extensions that need to run AFTER client extensions
-      ExtensionPoint.addExtensions this, [
-        new RequestStreamer @config.options.Streaming
-        new Spooler
-        new Completer
-        new Cleanup]
+    @initializeExtensionPoints @context
+    # Core extensions that need to run BEFORE user extensions
+    @addExtensions [
+      new ExtensionPointConnector
+      new RequestItemMapper
+      new QueueConnector @config.options.Queueing
+      new QueueWorker @config.options.Queueing
+      ]
+    # Add client extensions
+    # TODO: Do not allow extensions on phase COMPLETE
+    @log.debug? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
+    @addExtensions @config.extensions
+    # Core extensions that need to run AFTER client extensions
+    @addExtensions [
+      new RequestStreamer @config.options.Streaming
+      new Spooler
+      new Completer
+      new Cleanup]
 
     initializeExtensions = =>
       for extension in @extensions
+        console.log "Initializing extension #{extension}"
         extension.initialize(@context.fork())
         extension.verify()
-
-    addExtensionPoints()
-    addExtensions()
 
     @qs.initialize =>
       # TODO: Move all commands on queue for execution as soon as crawler is initialized
       initializeExtensions()
       @start() if @config.autostart
     @log.info? @toString(), tags:['Crawler']
-
 
     # Usually this handler is considered back practice but in case of unhandled errors
     # of single items (in not so well behaved extensions :) general operation should continue.
@@ -135,12 +130,12 @@ class Crawler
   # with normal operation. {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
   # {QueueSystem} will be persisted, then the optional callback will be invoked.
   stop: (done)->
-    if not @running
-      return done?()
+    if not @running then return done?()
     @running = false
     @log.info? "Stopping", tags: ['Crawler']
     # Stop all extensions and Scheduler
     @context.messenger.publish 'commands.stop', {}
+    # Make sure that items in processing are COMPLETED before stopping
     @wdog = setInterval (=>
       unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
       if _.isEmpty unfinished
@@ -149,12 +144,12 @@ class Crawler
         done?()
       ), 500
 
-  # Stops the crawler then exits.
+  # Stop crawling and exit process.
   shutdown: ->
     @stop -> process.exit()
 
-  on: (msg, handler) ->
-    @context.messenger.subscribe msg, handler
+  on: (event, handler) ->
+    @context.messenger.subscribe event, handler
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
@@ -165,7 +160,7 @@ class Crawler
     else
       @log.trace? "Executing #{url}"
       item = new RequestItem url, meta, @log
-      ExtensionPoint.execute @, Phase.INITIAL, item
+      @scheduleExecution Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
@@ -174,6 +169,12 @@ class Crawler
       @log.debug? "Queued scheduling of #{url}. The queued command is transient and executed when start() is called"
     else
       @scheduler.schedule url, meta
+
+  execute:(command)->
+    # A command is either executed on the crawler itself or it targets a specific extension
+    target = if command.extension then @ExtensionPoint.getExtension @, command.extension else @
+    executable = target[command.cmd]
+    executable.apply target, command
 
   # Pretty print this crawler
   toString: ->
