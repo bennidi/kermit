@@ -7,7 +7,6 @@ cache = require 'gulp-memory-cache'
 
 # Expose assertion libs globally such that tests do not need to require()
 global.expect = require('must')
-require('coffeescript-mixins').bootstrap() # Enable support for mixins
 
 # This task will run all tests (*.spec.(coffee|es6))
 runSpecs = ->

@@ -233,9 +233,8 @@ class CrawlerConfig
 
   @private
 ###
-class Scheduler
-  @include Synchronizer
-  @include ContextAware
+class Scheduler extends Mixin
+  @with Synchronizer, ContextAware
 
   @defaultOptions: ->
     maxWaiting : 50
@@ -243,6 +242,7 @@ class Scheduler
 
   # @nodoc
   constructor: (@context, @config) ->
+    super()
     @importContext @context
     @nextUrls = []
     @urlFilter = new UrlFilter @config.options.Filtering, @log

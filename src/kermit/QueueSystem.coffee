@@ -3,6 +3,7 @@
 lokijs = require 'lokijs'
 _ = require 'lodash'
 Datastore = require 'nedb'
+{Mixin} = require 'caramel'
 
 class QueueSystem
 
@@ -145,11 +146,12 @@ class RequestItemStore
     processing => being processed in form of a {RequestItem}
     visited => completed processing (RequestItem reached phase COMPLETE)
 ###
-class UrlStore
-  @include Synchronizer
+class UrlStore extends Mixin
+  @with Synchronizer
 
   # Create a new URL manager
   constructor: (@options) ->
+    super()
     @log = @options.log
     @counter = # Maintain counters for URLs per phase to reduce load on db
       scheduled : 0
