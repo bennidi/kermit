@@ -19,46 +19,67 @@
       Index
     </a>
     &raquo;
-    <span class='title'>CharStream</span>
+    <span class='title'>ExtensionPointProvider</span>
   </div>
 </div>
     <div id='content'>
       <h1>
         Class:
-        CharStream
+        ExtensionPointProvider
       </h1>
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;kermit&#47;util&#47;tools.streams.coffee</td>
-        </tr>
-        <tr>
-          <td>Inherits:</td>
-          <td>
-            stream.Readable
-          </td>
+          <td>src&#47;kermit&#47;Crawler.ExtensionPoints.coffee</td>
         </tr>
       </table>
-      <h2>Overview</h2>
-      <div class='docstring'>
-  <p><a href="https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/">https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/</a>
-<a href="https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html">https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html</a>
-Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http://jeroenpelgrims.com/node-streams-in-coffeescript/</a>
-<a href="https://github.com/dominictarr/stream-spec">https://github.com/dominictarr/stream-spec</a></p>
-</div>
-<div class='tags'>
-</div>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#_read-dynamic'>
+      <a href='#initializeExtensionPoints-dynamic'>
         #
 (void)
-<b>_read</b><span>()</span>
+<b>initializeExtensionPoints</b><span>(context)</span>
       </a>
     </span>
     <span class='desc'>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#addExtensions-dynamic'>
+        #
+(void)
+<b>addExtensions</b><span>(extensions = [])</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Add list of extensions to the given provider 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getExtPoint-dynamic'>
+        #
+(void)
+<b>getExtPoint</b><span>(phase)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#scheduleExecution-dynamic'>
+        #
+(void)
+<b>scheduleExecution</b><span>(phase, item)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item 
     </span>
   </li>
 </ul>
@@ -68,7 +89,7 @@ Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(s)</span>
+<b>constructor</b><span>()</span>
       <br>
     </p>
     
@@ -77,13 +98,52 @@ Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='_read-dynamic'>
+    <p class='signature' id='initializeExtensionPoints-dynamic'>
       #
 (void)
-<b>_read</b><span>()</span>
+<b>initializeExtensionPoints</b><span>(context)</span>
       <br>
     </p>
     
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='addExtensions-dynamic'>
+      #
+(void)
+<b>addExtensions</b><span>(extensions = [])</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Add list of extensions to the given provider</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getExtPoint-dynamic'>
+      #
+(void)
+<b>getExtPoint</b><span>(phase)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='scheduleExecution-dynamic'>
+      #
+(void)
+<b>scheduleExecution</b><span>(phase, item)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item</p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
     </div>

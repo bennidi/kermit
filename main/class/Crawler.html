@@ -32,13 +32,19 @@
           <td>Defined in:</td>
           <td>src&#47;kermit&#47;Crawler.coffee</td>
         </tr>
+        <tr>
+          <td>Inherits:</td>
+          <td>
+            Mixin
+          </td>
+        </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
   <p>The Crawler coordinates execution of submitted <a href='../class/RequestItem.html'>RequestItem</a> by applying all <a href='../class/Extension.html'>Extension</a>s
 matching the item&#39;s current phase.</p><p>All functionality for item handling, such as filtering, queueing, streaming, storing, logging etc.
 is implemented as <a href='../class/Extension.html'>Extension</a>s to <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p><p>Extensions are added to extension points during initialization. Core extensions are added automatically,
-user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of {RequestPhase}.
+user extensions are specified in the options of the Crawler&#39;s constructor.</p><p>The crawler defines an extension point for each distinct value of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>.
 Each ExtensionPoint wraps the processing steps carried out when the item phase changes
 to a new value. The phase transitions implicitly define a item flow illustrated in the
 diagram below.</p>
@@ -61,6 +67,29 @@ diagram below.</p>
   </div>
 </div>
 <div class='tags'>
+  <div class='events'>
+    <h3>Events:</h3>
+    <div class='event'>
+      <p class='signature'>
+        @command.start
+      </p>
+      <div class='docstring'>
+  <p>Fired when crawling is started</p>
+</div>
+<div class='tags'>
+</div>
+    </div>
+    <div class='event'>
+      <p class='signature'>
+        @command.ststop
+      </p>
+      <div class='docstring'>
+  <p>Fired when crawling is stopped</p>
+</div>
+<div class='tags'>
+</div>
+    </div>
+  </div>
 </div>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
@@ -97,7 +126,7 @@ diagram below.</p>
       </a>
     </span>
     <span class='desc'>
-      Stops the crawler then exits. 
+      Stop crawling and exit process. 
     </span>
   </li>
   <li>
@@ -105,7 +134,7 @@ diagram below.</p>
       <a href='#on-dynamic'>
         #
 (void)
-<b>on</b><span>(msg, handler)</span>
+<b>on</b><span>(event, handler)</span>
       </a>
     </span>
     <span class='desc'>
@@ -113,10 +142,10 @@ diagram below.</p>
   </li>
   <li>
     <span class='signature'>
-      <a href='#execute-dynamic'>
+      <a href='#crawl-dynamic'>
         #
 (RequestItem)
-<b>execute</b><span>(url, meta)</span>
+<b>crawl</b><span>(url, meta)</span>
       </a>
     </span>
     <span class='desc'>
@@ -133,6 +162,17 @@ diagram below.</p>
     </span>
     <span class='desc'>
       Add the url to the <a href='../class/Scheduler.html'>Scheduler</a> 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#execute-dynamic'>
+        #
+(void)
+<b>execute</b><span>(command)</span>
+      </a>
+    </span>
+    <span class='desc'>
     </span>
   </li>
   <li>
@@ -222,7 +262,7 @@ with normal operation. {UrlScheduler} and <a href='../class/QueueWorker.html'>Qu
       <br>
     </p>
     <div class='docstring'>
-  <p>Stops the crawler then exits.</p>
+  <p>Stop crawling and exit process.</p>
 </div>
 <div class='tags'>
 </div>
@@ -231,16 +271,16 @@ with normal operation. {UrlScheduler} and <a href='../class/QueueWorker.html'>Qu
     <p class='signature' id='on-dynamic'>
       #
 (void)
-<b>on</b><span>(msg, handler)</span>
+<b>on</b><span>(event, handler)</span>
       <br>
     </p>
     
   </div>
   <div class='method_details'>
-    <p class='signature' id='execute-dynamic'>
+    <p class='signature' id='crawl-dynamic'>
       #
 (RequestItem)
-<b>execute</b><span>(url, meta)</span>
+<b>crawl</b><span>(url, meta)</span>
       <br>
     </p>
     <div class='docstring'>
@@ -274,6 +314,15 @@ with normal operation. {UrlScheduler} and <a href='../class/QueueWorker.html'>Qu
 </div>
   </div>
   <div class='method_details'>
+    <p class='signature' id='execute-dynamic'>
+      #
+(void)
+<b>execute</b><span>(command)</span>
+      <br>
+    </p>
+    
+  </div>
+  <div class='method_details'>
     <p class='signature' id='toString-dynamic'>
       #
 (void)
@@ -289,7 +338,7 @@ with normal operation. {UrlScheduler} and <a href='../class/QueueWorker.html'>Qu
 </div>
     </div>
     <div id='footer'>
-  July 07, 16 09:50:31 by
+  December 26, 16 14:44:47 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

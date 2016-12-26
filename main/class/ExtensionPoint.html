@@ -36,50 +36,10 @@
       <h2>Overview</h2>
       <div class='docstring'>
   <p>Provide a mechanism to add functionality to the provider of the extension point (=&gt; <a href='../class/Crawler.html'>Crawler</a>)
-Extension points act as containers for <a href='../class/Extension.html'>Extension</a>s - the primary abstraction for containment
-of processing functionality.</p>
+Extension are containers for <a href='../class/Extension.html'>Extension</a>s - grouping them by <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>.</p><p><a href='../class/Extension.html'>Extension</a>s are invoked as part of the execution of their containing ExtensionPoint.</p>
 </div>
 <div class='tags'>
 </div>
-      <h2>Class Method Summary</h2>
-      <ul class='summary'>
-  <li>
-    <span class='signature'>
-      <a href='#addExtensions-static'>
-        .
-(void)
-<b>addExtensions</b><span>(provider, extensions = [])</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Add list of extensions to the given provider 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#get-static'>
-        .
-(void)
-<b>get</b><span>(provider, phase)</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#execute-static'>
-        .
-(void)
-<b>execute</b><span>(provider, phase, item)</span>
-      </a>
-    </span>
-    <span class='desc'>
-      Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item 
-    </span>
-  </li>
-</ul>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
@@ -109,48 +69,6 @@ of processing functionality.</p>
     </span>
   </li>
 </ul>
-      <h2>Class Method Details</h2>
-      <div class='methods'>
-  <div class='method_details'>
-    <p class='signature' id='addExtensions-static'>
-      .
-(void)
-<b>addExtensions</b><span>(provider, extensions = [])</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Add list of extensions to the given provider</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='get-static'>
-      .
-(void)
-<b>get</b><span>(provider, phase)</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Retrieve the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for a given phase from the provider</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='execute-static'>
-      .
-(void)
-<b>execute</b><span>(provider, phase, item)</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>Schedule execution of an <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> for the given item</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-</div>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -174,7 +92,7 @@ of processing functionality.</p>
         )
       </span>
       &mdash;
-      <span class='desc'>The phase that corresponds to the respective value of {RequestPhase} </span>
+      <span class='desc'>The phase that corresponds to the respective value of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a> </span>
     </li>
   </ul>
 </div>
@@ -205,6 +123,10 @@ of processing functionality.</p>
       <br>
     </p>
     <div class='docstring'>
+  <div class='note todo'>
+    <strong>TODO:</strong>
+    Rename to invoke 
+  </div>
   <p>Helper method to invoke all extensions for processing of a given item</p>
 </div>
 <div class='tags'>
@@ -213,7 +135,7 @@ of processing functionality.</p>
 </div>
     </div>
     <div id='footer'>
-  July 07, 16 09:50:31 by
+  December 26, 16 14:44:47 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>

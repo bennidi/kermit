@@ -19,32 +19,27 @@
       Index
     </a>
     &raquo;
-    <span class='title'>CharStream</span>
+    <span class='title'>HtmlToJson</span>
   </div>
 </div>
     <div id='content'>
       <h1>
         Class:
-        CharStream
+        HtmlToJson
       </h1>
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;kermit&#47;util&#47;tools.streams.coffee</td>
-        </tr>
-        <tr>
-          <td>Inherits:</td>
-          <td>
-            stream.Readable
-          </td>
+          <td>src&#47;kermit&#47;extensions&#47;ext.htmlprocessor.coffee</td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p><a href="https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/">https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/</a>
-<a href="https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html">https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html</a>
-Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http://jeroenpelgrims.com/node-streams-in-coffeescript/</a>
-<a href="https://github.com/dominictarr/stream-spec">https://github.com/dominictarr/stream-spec</a></p>
+  <div class='note todo'>
+    <strong>TODO:</strong>
+    Combine with Extractor. Simplify API 
+  </div>
+  <p>Scan result data for links to other resources (css, img, js, html) and schedule a item to retrieve those resources.</p>
 </div>
 <div class='tags'>
 </div>
@@ -52,13 +47,16 @@ Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#_read-dynamic'>
+      <a href='#process-dynamic'>
         #
 (void)
-<b>_read</b><span>()</span>
+<b>process</b><span>(item)</span>
       </a>
     </span>
+    <span class='bound note title'>Bound</span>
     <span class='desc'>
+      Trigger execution of content handlers as soon as streaming has finished Note: Attach to <a href='../class/FETCHED.html'>FETCHED</a>
+
     </span>
   </li>
 </ul>
@@ -68,22 +66,32 @@ Thanks to <a href="http://jeroenpelgrims.com/node-streams-in-coffeescript/">http
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>(s)</span>
+<b>constructor</b><span>(extractors)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Create a new resource discovery extension</p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='_read-dynamic'>
+    <p class='signature' id='process-dynamic'>
       #
 (void)
-<b>_read</b><span>()</span>
+<b>process</b><span>(item)</span>
+      <span class='bound note'>Bound</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Trigger execution of content handlers as soon as streaming has finished
+Note: Attach to <a href='../class/FETCHED.html'>FETCHED</a></p>
+</div>
+<div class='tags'>
+</div>
   </div>
 </div>
     </div>

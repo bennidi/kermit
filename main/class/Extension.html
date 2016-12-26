@@ -36,7 +36,7 @@
         <tr>
           <td>Inherits:</td>
           <td>
-            <a href='../class/ContextAware.html'>ContextAware</a>
+            Mixin
           </td>
         </tr>
       </table>
@@ -50,18 +50,21 @@
     </strong>
     
   </div>
+  <div class='note'>
+    <strong>Note:</strong>
+    The mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a> corresponding to one of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>.ALL 
+  </div>
+  <div class='note'>
+    <strong>Note:</strong>
+    Each extension may expose only one handler per phase value 
+  </div>
   <p><a href='../class/Extension.html'>Extension</a>s are the core abstraction for adding actual item processing functionality
 to the <a href='../class/Crawler.html'>Crawler</a>. In fact, <strong>all</strong> of the available <strong>item processing functionality</strong> like filtering,
 queueing, streaming, logging etc. <strong>is implemented by means of extensions</strong>.</p><p>A major motivation of the extension design is to support the principles
 of separation of concern as well as single responsibility.
 It aims to encourage the development of relatively small, testable and reusable
 item processing components.</p><p>Each extension can expose handlers for item processing by mapping them to
-one of the defined values of {RequestPhase}.
-Note:</p><ul>
-<li>The mapping implicitly associates each extension with the <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>
-corresponding to one of {RequestPhase}.ALL</li>
-<li>Each extension may expose only one handler per phase value</li>
-</ul><p>See <a href='../class/Crawler.html'>Crawler</a> for the state diagram modeling the values and transitions of {RequestPhase}
+one of the defined values of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>.</p><p>See <a href='../class/Crawler.html'>Crawler</a> for the state diagram modeling the values and transitions of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>
 and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
 </div>
 <div class='tags'>
@@ -76,6 +79,9 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
     <li>
       <a href='../class/RequestItem.html'>RequestItem</a>
     </li>
+    <li>
+      <a href='../class/ProcessingPhase.html'>ProcessingPhase</a>
+    </li>
   </ul>
 </div>
       <h2>Direct Known Subclasses</h2>
@@ -87,7 +93,6 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
         <a href='../class/Cleanup.html'>Cleanup</a>
         <a href='../class/QueueConnector.html'>QueueConnector</a>
         <a href='../class/QueueWorker.html'>QueueWorker</a>
-        <a href='../class/RequestStreamer.html'>RequestStreamer</a>
         <a href='../class/RandomizedDelay.html'>RandomizedDelay</a>
         <a href='../class/RemoteControl.html'>RemoteControl</a>
         <a href='../class/AutoShutdown.html'>AutoShutdown</a>
@@ -149,7 +154,7 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
       </a>
     </span>
     <span class='desc'>
-      Get all {RequestPhase} values handled by this extension 
+      Get all <a href='../class/ProcessingPhase.html'>ProcessingPhase</a> values handled by this extension 
     </span>
   </li>
   <li>
@@ -173,6 +178,7 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
       </a>
     </span>
     <span class='desc'>
+      Register a callback function to be invoked when start command is executed 
     </span>
   </li>
   <li>
@@ -198,16 +204,6 @@ and respective <a href='../class/ExtensionPoint.html'>ExtensionPoint</a>s.</p>
     </span>
   </li>
 </ul>
-      <h2>
-        <small>Inherited Method Summary</small>
-        <h3 class='inherited'>
-          Methods inherited from
-          <a href='../class/ContextAware.html'>ContextAware</a>
-        </h3>
-        <p class='inherited'>
-          <a href='../class/ContextAware.html#importContext-dynamic'>#importContext</a>
-        </p>
-      </h2>
       <h2>Constructor Details</h2>
       <div class='methods'>
   <div class='method_details'>
@@ -233,7 +229,7 @@ to handlers that will be invoked for items with that phase</p>
         )
       </span>
       &mdash;
-      <span class='desc'>A mapping of {RequestPhase} values </span>
+      <span class='desc'>A mapping of <a href='../class/ProcessingPhase.html'>ProcessingPhase</a> values </span>
     </li>
   </ul>
 </div>
@@ -314,7 +310,7 @@ This is used to combine user specified options with default options</p>
       <br>
     </p>
     <div class='docstring'>
-  <p>Get all {RequestPhase} values handled by this extension</p>
+  <p>Get all <a href='../class/ProcessingPhase.html'>ProcessingPhase</a> values handled by this extension</p>
 </div>
 <div class='tags'>
 </div>
@@ -351,7 +347,11 @@ actual item processing starts</p>
 <b>onStart</b><span>(fn)</span>
       <br>
     </p>
-    
+    <div class='docstring'>
+  <p>Register a callback function to be invoked when start command is executed</p>
+</div>
+<div class='tags'>
+</div>
   </div>
   <div class='method_details'>
     <p class='signature' id='onStop-dynamic'>
@@ -386,7 +386,7 @@ actual item processing starts</p>
 </div>
     </div>
     <div id='footer'>
-  July 07, 16 09:50:31 by
+  December 26, 16 14:44:47 by
   <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
     Codo
   </a>
