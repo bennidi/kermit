@@ -1,6 +1,7 @@
 _ = require 'lodash'
 {obj} = require './util/tools'
-{CrawlerContext, ContextAware} = require './Crawler.Context'
+{ContextAware} = require './Crawler.Context'
+{Mixin} = require 'coffee-latte'
 
 ###
 {Extension}s are the core abstraction for adding actual item processing functionality
@@ -28,14 +29,18 @@ and respective {ExtensionPoint}s.
 @see ProcessingPhase
   
 ###
-class Extension extends ContextAware
+class Extension extends Mixin
+  @with ContextAware
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
   # @param handlers [Object] A mapping of {ProcessingPhase} values
   # to handlers that will be invoked for items with that phase
-  constructor: (@handlers = {}) ->
-    @name = @constructor.name
+  constructor: (handlers = {}) ->
+    super()
+    @handlers ?= {}
+    @handlers[phase] = handler for phase,handler of handlers
+    @name ?= @constructor.name
 
   # This method is called by the corresponding {ExtensionPoint}
   # during crawler construction.

@@ -1,15 +1,16 @@
-{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
 {HtmlProcessor} = require './ext.htmlprocessor'
-URI = require 'urijs'
 _ = require 'lodash'
 {HtmlExtractor} = require '../Extractor'
 {uri} = require '../util/tools'
+{ContentType} = require('../Pipeline')
+{InMemoryContentHolder} = require './core.streaming.coffee'
 
 
 # Scan result data for links to other resources (css, img, js, html) and schedule
 # a item to retrieve those resources.
 class ResourceDiscovery extends Extension
+  @with InMemoryContentHolder(ContentType( [/.*html.*/g] ))
 
   @defaultOpts: ->
     links : true
@@ -36,7 +37,6 @@ class ResourceDiscovery extends Extension
           @context.schedule url, parents:item.parents()+1 for url in _.reject (_.map results.links, (item) => @tryLog -> uri.clean base, item.href), _.isNull
     ]
     super
-      READY: @processor.attach
       FETCHED: @processor.process
 
   tryLog : (f) ->

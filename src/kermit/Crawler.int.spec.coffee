@@ -41,6 +41,7 @@ describe  'Crawler',  ->
       Kermit.on "commands.stop", ->
         options =
           compareSize: true
+          compareContent: true
           noDiffSet: true
         fixture = './fixtures/repositories/coffeescript/org'
         output = "./target/testing/repositories/coffeescript-#{dir}/org"

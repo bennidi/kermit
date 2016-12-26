@@ -1,7 +1,4 @@
-{Extension} = require '../Extension'
 stream = require 'stream'
-_ = require 'lodash'
-util = require 'util'
 
 # https://strongloop.com/strongblog/whats-new-io-js-beta-streams3/
 # https://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html
@@ -12,8 +9,7 @@ class CharStream extends stream.Readable
     super
 
   _read: ->
-    for c in @s
-      @push c
+    @push c for c in @s
     @push null
 
 class MemoryStream extends stream.Writable
@@ -22,8 +18,11 @@ class MemoryStream extends stream.Writable
     super
 
   _write: (chunk, enc, next) ->
-    @target.push chunk
-    next()
+    if @target[@target.length-1] is chunk
+      next()
+    else
+      @target.push chunk
+      next()
 
 
 module.exports = {

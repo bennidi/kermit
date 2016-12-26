@@ -1,7 +1,5 @@
 {obj} = require('./util/tools')
 {PassThrough} = require 'stream'
-{HtmlExtractor} = require './Extractor'
-{DevNull} = require './util/tools.streams'
 _ = require 'lodash'
 
 ###
@@ -71,6 +69,13 @@ class Pipeline
   cleanup: ->
     delete @guards
     delete @destinations
+
+  target:-> @_target ?= []
+
+  # @private
+  # @nodoc
+  data: ->
+    if @_target.length > 1 then @_target = @_target.join "" else @_target[0]
 
 module.exports = {
   Pipeline

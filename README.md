@@ -2,6 +2,8 @@
        src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
        width="80" height="15" alt="WTFPL" /></a>
 <img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" />
+[Travis-CI](https://travis-ci.org/bennidi/kermit)
+
 # Kermit - the sloth
 
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for

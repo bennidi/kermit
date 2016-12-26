@@ -1,11 +1,9 @@
-{Phase} = require('../RequestItem')
 {Extension} = require '../Extension'
 httpRequest = require 'request'
 https = require 'https'
 http = require 'http'
 socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
-{LogStream} = require '../util/tools'
 
 ###
 
@@ -58,8 +56,24 @@ class RequestStreamer extends Extension
         @log.error? "Error while issuing of request", {msg: error.msg, trace:error.stack, tags: ['RequestStreamer']}
         crawlRequest.error()
 
+{MemoryStream} = require('../util/tools.streams')
+
+InMemoryContentHolder = (guard)->
+
+  class extends Extension
+
+    constructor:->
+      super
+      # Attach the processor to receive response data.
+        READY: (item) =>
+          # Store response data in-memory for subsequent processing
+          item.pipeline().stream guard, new MemoryStream item.pipeline().target()
+
+
+
 
 # Export a function to create the core plugin with default extensions
 module.exports = {
   RequestStreamer
+  InMemoryContentHolder
 }
