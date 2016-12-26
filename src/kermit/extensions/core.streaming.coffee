@@ -63,7 +63,7 @@ InMemoryContentHolder = (guard)->
 
     constructor:->
       super
-      # Attach the processor to receive response data.
+        # Attach the processor to receive response data.
         READY: (item) =>
           # Store response data in-memory for subsequent processing
           item.pipeline().stream guard, new MemoryStream item.pipeline().target()

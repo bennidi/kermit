@@ -2,8 +2,7 @@
        src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
        width="80" height="15" alt="WTFPL" /></a>
 <a href="https://travis-ci.org/bennidi/kermit" target="_blank"><img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" /></a>
-<a href="https://travis-ci.org/bennidi/kermit" target="_blank"><img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" /></a>
-<a href="http://bennidi.github.io/kermit" target="_blank"><img src="/doc/assets/architecture.png?raw=true" alt="coffeedoc" /></a>
+<a href="http://bennidi.github.io/kermit/main/index.html" target="_blank"><img src="/doc/assets/coffeedoc-icon.jpg?raw=true" alt="coffeedoc" /></a>
 
 
 # Kermit - the web-scraping sloth
@@ -139,11 +138,6 @@ for calling the web - includes support for [Tor](https://www.torproject.org/) pr
 - [must](https://www.npmjs.com/package/must) for testing done right
 - [postal](https://www.npmjs.com/package/postal) as a shared message bus for inter component communication
  
- 
-  * Thoroughly documented: Read the [API docs](https://bennidi.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
-
-
-
 
 # Installation
     
