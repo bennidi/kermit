@@ -33,8 +33,15 @@ class ResourceDiscovery extends Extension
           ]
         onResult : (results, item) =>
           base = item.url()
-          @context.schedule url, parents:item.parents()+1 for url in _.reject (_.map results.resources, (item) => @tryLog -> uri.clean base, item.href), _.isNull
-          @context.schedule url, parents:item.parents()+1 for url in _.reject (_.map results.links, (item) => @tryLog -> uri.clean base, item.href), _.isNull
+          cleaner = (item) => @tryLog -> uri.clean base, item.href
+          resources = results.resources
+            ._map cleaner
+            ._reject _.isNull
+          links = results.links
+          ._map cleaner
+          ._reject _.isNull
+          @context.schedule url, parents:item.parents()+1 for url in resources
+          @context.schedule url, parents:item.parents()+1 for url in links
     ]
     super
       FETCHED: @processor.process
