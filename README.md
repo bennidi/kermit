@@ -24,7 +24,7 @@ Kermit in a nutshell
 ========================
 
 ### Extension mechanism
-Provides composable abstraction to simplify extension with custom features. See [Extension](http://bennidi.github.io/kermit/main/class/Extension.html)
+Provides convenient abstraction to simplify extension with custom features. In fact, most of the core features are built as extensions. See [Extension](http://bennidi.github.io/kermit/main/class/Extension.html)
 
 
 ```coffeescript
@@ -124,7 +124,7 @@ Kermit = new Crawler
       ]
       # All blacklisted entries would be excluded
       deny : []
-
+```
 
 ### Built around solid js libraries
 
