@@ -56,6 +56,7 @@ class RequestStreamer extends Extension
         @log.error? "Error while issuing of request", {msg: error.msg, trace:error.stack, tags: ['RequestStreamer']}
         crawlRequest.error()
 
+{MemoryStream} = require('../util/tools.streams')
 
 InMemoryContentHolder = (guard)->
 
