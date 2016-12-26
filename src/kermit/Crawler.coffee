@@ -248,9 +248,7 @@ class Scheduler extends Mixin
     @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
     @messenger.subscribe 'commands.start', @start
-    @messenger.subscribe 'commands.stop', =>
-      @log.debug "Stopping", tags: ['Scheduler']
-      clearInterval @scheduler
+    @messenger.subscribe 'commands.stop', @stop
 
 
   # @private
@@ -276,6 +274,10 @@ class Scheduler extends Mixin
             @crawler.crawl next.url, next.meta unless next is undefined
     @scheduler = setInterval pushUrls,  @opts.interval # run regularly to feed new URLs
 
+
+  stop: =>
+    @log.debug "Stopping", tags: ['Scheduler']
+    clearInterval @scheduler
 
 module.exports = {
   Crawler

@@ -1,5 +1,5 @@
 {Extension} = require '../Extension'
-{HtmlProcessor} = require './ext.htmlprocessor'
+{HtmlToJson} = require './ext.htmlprocessor'
 _ = require 'lodash'
 {HtmlExtractor} = require '../Extractor'
 {uri} = require '../util/tools'
@@ -19,9 +19,8 @@ class ResourceDiscovery extends Extension
     images : true # TODO: implement discovery
 
   # Create a new resource discovery extension
-  constructor: ->
-    @opts = @merge ResourceDiscovery.defaultOpts(), @opts
-    @processor = new HtmlProcessor [
+  constructor: (options) ->
+    @processor = new HtmlToJson [
       new HtmlExtractor
         name : 'all'
         select :
@@ -38,8 +37,8 @@ class ResourceDiscovery extends Extension
             ._map cleaner
             ._reject _.isNull
           links = results.links
-          ._map cleaner
-          ._reject _.isNull
+            ._map cleaner
+            ._reject _.isNull
           @context.schedule url, parents:item.parents()+1 for url in resources
           @context.schedule url, parents:item.parents()+1 for url in links
     ]

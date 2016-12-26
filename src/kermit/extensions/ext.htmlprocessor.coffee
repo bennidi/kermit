@@ -1,13 +1,14 @@
-
-
 _ = require 'lodash'
 htmlToJson = require 'html-to-json'
 
 
+###
+  Scan result data for links to other resources (css, img, js, html) and schedule a item to retrieve those resources.
 
-# Scan result data for links to other resources (css, img, js, html) and schedule
-# a item to retrieve those resources.
-class HtmlProcessor
+  @todo Combine with Extractor. Simplify API
+
+###
+class HtmlToJson
 
   # Create a new resource discovery extension
   constructor: (extractors) ->
@@ -33,4 +34,4 @@ class HtmlProcessor
 
 
 
-module.exports = {HtmlProcessor}
+module.exports = {HtmlToJson}
