@@ -1,18 +1,22 @@
 <a href="http://www.wtfpl.net/"><img
        src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
        width="80" height="15" alt="WTFPL" /></a>
-<img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" />
-[Travis-CI](https://travis-ci.org/bennidi/kermit)
+<a href="https://travis-ci.org/bennidi/kermit" target="_blank"><img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" /></a>
+<a href="https://travis-ci.org/bennidi/kermit" target="_blank"><img src="https://travis-ci.org/bennidi/kermit.svg?branch=master" alt="build-status" /></a>
+<a href="http://bennidi.github.io/kermit" target="_blank"><img src="/doc/assets/architecture.png?raw=true" alt="coffeedoc" /></a>
 
-# Kermit - the sloth
+
+# Kermit - the web-scraping sloth
 
 > Kermit is an extensible and feature rich web-scraper providing many useful extensions for
-> automated data collection. It was built to lower the barrier of web-scraping complexity by providing
-> clean abstractions and extension points for custom plugins.
+> automated data collection. 
 
-> All complexity of request scheduling and coordination, resource discovery, url filtering, duplicate control etc.
-> is dealt with using configurable extensions (YES!, most of Kermit's core functionality is built around its own
-> plugin mechanism).
+It was built to lower the barrier of web-scraping complexity by providing clean abstractions and extension points for custom plugins. It is based around a state-machine model of request phases and an architecture that makes it easy to add processing steps to each phase.
+
+Kermit can handle URL backlogs with millions of entries. Just give it enough memory (~ 1.3 Gb per Million entries). 
+
+![Kermit architectural diagram](/doc/assets/architecture.png?raw=true , "Kermit architecture")
+
 
 > Kermit especially loves to free data from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
 
@@ -20,63 +24,51 @@
 Kermit in a nutshell
 ========================
 
-  * Provides composable abstraction to simplify extension with custom features. See [Extension](http://open-medicine-initiative.github.io/kermit/main/class/Extension.html)
-  * Uses streaming API for handling of response data. Provides simple [Pipeline](http://open-medicine-initiative.github.io/kermit/main/class/Pipeline.html) abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
-  * Provides communication between components using [postal](https://www.npmjs.com/package/postal) as a shared message bus.
-  * Comprehensive set of standard extensions for
-    * Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filter functions
-    * Queueing system with configurable **rate limits** based on regular expression over URLs
-    * Pluggable automated **resource discovery** (links, images, resources etc.) schedules all URLs found in html(-ish) documents
-    * Pluggable **monitoring** to provide runtime statistics for traceability
-    * Pluggable **REST based remote control** allows to interact with a scraper instance using the REST gui of your choice
-    * **Lazy logging**: Log facilities only generate log messages if log level actually exists.
-    * Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
-  * Built around solid js libraries
-    * [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
-    for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
-    * [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as efficient backends for request queuing and URL backlog
-    * [koa](https://www.npmjs.com/package/koa) as middleware for [serving pages](https://www.npmjs.com/package/koa-static) from local storage 
-     and REST based remote control
-    * [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for efficient and syntax friendly dom traversals
-    * [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
-    * [must](https://www.npmjs.com/package/must) for testing done right - well, admittedly the code base needs a bit more of testing  :-/ (WIP)
-  * Thoroughly documented: Read the [API docs](https://open-medicine-initiative.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
+### Extension mechanism
+Provides composable abstraction to simplify extension with custom features. See [Extension](http://bennidi.github.io/kermit/main/class/Extension.html)
 
 
-Kermit has been designed with care. Have a look at this simplified architectural diagram.
+```coffeescript
 
-![Kermit architectural diagram](/doc/assets/architecture.png?raw=true , "Kermit architecture")
+# Handle phase transition {INITIAL} -> {SPOOLED}
+class Spooler extends Extension
 
-Kermit can handle URL backlogs with 1 Million entries and more. Just give it enough memory (~ 1.3 Gb per Million entries).
+  # Create a Spooler
+  constructor: ()->
+    super INITIAL : (item) -> item.spool()
 
-# Installation
-    
-Currently not available as npm library because it is still in beta. Use the github repository to install
-and run your local copy. It is planned to release an npm version soon(ish) but I am still waiting for
-user feedback (see section **Contribute**)
-    
-## Prerequisites
-    
-  * Running installation of Node.js and git
-    > Recommendation: Use nvm and install 5.3 (not tested on versions below 5.0)
-  * (optional) Installation of Tor  (if you want to collect data anonymously...and slowly, of course :)
+```
 
-## Setup
-    
-	$ npm install -g gulpjs/gulp-cli#4.0 -g
-	$ git clone https://github.com/open-medicine-initiative/kermit.git
-	$ cd kermit
-	$ npm install
-	$ npm test
 
-# Usage
+### Streaming API
+Uses streaming API for handling of response data. Provides simple [Pipeline](http://bennidi.github.io/kermit/main/class/Pipeline.html) abstraction to register [writable streams](https://nodejs.org/api/stream.html#stream_class_stream_writable) guarded by custom filters (content-type, length etc.)
 
-To execute a Kermit script simply run
 
-    $ node kermit.js --script=<relative-path-to-script>
+```coffeescript
 
-For starters, here is a comprehensive example of a script that will download online content
-to local storage (you can scrape the offline content later).
+class HmtlStreamer extends Extension
+
+    constructor:->
+      super READY: (item) =>
+        # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
+        path = uri.toLocalPath @opts.basedir , item.url()
+        @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
+        target = fse.createOutputStream path
+        item.pipeline().stream ContentType([/.*/g]), target
+
+```
+
+
+### Repository of standard extensions
+Many standard and core extensions make the common use cases of web scraping easy to build and reuse.
+
+-  Configurable **request filtering** (blacklist/whitelist) based on regular expressions on URLs or custom filter functions
+- Queueing system with configurable **rate limits** based on regular expression over URLs
+- Pluggable automated **resource discovery** (links, images, resources etc.) schedules all URLs found in html(-ish) documents
+- Pluggable **monitoring** to provide runtime statistics for traceability
+- Pluggable **REST based remote control** allows to interact with a scraper instance using the REST gui of your choice
+- **Lazy logging**: Log facilities only generate log messages if log level actually exists.
+- Pluggable **Offline Mode**: Download URLs to local storage to subsequently collect data offline from your local repositories (no rate limits! :-P )
 
 ```coffeescript
 
@@ -134,17 +126,74 @@ Kermit = new Crawler
       # All blacklisted entries would be excluded
       deny : []
 
+
+### Built around solid js libraries
+
+- [request](https://www.npmjs.com/package/request) and [socks5](https://www.npmjs.com/package/socks5-http-client)
+for calling the web - includes support for [Tor](https://www.torproject.org/) proxying
+- [lokijs](https://www.npmjs.com/package/lokijs) and [nedb](https://www.npmjs.com/package/nedb) as efficient backends for request queuing and URL backlog
+- [koa](https://www.npmjs.com/package/koa) as middleware for [serving pages](https://www.npmjs.com/package/koa-static) from local storage 
+ and REST based remote control
+- [html-to-json](https://www.npmjs.com/package/html-to-json) and [cheerio](https://www.npmjs.com/package/cheerio) for efficient and syntax friendly dom traversals
+- [mitm](https://www.npmjs.com/package/mitm) for transparent redirecting of requests
+- [must](https://www.npmjs.com/package/must) for testing done right
+- [postal](https://www.npmjs.com/package/postal) as a shared message bus for inter component communication
+ 
+ 
+  * Thoroughly documented: Read the [API docs](https://bennidi.github.io/kermit/main/index.html) generated with [codo](https://github.com/coffeedoc/codo) 
+
+
+
+
+# Installation
+    
+Currently not available as npm library because it is still in beta. Use the github repository to install
+and run your local copy. It is planned to release an npm version soon(ish) but I am still waiting for
+user feedback (see section **Contribute**)
+    
+## Prerequisites
+    
+  * Running installation of Node.js and git
+    > Recommendation: Use nvm and install 5.3 (not tested on versions below 5.0)
+  * (optional) Installation of Tor  (if you want to collect data anonymously...and slowly, of course :)
+
+## Setup
+    
+	$ npm install -g gulpjs/gulp-cli#4.0 -g
+	$ git clone https://github.com/open-medicine-initiative/kermit.git
+	$ cd kermit
+	$ npm install
+	$ npm test
+
+# Usage
+
+To execute a Kermit script simply run
+
+    $ node kermit.js --script=<relative-path-to-script>
+
+For starters, here is a comprehensive example of a script that will download online content
+to local storage (you can scrape the offline content later).
+
+```coffeescript
+
+Kermit = new Crawler
+  name: "example"
+  basedir : '/tmp/kermit'
+  autostart: true
+  # Add extensions as you wish..
+  extensions:[...]
+
 Kermit.execute "http://en.wikipedia.org/wiki/Web_scraping"
 
 ```
 
-For a deeper understanding, read the [tutorial](http://open-medicine-initiative.github.io/kermit/main/index.html) 
+For a deeper understanding, read the [tutorial](http://bennidi.github.io/kermit/main/index.html) 
 regularly generated from [main.intro.md](./doc/main.intro.md). Also have a look at the [examples](./src/examples). 
 
 # Documentation
 
 The code ships with a lot of documentation and it is highly recommended to have a look at
-the sources as well as the [API docs](https://open-medicine-initiative.github.io/kermit/main.index.html).
+the sources as well as the [API docs](https://bennidi.github.io/kermit/main.index.html).
 
 # Contribute
 
