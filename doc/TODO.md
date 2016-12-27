@@ -12,9 +12,6 @@ IDEAS / FEATURES
  + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
   
-REFACTORING
- * Optimize Pipeline such that it does not attach the same (identity) stream multiple times
- * Extract global in-memory stream storage
   
 POLISH
  + Logging

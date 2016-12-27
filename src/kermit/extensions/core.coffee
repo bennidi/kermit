@@ -1,6 +1,5 @@
-{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
-{ExtensionPoint} = require '../Crawler'
+{User} = require './core.users.coffee'
 
 # Adds listeners to the items such that each phase transition will
 # trigger execution of the respective {ExtensionPoint}
@@ -42,6 +41,13 @@ class RequestItemMapper extends Extension
     @items = {}
     context.share "items", @items
 
+class DefaultUserProvider extends Extension
+
+  # @nodoc
+  constructor: ->
+    @defaultUser = new User()
+    super INITIAL : (item) => item.user ?= @defaultUser
+
 
 # Run cleanup on all terminal phases
 class Cleanup extends Extension
@@ -76,4 +82,5 @@ module.exports = {
   Spooler
   Completer
   Cleanup
+  DefaultUserProvider
 }

@@ -27,7 +27,6 @@ class RequestStreamer extends Extension
       enabled : false
       port : 9050
       host: 'localhost'
-    userAgent : "Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16"
 
   # Create a new Streamer
   constructor: (opts = {}) ->
@@ -47,7 +46,7 @@ class RequestStreamer extends Extension
     options =
       agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
       headers :
-        'User-Agent' : @opts.userAgent
+        'User-Agent' : crawlRequest.user.properties['User-Agent']
     crawlRequest.fetching()
     httpRequest.get url, options
       .on 'response', (response) ->

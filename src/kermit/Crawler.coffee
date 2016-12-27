@@ -2,7 +2,8 @@
 {Extension} = require './Extension'
 {ExtensionPoint, ExtensionPointProvider} = require './Crawler.ExtensionPoints'
 {CrawlerContext, ContextAware} = require './Crawler.Context'
-{ExtensionPointConnector, RequestItemMapper, Spooler, Completer, Cleanup} = require './extensions/core'
+{ExtensionPointConnector, RequestItemMapper,
+Spooler, Completer, Cleanup, DefaultUserProvider} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
 {QueueSystem} = require './QueueSystem'
@@ -84,6 +85,7 @@ class Crawler extends Mixin
       new RequestItemMapper
       new QueueConnector @config.options.Queueing
       new QueueWorker @config.options.Queueing
+      new DefaultUserProvider
       ]
     # Add client extensions
     # TODO: Do not allow extensions on phase COMPLETE
