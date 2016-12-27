@@ -12,13 +12,16 @@
     "gulp": "gulpjs/gulp#4.0",
     "gulp-clean": "^0.3.1",
     "gulp-codo": "^1.0.4",
+    "gulp-coffee": "^2.3.3",
+    "gulp-coffee-istanbul": "^0.9.1",
     "gulp-gh-pages": "^0.5.4",
     "gulp-memory-cache": "^0.3.0",
     "gulp-mocha": "^2.1.3",
     "gulp-run": "^1.6.11",
     "gulp-util": "^3.0.7",
     "mocha": "^2.3.3",
-    "must": "^0.13.1"
+    "must": "^0.13.1",
+    "traceur": "0.0.111"
   },
   "dependencies": {
     "coffee-latte": "^1.0.1",

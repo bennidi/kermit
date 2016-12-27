@@ -12,10 +12,6 @@ IDEAS / FEATURES
  + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
   
-REFACTORING
- * Optimize Pipeline such that it does not attach the same (identity) stream multiple times
- * Extract global in-memory stream storage
-  
 POLISH
  + Logging
    + Add new log levels at runtime. Use this for adding log.request with request.log in Completer
@@ -31,6 +27,19 @@ FIX
 TESTING
  + UrlStore: Counters, Rescheduling
  
-QUESTIONS
- + How to synchronize the two store callbacks (async library..?)
+ 
+ 
+- https://github.com/carrasti
+- http://galvanist.com/post/80134219818/more-web-scraping-with-phantomjs-coffeescript
+- https://libraries.io/search?keywords=scraping&languages=CoffeeScript
+- https://www.codementor.io/johnnyb/tutorials/how-to-write-a-web-scraper-in-nodejs-du108266t
+- https://github.com/IonicaBizau/scrape-it
+- https://github.com/ruipgil/scraperjs
+- https://github.com/mnmldave/scraper
+- https://libraries.io/npm/youtube-comment-scraper
+- https://github.com/arshaw/scrapemark
+- https://github.com/jamesturk/scrapelib (Read the README.md)
+- https://github.com/jamesturk/scrapelib
+- https://github.com/lorien/grab
+- https://github.com/mape
      
