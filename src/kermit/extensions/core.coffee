@@ -64,7 +64,7 @@ class Cleanup extends Extension
     delete @context.items[item.id()] # Remove from Lookup table to allow GC
     @context.qs.completed item # Remove from
     item.cleanup()
-    @log.trace? item.toString()
+    @log.trace? item.toString(), tags:['Cleanup']
 
   # Do cleanup work to prevent memory leaks
   error: (item) ->
@@ -74,6 +74,7 @@ class Cleanup extends Extension
   # Do cleanup work to prevent memory leaks
   canceled: (item) ->
     delete @context.items[item.id()] # Remove from Lookup table to allow GC
+    @log.trace? item.toString(), tags:['Cleanup']
     item.cleanup()
 
 module.exports = {

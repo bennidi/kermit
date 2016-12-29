@@ -5,24 +5,21 @@ dircompare = require 'dir-compare'
 {obj} = require './util/tools'
 
 describe  'Crawler',  ->
-  @timeout 15000
-  dir = obj.randomId()
-  describe 'integration test for ResourceDiscovery,LocalStorage,OfflineServer', ->
-    it '# can transparently route requests to local storage when matching content is found', (done) ->
+  @timeout 5000
+
+  describe 'result verification will stop the crawler', ->
+    it '#when bad result is found', (done) ->
       Kermit = new Crawler
         name: "testrepo"
         basedir : './target/testing/integration'
         autostart: true
         extensions : [
           new ResourceDiscovery
-          new AutoShutdown mode:'stop'
-          new OfflineStorage
-            basedir: "./target/testing/repositories/coffeescript-#{dir}"
+          new ResultVerification
+            bad: [ (item, content) -> true ]
+          new AutoShutdown mode:'shutdown'
           new OfflineServer
             basedir : './fixtures/repositories/coffeescript'
-          new ResultVerification
-            bad: [ (item, content) -> false ]
-            good: [ (item, content) -> true ]
         ]
         options:
           Streaming:
@@ -41,16 +38,8 @@ describe  'Crawler',  ->
             allow : [
               /.*coffeescript\.org.*/
             ]
-      Kermit.on "commands.stop", ->
-        options =
-          compareSize: true
-          compareContent: true
-          noDiffSet: true
-        fixture = './fixtures/repositories/coffeescript/org'
-        output = "./target/testing/repositories/coffeescript-#{dir}/org"
-        result = dircompare.compareSync fixture, output, options
-        expect(result.same).to.be.true()
-        done()
+      Kermit.on "commands.stop", -> done()
       Kermit.crawl "http://coffeescript.org"
+
 
 

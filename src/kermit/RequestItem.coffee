@@ -239,7 +239,7 @@ class RequestItem
   timeToComplete : ->
     return -1 if not @isComplete()
     try
-      @stamps('COMPLETE')[0] - @stamps('INITIAL')[0]
+      @stamps(ProcessingPhase.COMPLETE)[0] - @stamps(ProcessingPhase.INITIAL)[0]
     catch error
       # This error occurs if a stamp did not exist
       -1
@@ -291,15 +291,17 @@ class RequestItem
   # Change the items phase to ERROR
   # @return {RequestItem} This item
   error: (error) ->
-    @state.phase = ProcessingPhase.ERROR
+    try
+      throw new Error
+    catch err
+      @log.debug? err.stack
     @errors ?= [];@errors.push error
-    notify this, "phase"
+    @phase(ProcessingPhase.ERROR);this
 
   # Change the items phase to CANCELED
   # @return {RequestItem} This item
   cancel: ->
-    @state.phase = ProcessingPhase.CANCELED
-    notify this, "phase"
+    @phase(ProcessingPhase.CANCELED);this
 
   # Check whether this item has phase INITIAL
   # @return {Boolean} True if phase is INITIAL, false otherwise
@@ -349,11 +351,9 @@ class RequestItem
   # Generate a human readable representation of this item
   toString: ->
     switch @state.phase
-      when 'INITIAL','SPOOLED','READY'
-        """#{@state.phase} => GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps}"""
       when 'COMPLETE'
-        """COMPLETED GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms)"""
-      else "Unknown phase"
+        "GET #{@state.url} (status=#{@_pipeline?.status} duration=#{@timeToComplete()}ms phase=#{@state.phase})"
+      else "GET #{@state.url} :#{obj.print RequestItem.stampsToString @state.stamps} (#{@state.phase})"
 
 module.exports = {
   RequestItem

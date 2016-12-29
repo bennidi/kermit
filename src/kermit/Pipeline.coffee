@@ -75,7 +75,9 @@ class Pipeline
   # @private
   # @nodoc
   data: ->
-    if @_target.length > 1 then @_target = @_target.join "" else @_target[0]
+    @_data ?= if @_target.length > 1 then @_target.join "" else @_target[0]
+    @_data
+
 
 module.exports = {
   Pipeline

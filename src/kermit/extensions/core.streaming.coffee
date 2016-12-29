@@ -4,6 +4,7 @@ https = require 'https'
 http = require 'http'
 socks5Https = require 'socks5-https-client/lib/Agent'
 socks5Http = require 'socks5-http-client/lib/Agent'
+mime = require 'mime'
 
 ###
 
@@ -33,8 +34,7 @@ class RequestStreamer extends Extension
   constructor: (opts = {}) ->
     super READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
-    if @opts.debug
-      require('request-debug')(httpRequest)
+    if @opts.debug then require('request-debug')(httpRequest)
     if @opts.Tor.enabled
       @opts.agentOptions.socksHost = @opts.Tor.host # Defaults to 'localhost'.
       @opts.agentOptions.socksPort = @opts.Tor.port # Defaults to 1080.
@@ -44,22 +44,24 @@ class RequestStreamer extends Extension
       @opts.agents.http = new http.Agent @opts.agentOptions
       @opts.agents.https = new https.Agent @opts.agentOptions
 
-  apply: (crawlRequest) ->
-    url = crawlRequest.url()
-    userAgent = crawlRequest.get 'user-agent'
+  apply: (item) ->
+    url = item.url()
+    userAgent = item.get 'user-agent'
     options =
-      agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
+      agent: if item.useSSL() then @opts.agents.https else @opts.agents.http
       headers : userAgent.headers()
-    options.headers['Referer'] = crawlRequest.get 'Referer'
-    userAgent.addCookies options.headers, crawlRequest.url()
-    crawlRequest.fetching()
+    options.headers['Referer'] = item.get 'Referer'
+    userAgent.addCookies options.headers, item.url()
+    item.fetching()
     httpRequest.get url, options
       .on 'response', (response) ->
-        crawlRequest.pipeline().import response
-        userAgent.import response, crawlRequest.url()
+        # Try sanitize missing content-type
+        if not response.headers['content-type'] then response.headers['content-type'] = mime.lookup url
+        item.pipeline().import response
+        userAgent.import response, item.url()
       .on 'error', (error) =>
         @log.error? "Error while issuing of request", {msg: error.msg, trace:error.stack, tags: ['RequestStreamer']}
-        crawlRequest.error()
+        item.error()
 
 {MemoryStream} = require('../util/tools.streams')
 
@@ -72,7 +74,7 @@ InMemoryContentHolder = (guard)->
         # Attach the processor to receive response data.
         READY: (item) =>
           # Store response data in-memory for subsequent processing
-          item.pipeline().stream guard, new MemoryStream item.pipeline().target()
+          item.pipeline().stream guard.bind(@), new MemoryStream item.pipeline().target()
 
 
 

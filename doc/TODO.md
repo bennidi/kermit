@@ -8,7 +8,6 @@ First user is "kermit". Kermit behaves as the scheduler behaves currently.
 
 
 IDEAS / FEATURES
- + Dynamic Scheduling according to runtime statistics (like max. Spooler time)
  + Count computation time in Monitoring and publish as separate log entry
  + Add overall request timings to Monitoring
   
