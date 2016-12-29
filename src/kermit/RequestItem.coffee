@@ -179,6 +179,7 @@ class RequestItem
       stamps: {} # collect timestamps for tracking of meaningful state changes
       parents : 0
     @state = obj.merge @state, meta
+    @_context = {} # storage for transient data available during processing only
     @phase ProcessingPhase.INITIAL
     @url url
 
@@ -328,6 +329,7 @@ class RequestItem
   # Clean all item data that potentially occupies much memory
   cleanup: ->
     @_pipeline?.cleanup()
+    delete @_context
 
   # Access the {Pipeline} of this item
   pipeline: ->
@@ -339,6 +341,9 @@ class RequestItem
   parents: ->
     @state.parents
 
+
+  set:(key, value)->@_context[key] = value
+  get:(key) -> @_context[key] or @state[key]
 
 
   # Generate a human readable representation of this item

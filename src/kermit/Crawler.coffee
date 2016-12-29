@@ -3,7 +3,7 @@
 {ExtensionPoint, ExtensionPointProvider} = require './Crawler.ExtensionPoints'
 {CrawlerContext, ContextAware} = require './Crawler.Context'
 {ExtensionPointConnector, RequestItemMapper,
-Spooler, Completer, Cleanup, DefaultUserProvider} = require './extensions/core'
+Spooler, Completer, Cleanup, UserAgentProvider} = require './extensions/core'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
 {QueueSystem} = require './QueueSystem'
@@ -85,7 +85,7 @@ class Crawler extends Mixin
       new RequestItemMapper
       new QueueConnector @config.options.Queueing
       new QueueWorker @config.options.Queueing
-      new DefaultUserProvider
+      new UserAgentProvider
       ]
     # Add client extensions
     # TODO: Do not allow extensions on phase COMPLETE
@@ -278,8 +278,8 @@ class Scheduler extends Mixin
 
 
   stop: =>
-    @log.debug "Stopping", tags: ['Scheduler']
     clearInterval @scheduler
+    @log.debug? "Stopped", tags: ['Scheduler']
 
 module.exports = {
   Crawler

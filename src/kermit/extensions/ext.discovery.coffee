@@ -39,8 +39,8 @@ class ResourceDiscovery extends Extension
           links = results.links
             ._map cleaner
             ._reject _.isNull
-          @context.schedule url, parents:item.parents()+1 for url in resources
-          @context.schedule url, parents:item.parents()+1 for url in links
+          @context.schedule url, parents:item.parents()+1, Referer:item.url() for url in resources
+          @context.schedule url, parents:item.parents()+1, Referer:item.url() for url in links
     ]
     super
       FETCHED: @processor.process

@@ -4,7 +4,7 @@ fse = require 'fs-extra'
 fs = require 'fs'
 Mitm = require 'mitm'
 _ = require 'lodash'
-{uri, files} = require '../util/tools'
+{uri, files, obj} = require '../util/tools'
 
 
 
@@ -79,13 +79,13 @@ class OfflineServer extends Extension
       if not files.exists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
-      @log.debug "Connection to #{url} redirects to #{localFilePath}"
+      @log.debug? "Connection to #{url} redirects to #{localFilePath}"
     # Redirect items to local server
     @mitm.on 'request', (item, response) =>
       url = "http://#{item.headers.host}#{item.url}"
       localUrl = uri.toLocalPath "http://localhost:#{@opts.port}", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
-      response.writeHead 302, 'Location': localUrl
+      response.writeHead 302, 'Location': localUrl, 'Set-Cookie': "rid=#{obj.randomId()}"
       response.end()
 
 module.exports = {

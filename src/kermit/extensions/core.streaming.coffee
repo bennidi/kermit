@@ -15,7 +15,8 @@ socks5Http = require 'socks5-http-client/lib/Agent'
 class RequestStreamer extends Extension
 
   # Create a new options object with the default configuration
-  @defaultOpts = ->
+  @defaultOpts : ->
+    debug: off
     agents : {}
     agentOptions:
       maxSockets: 15
@@ -32,6 +33,8 @@ class RequestStreamer extends Extension
   constructor: (opts = {}) ->
     super READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
+    if @opts.debug
+      require('request-debug')(httpRequest)
     if @opts.Tor.enabled
       @opts.agentOptions.socksHost = @opts.Tor.host # Defaults to 'localhost'.
       @opts.agentOptions.socksPort = @opts.Tor.port # Defaults to 1080.
@@ -43,14 +46,17 @@ class RequestStreamer extends Extension
 
   apply: (crawlRequest) ->
     url = crawlRequest.url()
+    userAgent = crawlRequest.get 'user-agent'
     options =
       agent: if crawlRequest.useSSL() then @opts.agents.https else @opts.agents.http
-      headers :
-        'User-Agent' : crawlRequest.user.properties['User-Agent']
+      headers : userAgent.headers()
+    options.headers['Referer'] = crawlRequest.get 'Referer'
+    userAgent.addCookies options.headers, crawlRequest.url()
     crawlRequest.fetching()
     httpRequest.get url, options
       .on 'response', (response) ->
         crawlRequest.pipeline().import response
+        userAgent.import response, crawlRequest.url()
       .on 'error', (error) =>
         @log.error? "Error while issuing of request", {msg: error.msg, trace:error.stack, tags: ['RequestStreamer']}
         crawlRequest.error()

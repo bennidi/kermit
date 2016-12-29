@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "coffee-latte": "^1.0.1",
+    "cookie": "^0.3.1",
     "dateformat": "^1.0.12",
     "fs-extra": "^0.26.2",
     "html-to-json": "^0.5.1",
@@ -36,10 +37,11 @@
     "nedb": "^1.8.0",
     "postal": "^1.0.8",
     "request": "^2.67.0",
+    "request-debug": "^0.2.0",
     "socks5-http-client": "^1.0.2",
     "socks5-https-client": "^1.1.2",
     "synchronize": "^2.0.0",
-    "tough-cookie": "^2.2.1",
+    "tough-cookie": "^2.3.2",
     "urijs": "^1.17.0",
     "yargs": "^4.2.0"
   },

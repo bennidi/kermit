@@ -1,7 +1,7 @@
 serve = require 'koa-static'
 Koa = require 'koa'
-item = require 'request'
 fs = require 'fs'
+{obj} = require './tools.coffee'
 
 class LocalHttpServer
 
@@ -11,6 +11,7 @@ class LocalHttpServer
     app = new Koa()
     app.use (next) ->
       @set 'server', 'LocalHttpServer(localhost)' # set header entry "server"
+      @set 'set-cookie', "rid=#{obj.randomId()}" # set cookie rid
       yield next
     app.use serve @basedir
     @server = app.listen @port
