@@ -10,20 +10,20 @@ class Lifecycle
   constructor: (opts={})->
     @_lcycle =
       status : Lifecycle.IDLE
-      onStart: opts.onStart.bind @
-      onStop: opts.onStop.bind @
+      onStart: opts.onStart?.bind(@) or =>
+      onStop: opts.onStop?.bind(@) or =>
 
   stop:(callback)->
     if @isIdle() or @isStopping() then return
     @_lcycle.status = Lifecycle.STOPPING
-    @_lcycle.onStop =>
+    @_lcycle.onStop? =>
       @_lcycle.status = Lifecycle.IDLE
       callback?()
 
   start: (callback)->
     if @isRunning() or @isStarting() then return
     @_lcycle.status = Lifecycle.STARTING
-    @_lcycle.onStart =>
+    @_lcycle.onStart? =>
       @_lcycle.status = Lifecycle.RUNNING
       callback?()
 

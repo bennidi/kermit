@@ -34,7 +34,7 @@ describe  'Crawler',  ->
                 pattern : /.*coffeescript\.org.*/
                 to : 100
                 per : 'second'
-                max : 50
+                max : 500
               }
             ]
           Filtering:

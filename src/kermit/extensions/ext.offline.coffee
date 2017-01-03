@@ -61,6 +61,7 @@ class OfflineServer extends Extension
 
   constructor: (opts = {}) ->
     @opts = @merge OfflineServer.defaultOpts(), opts
+    super()
     throw new Error OfflineServer.errors.OSNODIR if _.isEmpty @opts.basedir
 
   initialize: (context) ->

@@ -2,6 +2,7 @@ _ = require 'lodash'
 {obj} = require './util/tools'
 {ContextAware} = require './Crawler.Context'
 {Mixin} = require 'coffee-latte'
+{Lifecycle} = require './Lifecycle.coffee'
 
 ###
 {Extension}s are the core abstraction for adding actual item processing functionality
@@ -30,7 +31,7 @@ and respective {ExtensionPoint}s.
   
 ###
 class Extension extends Mixin
-  @with ContextAware
+  @with ContextAware, Lifecycle
 
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
