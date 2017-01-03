@@ -16,6 +16,7 @@ class AutoShutdown extends Extension
   initialize: (context) ->
     super context
     watchdog = =>
+      if not @crawler.isRunning() then return
       try
         queuesAreEmpty = => @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
         @log.debug? "Checking conditions for shutdown", tags:['AutoShutdown']

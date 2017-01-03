@@ -15,7 +15,42 @@ _ = require 'lodash'
 fse = require 'fs-extra'
 RateLimiter = require('limiter').RateLimiter
 {Mixin} = require 'coffee-latte'
+{Lifecycle} = require './Lifecycle.coffee'
 
+
+class CrawlerLifecycle extends Lifecycle
+
+  constructor:->
+    super
+      # Start crawling. All queued commands will be executed after "commands.start" message
+      # was sent to all listeners.
+      onStart: (done) ->
+        @log.info? "Starting", tags: ['Crawler']
+        @context.messenger.publish 'commands.start'
+        @commandQueueWorker = =>
+          if _.isEmpty @commandQueue or not @isRunning() then return
+          queuedCommands = @commandQueue
+          @commandQueue = []
+          command() for command in queuedCommands
+        @commandQueueWorker = setInterval @commandQueueWorker, 500
+        done?()
+      # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
+      # with normal operation.
+      # {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
+      # {QueueSystem} will be persisted, then the optional callback will be invoked.
+      onStop : (done)->
+        @log.info? "Stopping", tags: ['Crawler']
+        # Stop all extensions and Scheduler
+        @context.messenger.publish 'commands.stop', {}
+        checkForUnfinishedItems = =>
+          unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
+          if _.isEmpty unfinished
+            clearInterval @wdog
+            @qs.save()
+            clearInterval @commandQueueWorker
+            done?()
+        # Make sure that items in processing are COMPLETED before stopping
+        @wdog = setInterval checkForUnfinishedItems, 500
 
 
 ###
@@ -53,7 +88,7 @@ diagram below.
 
 ###
 class Crawler extends Mixin
-  @with Synchronizer, ExtensionPointProvider
+  @with Synchronizer, ExtensionPointProvider, CrawlerLifecycle
 
   # Create a new crawler with the given options
   # @param options [Object] The configuration for this crawler.
@@ -63,7 +98,6 @@ class Crawler extends Mixin
     throw new Error "Please provide a basedir property in options. Was: #{options.basedir}" unless options.basedir
     super options
     # Use default options where no user defined options are given
-    @running = false
     @commandQueue =  []
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
@@ -100,7 +134,7 @@ class Crawler extends Mixin
 
     initializeExtensions = =>
       for extension in @extensions
-        console.log "Initializing extension #{extension}"
+        @log.info? "Initializing extension #{extension}"
         extension.initialize(@context.fork())
         extension.verify()
 
@@ -118,33 +152,10 @@ class Crawler extends Mixin
       if not allowedErrors.tryRemoveTokens 1
         @log.info? "Allowed uncaught error rate exceeded. Initiating shutdown"
 
-  # Start crawling. All queued commands will be executed after "commands.start" message
-  # was sent to all listeners.
-  start: ->
-    @running = true
-    @log.info? "Starting", tags: ['Crawler']
-    @context.messenger.publish 'commands.start'
-    command() for command in @commandQueue
-    @commandQueue = []
+
 
     
-  # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
-  # with normal operation. {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
-  # {QueueSystem} will be persisted, then the optional callback will be invoked.
-  stop: (done)->
-    if not @running then return done?()
-    @running = false
-    @log.info? "Stopping", tags: ['Crawler']
-    # Stop all extensions and Scheduler
-    @context.messenger.publish 'commands.stop', {}
-    # Make sure that items in processing are COMPLETED before stopping
-    @wdog = setInterval (=>
-      unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
-      if _.isEmpty unfinished
-        clearInterval @wdog
-        @qs.save()
-        done?()
-      ), 500
+
 
   # Stop crawling and exit process.
   shutdown: ->
@@ -156,21 +167,19 @@ class Crawler extends Mixin
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
   crawl: (url, meta) ->
-    if not @running
-      @commandQueue.push => @crawl url,meta
+    if not @isRunning()
       @log.debug? "Queued execution of #{url}. The queued command is transient and executed when start() is called"
+      @commandQueue.push =>
+        @log.debug? "Executing queued command <crawl #{url}>"
+        @crawl url,meta
     else
       @log.trace? "Executing #{url}"
-      item = new RequestItem url, meta, @log
-      @scheduleExecution Phase.INITIAL, item
+      @scheduleExecution Phase.INITIAL, new RequestItem url, meta, @log
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
-    if not @running
-      @commandQueue.push => @crawl url,meta
-      @log.debug? "Queued scheduling of #{url}. The queued command is transient and executed when start() is called"
-    else
-      @scheduler.schedule url, meta
+    @scheduler.schedule url, meta
+
 
   execute:(command)->
     # A command is either executed on the crawler itself or it targets a specific extension
@@ -232,6 +241,9 @@ class CrawlerConfig
   as well as duplicate prevention.
   The scheduler is an internal class controlled by the {Crawler} and should not be interacted
   with directly. It is exposed indirectly through the {CrawlerContext}.
+
+
+  @todo Could be implemented as an extension as soon as extensions have lifecycle integration.
 
   @private
 ###

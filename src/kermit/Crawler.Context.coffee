@@ -46,6 +46,10 @@ class CrawlerContext
       @[property] = value
     child
 
+
+###
+
+###
 class ContextAware
 
   importContext : (context) ->

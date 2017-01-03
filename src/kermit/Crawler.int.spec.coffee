@@ -10,7 +10,7 @@ describe  'Crawler',  ->
   describe 'integration test for ResourceDiscovery,LocalStorage,OfflineServer', ->
     it '# can transparently route requests to local storage when matching content is found', (done) ->
       Kermit = new Crawler
-        name: "testrepo"
+        name: "testrepo#{dir}"
         basedir : './target/testing/integration'
         autostart: true
         extensions : [
