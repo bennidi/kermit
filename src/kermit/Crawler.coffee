@@ -26,7 +26,7 @@ class CrawlerLifecycle extends Lifecycle
       # was sent to all listeners.
       onStart: (done) ->
         @log.info? "Starting", tags: ['Crawler']
-        @context.messenger.publish 'commands.start'
+        @context.emit 'crawler:start', {}
         @commandQueueWorker = =>
           if _.isEmpty @commandQueue or not @isRunning() then return
           queuedCommands = @commandQueue
@@ -41,7 +41,7 @@ class CrawlerLifecycle extends Lifecycle
       onStop : (done)->
         @log.info? "Stopping", tags: ['Crawler']
         # Stop all extensions and Scheduler
-        @context.messenger.publish 'commands.stop', {}
+        @context.emit 'crawler:stop', {}
         checkForUnfinishedItems = =>
           unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
           if _.isEmpty unfinished
@@ -153,16 +153,12 @@ class Crawler extends Mixin
         @log.info? "Allowed uncaught error rate exceeded. Initiating shutdown"
 
 
-
-    
-
-
   # Stop crawling and exit process.
   shutdown: ->
     @stop -> process.exit()
 
   on: (event, handler) ->
-    @context.messenger.subscribe event, handler
+    @context.on event, handler
 
   # Create a new {RequestItem} and start its processing
   # @return [RequestItem] The created item
@@ -261,8 +257,8 @@ class Scheduler extends Mixin
     @nextUrls = []
     @urlFilter = new UrlFilter @config.options.Filtering, @log
     @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
-    @messenger.subscribe 'commands.start', @start
-    @messenger.subscribe 'commands.stop', @stop
+    @context.on 'crawler:start', @start
+    @context.on 'crawler:stop', @stop
 
 
   # @private
@@ -273,6 +269,7 @@ class Scheduler extends Mixin
   # Called by Crawler at startup
   # @nodoc
   start: =>
+    @log.debug? "Starting Scheduler"
     pushUrls = =>
       waiting = @qs.items().waiting().length
       missing = @opts.maxWaiting - waiting

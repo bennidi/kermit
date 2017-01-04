@@ -1,12 +1,37 @@
-{ExtensionPoint} = require './Crawler.ExtensionPoints'
-postal = require 'postal'
+{Mixin} = require 'coffee-latte'
+EventEmitter = require('eventemitter2').EventEmitter2
+
+class EventSupport
+
+  constructor : ->
+    @_emitter = new EventEmitter
+      wildcard: true # Attention: Using wild card events is considerably slower then non-wildcard
+      delimiter: ':'
+      newListener: false
+      maxListeners: 20
+
+  # @see EventEmitter#on
+  on: (event, fnc) ->
+    @_emitter.on event, fnc
+
+  # @see EventEmitter#off
+  off: (event, fnc) ->
+    @_emitter.off event, fnc
+
+  # @see EventEmitter#emit
+  emit:(event, data) ->
+    try
+      @_emitter.emit event, data
+    catch err
+      @log.error? "#{obj.nameOf @}:#{err.message}"
 
 # A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
 # of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.
 #
 # Any Extension or ExtensionPoint may modify the context to expose additional functionality
 # to other Extensions or ExtensionPoints
-class CrawlerContext
+class CrawlerContext extends Mixin
+  @with EventSupport
 
   # Construct a new CrawlerContext
   #
@@ -15,13 +40,11 @@ class CrawlerContext
   # @option config [Function] execute A function handle to execute an extension point
   # @option config [bunyan.Logger] log A logger to handle log messages
   constructor: (config) ->
+    super()
     @crawler = config.crawler
     @log = config.log
     @config = config.crawler.config
     @qs = config.qs
-    @messenger =
-      subscribe : (cmd, handler) -> postal.subscribe {channel: 'main', topic: cmd, callback: handler}
-      publish :  (cmd, data) -> postal.publish {channel: 'main', topic: cmd, data: data}
 
   # @see [Crawler#schedule]
   schedule : (url, meta) ->
@@ -57,7 +80,6 @@ class ContextAware
     @log = context.log
     @qs = context.qs
     @crawler = context.crawler
-    @messenger = context.messenger
 
 module.exports = {
   CrawlerContext

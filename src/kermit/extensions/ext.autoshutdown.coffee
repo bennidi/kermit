@@ -10,6 +10,7 @@ class AutoShutdown extends Extension
 
   constructor: (options = {}) ->
     @options = @merge AutoShutdown.defaultOpts(), options
+    #super arguments...
 
 
   # @nodoc

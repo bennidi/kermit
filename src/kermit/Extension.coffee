@@ -78,10 +78,10 @@ class Extension extends Mixin
 
   # Register a callback function to be invoked when start command is executed
   onStart: (fn) ->
-    @messenger.subscribe 'commands.start', fn
+    @context.on 'crawler:start', fn
 
   onStop: (fn) ->
-    @messenger.subscribe 'commands.stop', fn
+    @context.on 'crawler:stop', fn
 
   # @return {String} Human readable description of this extension
   toString: ->

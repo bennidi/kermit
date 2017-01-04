@@ -38,6 +38,6 @@ class ResultVerification extends Extension
           if handler item, content
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'BAD']
             item.cancel()
-            @crawler.shutdown()
+            @crawler.stop()
 
 module.exports = {ResultVerification}

@@ -41,7 +41,7 @@ describe  'Crawler',  ->
             allow : [
               /.*coffeescript\.org.*/
             ]
-      Kermit.on "commands.stop", ->
+      Kermit.on "crawler:stop", ->
         options =
           compareSize: true
           compareContent: true

@@ -1,8 +1,5 @@
 {Crawler, ext} = require './kermit.modules.coffee'
-{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, ResultVerification} = ext
-{RemoteControl} = ext
-dircompare = require 'dir-compare'
-{obj} = require './util/tools'
+{ResourceDiscovery,OfflineServer,  ResultVerification, NotificationCenter} = ext
 
 describe 'Result verification stops the crawler', ->
   @timeout 15000
@@ -12,10 +9,10 @@ describe 'Result verification stops the crawler', ->
       basedir : './target/testing/integration'
       autostart: true
       extensions : [
+        new NotificationCenter
         new ResourceDiscovery
         new ResultVerification
           bad: [ -> true ]
-        new AutoShutdown mode:'shutdown'
         new OfflineServer
           basedir : './fixtures/repositories/coffeescript'
           port: 3001
@@ -37,8 +34,8 @@ describe 'Result verification stops the crawler', ->
           allow : [
             /.*coffeescript\.org.*/
           ]
-    Kermit.on "commands.stop", ->
-      console.log "Test finished"
+    Kermit.on "crawler:stop", ->
+      console.log "#####################################################Test finished: resultverificatoin"
       done()
     Kermit.crawl "http://coffeescript.org"
 
