@@ -49,11 +49,9 @@ class QueueSystem
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->  @_urls.schedule url, meta
 
-  items: ->
-    @_items
+  items: -> @_items
 
-  urls: ->
-    @_urls
+  urls: -> @_urls
 
   save: ->
     @_urls.save()
@@ -186,11 +184,11 @@ class UrlStore extends Mixin
         @counter.scheduled--
 
   # Returns the number of URLs in given phase
-  count: (phase) ->
-    @counter[phase]
+  count: (phase) -> @counter[phase]
 
   reschedule :  (url) ->
-    @urls.update { url:  url}, { $set: {phase : 'scheduled'}},{}, (err, updates) => @counter.visited++ unless err
+    callback = (err, updates) => @counter.visited++ unless err
+    @urls.update { url:  url}, { $set: {phase : 'scheduled'}},{}, callback
 
   # Add the given URL to the collection of scheduled URLs
   schedule: (url, meta) ->
@@ -216,8 +214,8 @@ class UrlStore extends Mixin
   scheduled: (size = 100) ->
     @await @urls.find(phase:'scheduled').limit(size).exec @defer()
 
-  save: ->
-    @urls.persistence.compactDatafile()
+  # Save datastore to disk
+  save: -> @urls.persistence.compactDatafile()
 
 module.exports = {
   QueueSystem

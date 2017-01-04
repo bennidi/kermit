@@ -4,6 +4,9 @@
 describe 'Result verification stops the crawler', ->
   @timeout 15000
   it '#when bad result is found', (done) ->
+    count = 1
+    counter = ->
+      count++ < 20 and count % 3 is 0
     Kermit = new Crawler
       name: "testrepo"
       basedir : './target/testing/integration'
@@ -12,7 +15,7 @@ describe 'Result verification stops the crawler', ->
         new NotificationCenter
         new ResourceDiscovery
         new ResultVerification
-          bad: [ -> true ]
+          bad: [ counter ]
         new OfflineServer
           basedir : './fixtures/repositories/coffeescript'
           port: 3001
@@ -34,8 +37,7 @@ describe 'Result verification stops the crawler', ->
           allow : [
             /.*coffeescript\.org.*/
           ]
-    Kermit.on "crawler:stop", ->
-      console.log "#####################################################Test finished: resultverificatoin"
+    Kermit.on "crawler:stopped", ->
       done()
     Kermit.crawl "http://coffeescript.org"
 

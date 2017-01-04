@@ -41,13 +41,14 @@ class CrawlerLifecycle extends Lifecycle
       onStop : (done)->
         @log.info? "Stopping", tags: ['Crawler']
         # Stop all extensions and Scheduler
-        @context.emit 'crawler:stop', {}
+        @context.emit 'crawler:stop'
         checkForUnfinishedItems = =>
-          unfinished = @qs.items().inPhases [Phase.FETCHING, Phase.FETCHED]
+          unfinished = @qs.items().inPhases [Phase.READY, Phase.FETCHING, Phase.FETCHED]
           if _.isEmpty unfinished
             clearInterval @wdog
             @qs.save()
             clearInterval @commandQueueWorker
+            @context.emit 'crawler:stopped'
             done?()
         # Make sure that items in processing are COMPLETED before stopping
         @wdog = setInterval checkForUnfinishedItems, 500
@@ -99,6 +100,7 @@ class Crawler extends Mixin
     super options
     # Use default options where no user defined options are given
     @commandQueue =  []
+    @name = options.name
     @config = new CrawlerConfig options
     @log = new LogHub(@config.options.Logging).logger()
     @qs = new QueueSystem

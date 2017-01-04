@@ -42,7 +42,7 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "Response(#{@status}) from #{@headers['server']} => type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipeline']
+    @log.debug? "#{@item.id()}(#{@status}) from #{@headers['server']} => type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipeline']
     # Connect all matching destinations
     streams = []
     for id, guard of @guards
@@ -51,7 +51,7 @@ class Pipeline
         streams.push @destinations[id].constructor.name
     if _.isEmpty streams # For some responses a matching destination might not be found
       # In that case the item phase is simply set to 'FETCHED' to continue processing
-      @log.debug? "No matching destinations found. Skipping.", tags:['Pipeline']
+      @log.debug? "No streams for #{@item.id()}", tags:['Pipeline']
       @item.fetched() unless @item.isError()
     else
       @log.debug? "Streaming #{@item.id()} to #{streams}", tags:['Pipeline']

@@ -49,6 +49,6 @@
     "yargs": "^4.2.0"
   },
   "scripts": {
-    "test": "gulp test:run"
+    "test": "gulp test:all"
   }
 }

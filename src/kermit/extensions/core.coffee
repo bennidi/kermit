@@ -1,8 +1,10 @@
 {Extension} = require '../Extension'
 {UserAgent} = require './core.users.coffee'
 
-# Adds listeners to the items such that each phase transition will
-# trigger execution of the respective {ExtensionPoint}
+###
+  Adds listeners to the items such that each phase transition will
+  trigger execution of the respective {ExtensionPoint}
+###
 class ExtensionPointConnector extends Extension
 
   # @nodoc
@@ -26,9 +28,11 @@ class Completer extends Extension
   constructor: ->
     super FETCHED : (item) -> item.complete() unless item.isError()
 
-# Add capability to lookup a item object by its id.
-# Note: This is used to find the living item object for a given persistent state
-# stored in lokijs.
+###
+  Add capability to lookup a {RequestItem} by its id.
+
+  @note This is used to find the living item instance for a given persistent state stored in {RequestItemStore}.
+###
 class RequestItemMapper extends Extension
 
   # @nodoc
@@ -41,6 +45,16 @@ class RequestItemMapper extends Extension
     @items = {}
     context.share "items", @items
 
+###
+
+  Sets a {UserAgent} on the {RequestItem}.
+
+  @note The {UserAgent} is used by {RequestStreamer} to add request headers, cookies etc.
+
+  @todo Choose randomly from a set of UserAgents
+  @todo Persistence
+
+###
 class UserAgentProvider extends Extension
 
   # @nodoc

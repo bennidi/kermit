@@ -1,19 +1,11 @@
-{Phase} = require '../RequestItem'
 {Extension} = require '../Extension'
-{HtmlProcessor} = require './ext.htmlprocessor'
-URI = require 'urijs'
 _ = require 'lodash'
-{HtmlExtractor} = require '../Extractor'
-{uri} = require '../util/tools'
 {ContentType} = require('../Pipeline')
-{MemoryStream} = require('../util/tools.streams')
 {InMemoryContentHolder} = require './core.streaming.coffee'
 
 ###
 
   Scan result for bad data patterns (site banned access, captcha etc)
-
-  @todo Expose request and response
 
 ###
 class ResultVerification extends Extension
@@ -37,7 +29,8 @@ class ResultVerification extends Extension
         for handler in @opts.bad
           if handler item, content
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'BAD']
-            item.cancel()
+            item.error "Result verification failed"
+            @qs.urls().reschedule item.url()
             @crawler.stop()
 
 module.exports = {ResultVerification}

@@ -295,7 +295,8 @@ class RequestItem
       throw new Error
     catch err
       @log.debug? err.stack
-    @errors ?= [];@errors.push error
+    @errors ?= []
+    @errors.push error
     @phase(ProcessingPhase.ERROR);this
 
   # Change the items phase to CANCELED

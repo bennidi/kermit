@@ -9,9 +9,8 @@ class AutoShutdown extends Extension
     mode : 'shutdown'
 
   constructor: (options = {}) ->
+    super()
     @options = @merge AutoShutdown.defaultOpts(), options
-    #super arguments...
-
 
   # @nodoc
   initialize: (context) ->
@@ -31,7 +30,7 @@ class AutoShutdown extends Extension
       catch error
         @log.error? "Error during shutdown check", error:error, trace: error.stack
     @onStart =>
-      @log.info? "Starting Autoshutdown watchdog", tags:['AutoShutdown']
+      @log.debug? "Starting to regularly check shutdown criteria", tags:['AutoShutdown']
       @wdog = setInterval watchdog, 5000
       @wdog.unref()
 

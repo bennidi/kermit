@@ -1,5 +1,6 @@
 {Mixin} = require 'coffee-latte'
 EventEmitter = require('eventemitter2').EventEmitter2
+notifier = require 'node-notifier'
 
 class EventSupport
 
@@ -69,6 +70,9 @@ class CrawlerContext extends Mixin
       @[property] = value
     child
 
+
+  notify: (msg) ->
+    notifier.notify title:"Crawler:#{@crawler.name}", message: msg
 
 ###
 
