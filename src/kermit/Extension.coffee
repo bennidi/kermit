@@ -28,6 +28,9 @@ and respective {ExtensionPoint}s.
 @see ExtensionPoint
 @see RequestItem
 @see ProcessingPhase
+
+
+  @todo remove handlers from constructor and use default properties if present
   
 ###
 class Extension extends Mixin
@@ -42,6 +45,10 @@ class Extension extends Mixin
     @handlers ?= {}
     @handlers[phase] = handler for phase,handler of handlers
     @name ?= @constructor.name
+
+  on:(handlers = {}) ->
+    @handlers ?= {}
+    @handlers[phase] = handler for phase,handler of handlers
 
   # This method is called by the corresponding {ExtensionPoint}
   # during crawler construction.

@@ -13,10 +13,10 @@ class QueueConnector extends Extension
 
   # @nodoc
   constructor: ->
-    super
+    super()
       # Enrich each item with methods that propagate its
       # state transitions to the queue system
-      INITIAL : (item) ->
+    @on INITIAL : (item) ->
         item.onChange 'phase', (item) => @qs.items().update item
         @qs.initial item
 

@@ -6,8 +6,8 @@
 class NotificationCenter extends Extension
 
   constructor:->
-    super
-      INITIAL: (item) => item.onPhase 'ERROR', => @context.notify "Error:#{item.toString()}"
+    super()
+    @on INITIAL: (item) -> item.onPhase 'ERROR', => @context.notify "Error:#{item.toString()}"
 
 
   # @nodoc

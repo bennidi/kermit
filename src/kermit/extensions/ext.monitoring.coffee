@@ -14,21 +14,23 @@ class Monitoring extends Extension
     enabled : true
 
   constructor: (opts) ->
-    super
-      INITIAL : (item) => @count Phase.INITIAL
-      SPOOLED : (item) => @durationOf item, Phase.INITIAL, @count Phase.SPOOLED
-      READY : (item) => @durationOf item, Phase.SPOOLED, @count Phase.READY
-      FETCHING : (item) => @durationOf item, Phase.READY, @count Phase.FETCHING
-      FETCHED : (item) => @durationOf item, Phase.FETCHING, @count Phase.FETCHED
-      COMPLETE : (item) => @durationOf item, Phase.FETCHED, @count Phase.COMPLETE
-      ERROR : (item) => @count Phase.ERROR
-      CANCELED : (item) => @count Phase.CANCELED
+    super()
     @counters =
       items : {}
       durations: {}
     @counters.items[phase] = 0 for phase in Phase.ALL
     @counters.durations[phase] = {total:0,min:100000,max:0,avg:0} for phase in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
     @opts = @merge Monitoring.defaultOpts(), opts
+    @on 
+      INITIAL : (item) -> @count Phase.INITIAL
+      SPOOLED : (item) -> @durationOf item, Phase.INITIAL, @count Phase.SPOOLED
+      READY : (item) -> @durationOf item, Phase.SPOOLED, @count Phase.READY
+      FETCHING : (item) -> @durationOf item, Phase.READY, @count Phase.FETCHING
+      FETCHED : (item) -> @durationOf item, Phase.FETCHING, @count Phase.FETCHED
+      COMPLETE : (item) -> @durationOf item, Phase.FETCHED, @count Phase.COMPLETE
+      ERROR : (item) -> @count Phase.ERROR
+      CANCELED : (item) -> @count Phase.CANCELED
+    
 
 
   # Add stats counter at intervals

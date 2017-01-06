@@ -2,6 +2,8 @@
 
 ###
   Make sure that the Crawler exits as when there are no items left for processing
+
+  @todo: Default options -> extension
 ###
 class AutoShutdown extends Extension
 

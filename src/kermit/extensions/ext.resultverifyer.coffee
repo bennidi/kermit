@@ -18,8 +18,8 @@ class ResultVerification extends Extension
 
   constructor: (@options)->
     @opts = @merge ResultVerification.defaultOpts(), @options
-    super
-      FETCHED : (item) =>
+    super()
+    @on FETCHED : (item) ->
         content = item.pipeline().data()
         if _.isEmpty content then return @log.debug? "#{item.id()}", tags: ['ResultVerification', 'EMPTY']
         for handler in @opts.good

@@ -17,16 +17,18 @@ class ExtensionPointConnector extends Extension
 # Handle phase transition {INITIAL} -> {SPOOLED}
 class Spooler extends Extension
 
-  # Create a Spooler
-  constructor: ()->
-    super INITIAL : (item) -> item.spool()
+  # @nodoc
+  constructor: ->
+    super()
+    @on INITIAL : (item) -> item.spool()
 
 # Handle phase transition {FETCHED} -> {COMPLETE}
 class Completer extends Extension
 
-  # Create a Completer
+  # @nodoc
   constructor: ->
-    super FETCHED : (item) -> item.complete() unless item.isError()
+    super()
+    @on FETCHED : (item) -> item.complete() unless item.isError()
 
 ###
   Add capability to lookup a {RequestItem} by its id.
@@ -37,7 +39,8 @@ class RequestItemMapper extends Extension
 
   # @nodoc
   constructor: ->
-    super INITIAL : (item) => @items[item.id()] = item
+    super()
+    @on INITIAL : (item) => @items[item.id()] = item
 
   # Expose a map that allows to lookup a {RequestItem} object by id
   initialize: (context) ->
@@ -59,8 +62,9 @@ class UserAgentProvider extends Extension
 
   # @nodoc
   constructor: ->
+    super()
     @defaultUser = new UserAgent()
-    super INITIAL : (item) => item.set 'user-agent', @defaultUser
+    @on INITIAL : (item) => item.set 'user-agent', @defaultUser
 
 
 # Run cleanup on all terminal phases
@@ -68,7 +72,8 @@ class Cleanup extends Extension
 
   # @nodoc
   constructor: ->
-    super
+    super()
+    @on
       COMPLETE : @complete
       CANCELED : @canceled
       ERROR : @error

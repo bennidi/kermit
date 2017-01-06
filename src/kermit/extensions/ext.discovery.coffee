@@ -20,6 +20,7 @@ class ResourceDiscovery extends Extension
 
   # Create a new resource discovery extension
   constructor: (options) ->
+    super()
     @processor = new HtmlToJson [
       new HtmlExtractor
         name : 'all'
@@ -42,8 +43,8 @@ class ResourceDiscovery extends Extension
           @context.schedule url, parents:item.parents()+1, Referer:item.url() for url in resources
           @context.schedule url, parents:item.parents()+1, Referer:item.url() for url in links
     ]
-    super
-      FETCHED: @processor.process
+
+    @on FETCHED: @processor.process
 
   tryLog : (f) ->
     try

@@ -24,13 +24,13 @@ class OfflineStorage extends Extension
     basedir: ''
 
   constructor: (opts = {}) ->
+    super()
     @opts = @merge OfflineStorage.defaultOpts(), opts
     throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @opts.basedir
     shouldStore = (path) =>
       @log.debug? "#{path} already exists" if exists = files.exists path
       @opts.ifFileExists is 'update' or not exists
-    super
-      READY: (item) =>
+    @on READY: (item) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
         path = uri.toLocalPath @opts.basedir , item.url()
         if shouldStore path
