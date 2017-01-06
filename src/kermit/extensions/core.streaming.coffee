@@ -32,7 +32,8 @@ class RequestStreamer extends Extension
 
   # Create a new Streamer
   constructor: (opts = {}) ->
-    super READY : @apply
+    super()
+    @on READY : @apply
     @opts = @merge RequestStreamer.defaultOpts(), opts
     if @opts.debug then require('request-debug')(httpRequest)
     if @opts.Tor.enabled

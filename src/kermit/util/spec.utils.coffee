@@ -40,7 +40,8 @@ class TransitionRecorder extends Extension
 class RejectingExtension extends Extension
 
   constructor: ->
-    super INITIAL: @apply
+    super()
+    @on INITIAL: @apply
     @invocations = 0
 
   apply: (item) ->

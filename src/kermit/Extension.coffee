@@ -36,14 +36,15 @@ and respective {ExtensionPoint}s.
 class Extension extends Mixin
   @with ContextAware, Lifecycle
 
+  @defaults:->{}
+
   # Construct a new extension. By convention the property "name"
   # will be assigned the class name of this extension
   # @param handlers [Object] A mapping of {ProcessingPhase} values
   # to handlers that will be invoked for items with that phase
-  constructor: (handlers = {}) ->
+  constructor: (options = {}) ->
     super()
-    @handlers ?= {}
-    @handlers[phase] = handler for phase,handler of handlers
+    @options = @merge @constructor.defaults(), options
     @name ?= @constructor.name
 
   on:(handlers = {}) ->
