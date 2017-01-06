@@ -5,37 +5,36 @@ _ = require 'lodash'
 {Lifecycle} = require './Lifecycle.coffee'
 
 ###
-{Extension}s are the core abstraction for adding actual item processing functionality
-to the {Crawler}. In fact, **all** of the available **item processing functionality** like filtering,
-queueing, streaming, logging etc. **is implemented by means of extensions**.
+  {Extension}s are the core abstraction for adding actual item processing functionality
+  to the {Crawler}. In fact, **all** of the available **item processing functionality** like filtering,
+  queueing, streaming, logging etc. **is implemented by means of extensions**.
 
-A major motivation of the extension design is to support the principles
-of separation of concern as well as single responsibility.
-It aims to encourage the development of relatively small, testable and reusable
-item processing components.
+  A major motivation of the extension design is to support the principles
+  of separation of concern as well as single responsibility.
+  It aims to encourage the development of relatively small, testable and reusable
+  item processing components.
 
-Each extension can expose handlers for item processing by mapping them to
-one of the defined values of {ProcessingPhase}.
+  Each extension can expose handlers for item processing by mapping them to
+  one of the defined values of {ProcessingPhase}.
 
-@note The mapping implicitly associates each extension with the {ExtensionPoint} corresponding to one of {ProcessingPhase}.ALL
-@note Each extension may expose only one handler per phase value
+  @note The mapping implicitly associates each extension with the {ExtensionPoint} corresponding to one of {ProcessingPhase}.ALL
+  @note Each extension may expose only one handler per phase value
 
-See {Crawler} for the state diagram modeling the values and transitions of {ProcessingPhase}
-and respective {ExtensionPoint}s.
+  See {Crawler} for the state diagram modeling the values and transitions of {ProcessingPhase}
+  and respective {ExtensionPoint}s.
 
-@abstract
-@see Crawler
-@see ExtensionPoint
-@see RequestItem
-@see ProcessingPhase
+  @abstract
+  @see Crawler
+  @see ExtensionPoint
+  @see RequestItem
+  @see ProcessingPhase
 
 
-  @todo remove handlers from constructor and use default properties if present
-  
 ###
 class Extension extends Mixin
   @with ContextAware, Lifecycle
 
+  # Default options can be overridden by subclass
   @defaults:->{}
 
   # Construct a new extension. By convention the property "name"
@@ -84,12 +83,7 @@ class Extension extends Mixin
     throw new Error "An extension requires a name" unless @name
     throw new Error "An extension requires a context object" unless @context
 
-  # Register a callback function to be invoked when start command is executed
-  onStart: (fn) ->
-    @context.on 'crawler:start', fn
 
-  onStop: (fn) ->
-    @context.on 'crawler:stop', fn
 
   # @return {String} Human readable description of this extension
   toString: ->

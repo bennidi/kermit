@@ -21,37 +21,39 @@ RateLimiter = require('limiter').RateLimiter
 class CrawlerLifecycle extends Lifecycle
 
   constructor:->
-    super
+    super()
       # Start crawling. All queued commands will be executed after "commands.start" message
       # was sent to all listeners.
-      onStart: (done) ->
-        @log.info? "Starting", tags: ['Crawler']
-        @context.emit 'crawler:start', {}
-        @commandQueueWorker = =>
-          if _.isEmpty @commandQueue or not @isRunning() then return
-          queuedCommands = @commandQueue
-          @commandQueue = []
-          command() for command in queuedCommands
-        @commandQueueWorker = setInterval @commandQueueWorker, 500
-        done?()
-      # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
-      # with normal operation.
-      # {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
-      # {QueueSystem} will be persisted, then the optional callback will be invoked.
-      onStop : (done)->
-        @log.info? "Stopping", tags: ['Crawler']
-        # Stop all extensions and Scheduler
-        @context.emit 'crawler:stop'
-        checkForUnfinishedItems = =>
-          unfinished = @qs.items().inPhases [Phase.READY, Phase.FETCHING, Phase.FETCHED]
-          if _.isEmpty unfinished
-            clearInterval @wdog
-            @qs.save()
-            clearInterval @commandQueueWorker
-            @context.emit 'crawler:stopped'
-            done?()
-        # Make sure that items in processing are COMPLETED before stopping
-        @wdog = setInterval checkForUnfinishedItems, 500
+    @onStart (done) ->
+      @log.info? "Starting", tags: ['Crawler']
+      @context.emit 'crawler:start', {}
+      extension.start() for extension in @extensions
+      @commandQueueWorker = =>
+        if _.isEmpty @commandQueue or not @isRunning() then return
+        queuedCommands = @commandQueue
+        @commandQueue = []
+        command() for command in queuedCommands
+      @commandQueueWorker = setInterval @commandQueueWorker, 500
+      done?()
+    # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
+    # with normal operation.
+    # {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
+    # {QueueSystem} will be persisted, then the optional callback will be invoked.
+    @onStop (done)->
+      @log.info? "Stopping", tags: ['Crawler']
+      # Stop all extensions and Scheduler
+      @context.emit 'crawler:stop'
+      extension.stop() for extension in @extensions
+      checkForUnfinishedItems = =>
+        unfinished = @qs.items().inPhases [Phase.READY, Phase.FETCHING, Phase.FETCHED]
+        if _.isEmpty unfinished
+          clearInterval @wdog
+          @qs.save()
+          clearInterval @commandQueueWorker
+          @context.emit 'crawler:stopped'
+          done?()
+      # Make sure that items in processing are COMPLETED before stopping
+      @wdog = setInterval checkForUnfinishedItems, 500
 
 
 ###
