@@ -9,7 +9,7 @@ _ = require 'lodash'
   to be piped into the stream. The most common scenario is stream attachment based on response content-type.
 
   @example
-    stream ContentType( [/.*html(.*)/g] ), process.stdout
+    stream ContentType( [/.*html(.*)/] ), process.stdout
 
   @see https://nodejs.org/api/http.html#http_class_http_incomingmessage Incoming Message
   @see https://nodejs.org/api/stream.html#stream_class_stream_writable Writable Stream
@@ -42,7 +42,7 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "#{@item.id()}(#{@status}) from #{@headers['server']} => type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipeline']
+    @log.debug? "#{@item.url()}(#{@status}) host=#{@headers['server']} type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipe',@item.id()]
     # Connect all matching destinations
     streams = []
     for id, guard of @guards
@@ -51,16 +51,16 @@ class Pipeline
         streams.push @destinations[id].constructor.name
     if _.isEmpty streams # For some responses a matching destination might not be found
       # In that case the item phase is simply set to 'FETCHED' to continue processing
-      @log.debug? "No streams for #{@item.id()}", tags:['Pipeline']
+      @log.debug? "No streams for #{@item.id()}", tags:['Pipe']
       @item.fetched() unless @item.isError()
     else
-      @log.debug? "Streaming #{@item.id()} to #{streams}", tags:['Pipeline']
+      @log.debug? "Streaming to #{streams}", tags:['Pipe',@item.id()]
       incomingMessage
         .on 'error', (error) =>
-          @log.error? "Error while streaming #{@item.id()}", {error:error, trace:error.stack, tags:['Pipeline']}
+          @log.error? "", {error:error, trace:error.stack, tags:['Pipe',@item.id()]}
           @item.error(error)
         .on 'end', =>
-          @log.debug? "Finished streaming #{@item.id()}", tags:['Pipeline']
+          @log.debug? "Finished streaming", tags:['Pipe',@item.id()]
           @item.fetched() unless @item.isError()
       # Start streaming
       incomingMessage.pipe @incoming
@@ -84,6 +84,10 @@ module.exports = {
   ContentType: (types) ->
     (message) ->
       for type in types
-        return true if type.test message.headers['content-type']
+        console.log "Checking #{message.headers['content-type']} with #{type}: #{message.url}"
+        if type.test message.headers['content-type']
+          console.log "#{message.url} accepted by guard"
+          return true;
+      console.log "#{message.url} not accepted by guard"
       false
 }

@@ -29,7 +29,7 @@ class QueueWorker extends Extension
     limits : [
         pattern : /.*/
         to : 5
-        per : 'second'
+        per : 'second' # 'second', 'minute', 'day', or a number of milliseconds
         max : 5
     ]
 
@@ -37,8 +37,6 @@ class QueueWorker extends Extension
   constructor: (opts = {}) ->
     super {}
     @opts = obj.merge QueueWorker.defaultOpts(), opts
-
-    # 'second', 'minute', 'day', or a number of milliseconds
 
   # @nodoc
   initialize: (context) ->

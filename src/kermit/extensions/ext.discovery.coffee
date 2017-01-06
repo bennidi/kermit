@@ -10,7 +10,7 @@ _ = require 'lodash'
 # Scan result data for links to other resources (css, img, js, html) and schedule
 # a item to retrieve those resources.
 class ResourceDiscovery extends Extension
-  @with InMemoryContentHolder(ContentType( [/.*html.*/g] ))
+  @with InMemoryContentHolder(ContentType( [/.*html.*/] ))
 
   @defaultOpts: ->
     links : true

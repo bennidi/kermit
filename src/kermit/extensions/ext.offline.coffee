@@ -36,7 +36,7 @@ class OfflineStorage extends Extension
         if shouldStore path
           @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
           target = fse.createOutputStream path
-          item.pipeline().stream ContentType([/.*/g]), target
+          item.pipeline().stream ContentType([/.*/]), target
 
 ###
   Redirect requests to web URLs to local storage. This allows to serve (previously downloaded) content
@@ -80,7 +80,6 @@ class OfflineServer extends Extension
       if not files.exists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
         socket.bypass()
-      @log.debug? "#{url} redirects to #{localFilePath}"
     # Redirect items to local server
     @mitm.on 'request', (item, response) =>
       url = "http://#{item.headers.host}#{item.url}"

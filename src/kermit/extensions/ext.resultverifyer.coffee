@@ -14,7 +14,7 @@ class ResultVerification extends Extension
   @defaultOpts: ->
     bad : []
     good : []
-    selector: ContentType( [/.*html.*/g, /.*octet-stream/g] )
+    selector: ContentType( [/.*html.*/, /.*octet-stream/] )
 
   constructor: (@options)->
     @opts = @merge ResultVerification.defaultOpts(), @options
