@@ -258,7 +258,7 @@ class Scheduler extends Mixin
     @importContext @context
     @nextUrls = []
     @urlFilter = new UrlFilter @config.options.Filtering, @log
-    @opts = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
+    @options = obj.overlay Scheduler.defaultOptions(), @config.options.Scheduling
     @context.on 'crawler:start', @start
     @context.on 'crawler:stop', @stop
 
@@ -274,7 +274,7 @@ class Scheduler extends Mixin
     @log.debug? "Starting Scheduler"
     pushUrls = =>
       waiting = @qs.items().waiting().length
-      missing = @opts.maxWaiting - waiting
+      missing = @options.maxWaiting - waiting
       if missing > 0
         @synchronized =>
           if _.isEmpty @nextUrls
@@ -285,7 +285,7 @@ class Scheduler extends Mixin
             # see https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
             next = @nextUrls.pop()
             @crawler.crawl next.url, next.meta unless next is undefined
-    @scheduler = setInterval pushUrls,  @opts.interval # run regularly to feed new URLs
+    @scheduler = setInterval pushUrls,  @options.interval # run regularly to feed new URLs
 
 
   stop: =>

@@ -95,7 +95,7 @@ class Extension extends Mixin
   toString: ->
     phases = (key for key of @handlers)
     asString = "#{@name}: phases=[#{phases}] options="
-    asString += if @opts then "#{obj.print @opts}" else "{}"
+    asString += if @options then "#{obj.print @options}" else "{}"
 
 
 module.exports = {

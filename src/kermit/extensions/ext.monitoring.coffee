@@ -14,14 +14,13 @@ class Monitoring extends Extension
     enabled : true
 
   constructor: (opts) ->
-    super()
+    super opts
     @counters =
       items : {}
       durations: {}
     @counters.items[phase] = 0 for phase in Phase.ALL
     @counters.durations[phase] = {total:0,min:100000,max:0,avg:0} for phase in ['INITIAL', 'SPOOLED', 'READY', 'FETCHING', 'FETCHED']
-    @opts = @merge Monitoring.defaultOpts(), opts
-    @on 
+    @on
       INITIAL : (item) -> @count Phase.INITIAL
       SPOOLED : (item) -> @durationOf item, Phase.INITIAL, @count Phase.SPOOLED
       READY : (item) -> @durationOf item, Phase.SPOOLED, @count Phase.READY
@@ -50,9 +49,9 @@ class Monitoring extends Extension
       catch error
         @log.error? "Error during computation of statistics", error:error, trace: error.stack
     @onStart =>
-      if @opts.enabled
-        @log.info? "Statistics enabled at interval #{@opts.interval}"
-        @stats = setInterval statsLogger, @opts.interval
+      if @options.enabled
+        @log.info? "Statistics enabled at interval #{@options.interval}"
+        @stats = setInterval statsLogger, @options.interval
     @onStop => clearInterval @stats
 
 

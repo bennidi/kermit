@@ -5,13 +5,12 @@ bodyparser = require 'koa-body-parser'
 
 class RemoteControl extends Extension
   
-  @defaultOptions: ->
+  @defaults: ->
     port : 8011
   
   constructor: (options = {}) ->
-    super {}
-    @options = @merge RemoteControl.defaultOptions(), options
-  
+    super options
+
   initialize: (context) ->
     super context
     app = new Koa()

@@ -16,7 +16,7 @@ mime = require 'mime'
 class RequestStreamer extends Extension
 
   # Create a new options object with the default configuration
-  @defaultOpts : ->
+  @defaults : ->
     debug: off
     agents : {}
     agentOptions:
@@ -31,25 +31,24 @@ class RequestStreamer extends Extension
       host: 'localhost'
 
   # Create a new Streamer
-  constructor: (opts = {}) ->
-    super()
+  constructor: (options = {}) ->
+    super options
     @on READY : @apply
-    @opts = @merge RequestStreamer.defaultOpts(), opts
-    if @opts.debug then require('request-debug')(httpRequest)
-    if @opts.Tor.enabled
-      @opts.agentOptions.socksHost = @opts.Tor.host # Defaults to 'localhost'.
-      @opts.agentOptions.socksPort = @opts.Tor.port # Defaults to 1080.
-      @opts.agents.https = new socks5Https @opts.agentOptions
-      @opts.agents.http = new socks5Http @opts.agentOptions
+    if @options.debug then require('request-debug')(httpRequest)
+    if @options.Tor.enabled
+      @options.agentOptions.socksHost = @options.Tor.host # Defaults to 'localhost'.
+      @options.agentOptions.socksPort = @options.Tor.port # Defaults to 1080.
+      @options.agents.https = new socks5Https @options.agentOptions
+      @options.agents.http = new socks5Http @options.agentOptions
     else
-      @opts.agents.http = new http.Agent @opts.agentOptions
-      @opts.agents.https = new https.Agent @opts.agentOptions
+      @options.agents.http = new http.Agent @options.agentOptions
+      @options.agents.https = new https.Agent @options.agentOptions
 
   apply: (item) ->
     url = item.url()
     userAgent = item.get 'user-agent'
     options =
-      agent: if item.useSSL() then @opts.agents.https else @opts.agents.http
+      agent: if item.useSSL() then @options.agents.https else @options.agents.http
       headers : userAgent.headers()
     options.headers['Referer'] = item.get 'Referer'
     userAgent.addCookies options.headers, item.url()

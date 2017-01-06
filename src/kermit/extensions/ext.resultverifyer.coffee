@@ -9,24 +9,23 @@ _ = require 'lodash'
 
 ###
 class ResultVerification extends Extension
-  @with InMemoryContentHolder (response) -> @opts.selector response
+  @with InMemoryContentHolder (response) -> @options.selector response
 
-  @defaultOpts: ->
+  @defaults: ->
     bad : []
     good : []
     selector: ContentType( [/.*html.*/, /.*octet-stream/] )
 
-  constructor: (@options)->
-    @opts = @merge ResultVerification.defaultOpts(), @options
-    super()
+  constructor: (options)->
+    super options
     @on FETCHED : (item) ->
         content = item.pipeline().data()
         if _.isEmpty content then return @log.debug? "#{item.id()}", tags: ['ResultVerification', 'EMPTY']
-        for handler in @opts.good
+        for handler in @options.good
           if handler item, content
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'GOOD']
             return
-        for handler in @opts.bad
+        for handler in @options.bad
           if handler item, content
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'BAD']
             item.error "Result verification failed"

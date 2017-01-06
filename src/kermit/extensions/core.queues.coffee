@@ -36,13 +36,13 @@ class QueueWorker extends Extension
   # https://www.npmjs.com/package/simple-rate-limiter
   constructor: (opts = {}) ->
     super {}
-    @opts = obj.merge QueueWorker.defaultOpts(), opts
+    @options = obj.merge QueueWorker.defaultOpts(), opts
 
   # @nodoc
   initialize: (context) ->
     super context
     @items = context.items # Request object is resolved from shared item map
-    @limits = new RateLimits @opts.limits, @context.log, @qs # Rate limiting is applied here
+    @limits = new RateLimits @options.limits, @context.log, @qs # Rate limiting is applied here
     @batch = [] # Local batch of items to be put into READY state
     @onStart =>
       @log.debug? "Starting QueueWorker"

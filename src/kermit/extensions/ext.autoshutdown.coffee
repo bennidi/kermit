@@ -7,12 +7,11 @@
 ###
 class AutoShutdown extends Extension
 
-  @defaultOpts: ->
+  @defaults: ->
     mode : 'shutdown'
 
   constructor: (options = {}) ->
-    super()
-    @options = @merge AutoShutdown.defaultOpts(), options
+    super options
 
   # @nodoc
   initialize: (context) ->

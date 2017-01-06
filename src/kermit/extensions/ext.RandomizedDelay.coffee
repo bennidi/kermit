@@ -7,7 +7,7 @@
 ###
 class RandomizedDelay extends Extension
 
-  @defaultOptions: ->
+  @defaults: ->
     delays : [
       # ratio: 1/3 # ~ every third time
       # interval: 20000 # runs every 20 sec, i.e. ~ one pause per minute
@@ -15,8 +15,7 @@ class RandomizedDelay extends Extension
     ]
 
   constructor: (options = {}) ->
-    super {}
-    @options = @merge RandomizedDelay.defaultOptions(), options
+    super options
     @randomizers = []
 
   initialize: (context) ->

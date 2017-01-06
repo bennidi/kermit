@@ -36,19 +36,19 @@ class UrlFilter
   # @nodoc
   constructor: (opts = {}, @log) ->
     {obj} = require '../util/tools'
-    @opts = obj.overlay UrlFilter.defaultOpts(), opts
+    @options = obj.overlay UrlFilter.defaultOpts(), opts
     # Filters can be regular expressions (evaluated on
-    @opts.allow = _.map @opts.allow, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
-    @opts.deny = _.map @opts.deny, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
+    @options.allow = _.map @options.allow, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
+    @options.deny = _.map @options.deny, (filter) -> if _.isRegExp filter then Filters.ByPattern filter else filter
 
 
   # Check the given URL for matching entries in blacklist/whitelist
   # @param url {String} The URL to be checked
   isAllowed: (url, meta) ->
-    if (not _.isEmpty @opts.allow) and not Filters.match url, meta, @opts.allow
+    if (not _.isEmpty @options.allow) and not Filters.match url, meta, @options.allow
       @log.debug? "#{url} not on whitelist", tags:['UrlFilter']
       return false
-    if Filters.match  url, meta, @opts.deny
+    if Filters.match  url, meta, @options.deny
       @log.debug? "#{url} on blacklist", tags:['UrlFilter']
       return false
     true

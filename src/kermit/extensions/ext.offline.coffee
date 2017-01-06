@@ -19,20 +19,19 @@ class OfflineStorage extends Extension
       Please provide property 'basedir' (withoud trailing slash) in the options.
     """
 
-  @defaultOpts = ->
+  @defaults = ->
     ifFileExists : 'skip' # [skip,update,rename?]
     basedir: ''
 
   constructor: (opts = {}) ->
-    super()
-    @opts = @merge OfflineStorage.defaultOpts(), opts
-    throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @opts.basedir
+    super opts
+    throw new Error OfflineStorage.errors.OSNODIR if _.isEmpty @options.basedir
     shouldStore = (path) =>
       @log.debug? "#{path} already exists" if exists = files.exists path
-      @opts.ifFileExists is 'update' or not exists
+      @options.ifFileExists is 'update' or not exists
     @on READY: (item) =>
         # Translate URI ending with "/", i.e. /some/path -> some/path/index.html
-        path = uri.toLocalPath @opts.basedir , item.url()
+        path = uri.toLocalPath @options.basedir , item.url()
         if shouldStore path
           @log.debug? "Storing #{item.url()} to #{path}", tags: ['OfflineStorage']
           target = fse.createOutputStream path
@@ -56,17 +55,16 @@ class OfflineServer extends Extension
       Please provide property 'basedir' (withoud trailing slash) in the options.
     """
 
-  @defaultOpts = ->
+  @defaults : ->
     port : 3000
 
   constructor: (opts = {}) ->
-    @opts = @merge OfflineServer.defaultOpts(), opts
-    super()
-    throw new Error OfflineServer.errors.OSNODIR if _.isEmpty @opts.basedir
+    super opts
+    throw new Error OfflineServer.errors.OSNODIR if _.isEmpty @options.basedir
 
   initialize: (context) ->
     super context
-    @server =  new LocalHttpServer @opts.port, @opts.basedir + "/"
+    @server =  new LocalHttpServer @options.port, @options.basedir + "/"
     @onStart => @server.start()
     @onStop => @server.stop()
     @mitm = Mitm()
@@ -75,7 +73,7 @@ class OfflineServer extends Extension
       if opts.host is 'localhost'
         return socket.bypass()
       url = opts.uri?.href
-      localFilePath = uri.toLocalPath @opts.basedir, url
+      localFilePath = uri.toLocalPath @options.basedir, url
       # Do not redirect if file doesn't exist.
       if not files.exists localFilePath
         @log.debug? "No local version found for #{url}", tags: ['OfflineServer']
@@ -83,7 +81,7 @@ class OfflineServer extends Extension
     # Redirect items to local server
     @mitm.on 'request', (item, response) =>
       url = "http://#{item.headers.host}#{item.url}"
-      localUrl = uri.toLocalPath "http://localhost:#{@opts.port}", url
+      localUrl = uri.toLocalPath "http://localhost:#{@options.port}", url
       @log.debug? "Redirecting #{url} to #{localUrl}", tags: ['OfflineServer']
       response.writeHead 302, 'Location': localUrl, 'Set-Cookie': "rid=#{obj.randomId()}"
       response.end()

@@ -143,23 +143,23 @@ class LogHub
 
   # @nodoc
   constructor : (opts = {}) ->
-    @opts = obj.overlay LogHub.defaultOpts(), opts
+    @options = obj.overlay LogHub.defaultOpts(), opts
     @initialize()
 
   #@private
   initialize: ->
-    fs.mkdirsSync @opts.basedir if @opts.basedir
+    fs.mkdirsSync @options.basedir if @options.basedir
     @dispatcher = {}
-    for level in @opts.levels
+    for level in @options.levels
       connector = new PassThrough(objectMode : true)
       connector.setMaxListeners 100 # what number here?
       @dispatcher[level] = connector
-    @addDestination destination for destination in @opts.destinations
+    @addDestination destination for destination in @options.destinations
 
   # Add a new log message destination to this hub
   addDestination: (destination) ->
     appender = switch
-      when destination.appender.type.constructor is String then @opts.appenders.create destination.appender
+      when destination.appender.type.constructor is String then @options.appenders.create destination.appender
       when destination.appender.type instanceof Function then new destination.appender.type destination.appender
       else throw new Error "Unknown specification of appender type: #{destination.appender.type}"
     for level in destination.levels
@@ -180,7 +180,7 @@ class LogHub
       @dispatcher[lvl]?.push msg
 
   # Create a new {Logger} that logs to this hub
-  logger: -> new Logger @opts.levels, @
+  logger: -> new Logger @options.levels, @
 
 ###
   Wrapper around {LogHub} that provides a method for each available log level.
