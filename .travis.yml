@@ -10,4 +10,4 @@ addons:
     packages:
     - g++-4.8
 script:
-  gulp test:run
+  npm test
