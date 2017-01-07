@@ -24,28 +24,27 @@ class CrawlerLifecycle extends Lifecycle
     super()
       # Start crawling. All queued commands will be executed after "commands.start" message
       # was sent to all listeners.
-    @onStart (done) ->
+    @onStart =>
       @log.info? "Starting", tags: ['Crawler']
-      @context.emit 'crawler:start', {}
-      for extension in @extensions
-        @log.info? "Starting", tags: [extension.name]
-        extension.start()
+      @context.emit 'crawler:start'
       @commandQueueWorker = =>
         if _.isEmpty @commandQueue or not @isRunning() then return
         queuedCommands = @commandQueue
         @commandQueue = []
         command() for command in queuedCommands
       @commandQueueWorker = setInterval @commandQueueWorker, 500
-      done?()
+      Promise.all (for extension in @extensions
+        @log.info? "Starting", tags: [extension.name]
+        extension.start())
+      .then => @context.emit 'crawler:running'
     # Stop crawling. Unfinished {RequestItem}s will be brought into terminal phase {COMPLETE}, {CANCELED}, {ERROR}
     # with normal operation.
     # {UrlScheduler} and {QueueWorker} and all other extensions will receive the "commands.stop" message.
     # {QueueSystem} will be persisted, then the optional callback will be invoked.
-    @onStop (done)->
+    @onStop =>
       @log.info? "Stopping", tags: ['Crawler']
       # Stop all extensions and Scheduler
       @context.emit 'crawler:stop'
-      extension.stop() for extension in @extensions
       checkForUnfinishedItems = =>
         unfinished = @qs.items().inPhases [Phase.READY, Phase.FETCHING, Phase.FETCHED]
         if _.isEmpty unfinished
@@ -54,9 +53,11 @@ class CrawlerLifecycle extends Lifecycle
           clearInterval @commandQueueWorker
           @log.info? "Stopped", tags: ['Crawler']
           @context.emit 'crawler:stopped'
-          done?()
       # Make sure that items in processing are COMPLETED before stopping
       @wdog = setInterval checkForUnfinishedItems, 500
+      Promise.all (for extension in @extensions
+        @log.info? "Stopping", tags: [extension.name]
+        extension.stop())
 
 
 ###
@@ -87,10 +88,10 @@ diagram below.
         maxWaiting: 50
         msPerUrl: 50
 
-
-
-@event @command.start Fired when crawling is started
-@event @command.ststop Fired when crawling is stopped
+@event @crawler:start Fired when crawling is starting
+@event @crawler:running Fired when crawler finished starting
+@event @crawler:stop Fired when crawler initiates to stop all operations
+@event @crawler:stopped Fired when crawler finished stopping
 
 ###
 class Crawler extends Mixin
@@ -184,7 +185,7 @@ class Crawler extends Mixin
   schedule: (url, meta) ->
     @scheduler.schedule url, meta
 
-  hasWork:-> @qs.urls().count 'scheduled'
+  hasWork:-> @qs.urls().count('scheduled') >0 and @qs.items().unfinished().length > 0
 
   execute:(command)->
     # A command is either executed on the crawler itself or it targets a specific extension
@@ -278,7 +279,7 @@ class Scheduler extends Mixin
   # Called by Crawler at startup
   # @nodoc
   start: =>
-    @log.debug? "Starting Scheduler"
+    @log.info? "Starting", tags:['Scheduler']
     pushUrls = =>
       waiting = @qs.items().waiting().length
       missing = @options.maxWaiting - waiting
@@ -297,7 +298,7 @@ class Scheduler extends Mixin
 
   stop: =>
     clearInterval @scheduler
-    @log.debug? "Stopped", tags: ['Scheduler']
+    @log.info? "Stopping", tags: ['Scheduler']
 
 module.exports = {
   Crawler

@@ -9,7 +9,7 @@ _ = require 'lodash'
 ###
 class Monitoring extends Extension
 
-  @defaultOpts: ->
+  @defaults: ->
     interval : 10000
     enabled : true
 

@@ -19,7 +19,7 @@ class AutoShutdown extends Extension
     watchdog = =>
       if not @crawler.isRunning() then return
       try
-        queuesAreEmpty = => @qs.urls().count('scheduled') is 0 and @qs.items().unfinished().length is 0
+        queuesAreEmpty = => not @crawler.hasWork()
         @log.debug? "Checking conditions for shutdown", tags:['AutoShutdown']
         if queuesAreEmpty()
           process.nextTick =>

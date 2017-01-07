@@ -9,8 +9,6 @@ describe  'Crawler',  ->
   @timeout 3000
   describe 'package', ->
     Kermit = null
-
-
     it '# can be instantiated with options for core extensions', ->
       Kermit = new Crawler
         name: "testicle"

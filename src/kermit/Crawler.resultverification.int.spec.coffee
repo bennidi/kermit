@@ -1,19 +1,26 @@
 {Crawler, ext} = require './kermit.modules.coffee'
-{ResourceDiscovery,OfflineServer,  ResultVerification, NotificationCenter} = ext
+{ResourceDiscovery,OfflineServer,
+ResultVerification, NotificationCenter, Monitoring, OfflineStorage} = ext
+dircompare = require 'dir-compare'
+{obj} = require './util/tools'
 
 describe 'Result verification stops the crawler', ->
   @timeout 15000
   it '#when bad result is found', (done) ->
+    dir = obj.randomId()
     count = 1
     counter = ->
       count++ < 20 and count % 3 is 0
     Kermit = new Crawler
-      name: "testrepo"
+      name: "resultcheck#{dir}"
       basedir : './target/testing/integration'
       autostart: true
       extensions : [
+        new Monitoring interval:50
         new NotificationCenter
         new ResourceDiscovery
+        new OfflineStorage
+          basedir: "./target/testing/repositories/resultcheck/#{dir}"
         new ResultVerification
           bad: [ counter ]
         new OfflineServer
@@ -39,8 +46,18 @@ describe 'Result verification stops the crawler', ->
           ]
 
     Kermit.on "crawler:stopped", ->
-      Kermit.start() if Kermit.hasWork()
-      done()
+      if Kermit.hasWork()
+        Kermit.start()
+      else
+        options =
+          compareSize: true
+          compareContent: true
+          noDiffSet: true
+        fixture = './fixtures/repositories/coffeescript/org'
+        output = "./target/testing/repositories/resultcheck/#{dir}/org"
+        result = dircompare.compareSync fixture, output, options
+        #expect(result.same).to.be.true()
+        done()
     Kermit.crawl "http://coffeescript.org"
 
 

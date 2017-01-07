@@ -25,7 +25,7 @@ class QueueConnector extends Extension
 # Takes care that concurrency and rate limits are met.
 class QueueWorker extends Extension
 
-  @defaultOpts = ->
+  @defaults = ->
     limits : [
         pattern : /.*/
         to : 5
@@ -35,8 +35,7 @@ class QueueWorker extends Extension
 
   # https://www.npmjs.com/package/simple-rate-limiter
   constructor: (opts = {}) ->
-    super {}
-    @options = obj.merge QueueWorker.defaultOpts(), opts
+    super opts
 
   # @nodoc
   initialize: (context) ->
@@ -44,12 +43,8 @@ class QueueWorker extends Extension
     @items = context.items # Request object is resolved from shared item map
     @limits = new RateLimits @options.limits, @context.log, @qs # Rate limiting is applied here
     @batch = [] # Local batch of items to be put into READY state
-    @onStart =>
-      @log.debug? "Starting QueueWorker"
-      @pump = setInterval @processRequests, 100
-    @onStop =>
-      @log.debug? "Stopping QueueWorker"
-      clearInterval @pump
+    @onStart => @pump = setInterval @processRequests, 100
+    @onStop => clearInterval @pump
 
   # This is run at intervals to process waiting items
   # @private

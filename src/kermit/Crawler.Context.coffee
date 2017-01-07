@@ -1,6 +1,7 @@
 {Mixin} = require 'coffee-latte'
 EventEmitter = require('eventemitter2').EventEmitter2
 notifier = require 'node-notifier'
+{obj} = require './util/tools.coffee'
 
 class EventSupport
 
@@ -24,7 +25,7 @@ class EventSupport
     try
       @_emitter.emit event, data
     catch err
-      @log.error? "#{obj.nameOf @}:#{err.message}"
+      @log.error? "#{err}"
 
 # A container for properties that need to be shared among all instances of {ExtensionPoint} and {Extension}
 # of a given {Crawler}. Each {Crawler} has its own, distinct context that it passes to all its extension points.

@@ -1,4 +1,4 @@
-
+Promise = require 'bluebird'
 
 class Lifecycle
 
@@ -7,31 +7,27 @@ class Lifecycle
   @RUNNING = "RUNNING"
   @STOPPING = "STOPPING"
 
-  constructor: (opts={})->
+  constructor: ->
     @_lcycle =
       status : Lifecycle.IDLE
-      #onStart: opts.onStart?.bind(@) or =>
-      #onStop: opts.onStop?.bind(@) or =>
 
   onStart:(fnc)->
-    @_lcycle.onStart = fnc.bind @
+    @_lcycle.onStart = fnc
 
   onStop:(fnc)->
-    @_lcycle.onStop = fnc.bind @
+    @_lcycle.onStop = fnc
 
-  stop:(callback)->
-    if @isIdle() or @isStopping() then return
+  stop:->
+    if @isIdle() or @isStopping() then return Promise.resolve true
     @_lcycle.status = Lifecycle.STOPPING
-    @_lcycle.onStop? =>
-      @_lcycle.status = Lifecycle.IDLE
-      callback?()
+    new Promise (resolve) => resolve @_lcycle.onStop?()
+      .then => @_lcycle.status = Lifecycle.IDLE
 
-  start: (callback)->
-    if @isRunning() or @isStarting() then return
+  start: ->
+    if @isRunning() or @isStarting() then return Promise.resolve true
     @_lcycle.status = Lifecycle.STARTING
-    @_lcycle.onStart? =>
-      @_lcycle.status = Lifecycle.RUNNING
-      callback?()
+    new Promise (resolve) => resolve @_lcycle.onStart?()
+      .then => @_lcycle.status = Lifecycle.RUNNING
 
   isRunning:-> @_lcycle.status is Lifecycle.RUNNING
   isStarting:-> @_lcycle.status is Lifecycle.STARTING
