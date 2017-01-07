@@ -37,7 +37,9 @@ describe 'Result verification stops the crawler', ->
           allow : [
             /.*coffeescript\.org.*/
           ]
+
     Kermit.on "crawler:stopped", ->
+      Kermit.start() if Kermit.hasWork()
       done()
     Kermit.crawl "http://coffeescript.org"
 

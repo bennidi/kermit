@@ -198,7 +198,7 @@ class UrlStore extends Mixin
     record['meta'] = meta if meta
     @urls.insert record, (err, result) =>
       if not err
-        @log.trace? "Scheduled #{url}"
+        @log.trace? "Scheduled #{url}", tags:["QueueSystem"]
         @counter.scheduled++
 
   # Mark a known URL as visited (silently ignores cases of unknown URLs)

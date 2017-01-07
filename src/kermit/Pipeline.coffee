@@ -42,7 +42,7 @@ class Pipeline
   import: (incomingMessage)   ->
     @status = incomingMessage.statusCode
     @headers = incomingMessage.headers
-    @log.debug? "#{@item.url()}(#{@status}) host=#{@headers['server']} type=#{@headers['content-type']} length=#{@headers['content-length']}", tags:['Pipe',@item.id()]
+    @log.debug? "#{@status}: host=#{@headers['server']} type=#{@headers['content-type']} length=#{@headers['content-length']}", {tags:['Pipe'],item:@item}
     # Connect all matching destinations
     streams = []
     for id, guard of @guards
@@ -51,16 +51,16 @@ class Pipeline
         streams.push @destinations[id].constructor.name
     if _.isEmpty streams # For some responses a matching destination might not be found
       # In that case the item phase is simply set to 'FETCHED' to continue processing
-      @log.debug? "No streams for #{@item.id()}", tags:['Pipe']
+      @log.debug? "No streams attached", {tags:['Pipe'], item:@item}
       @item.fetched() unless @item.isError()
     else
-      @log.debug? "Streaming to #{streams}", tags:['Pipe',@item.id()]
+      @log.debug? "Streaming to #{streams}", tags:['Pipe']
       incomingMessage
         .on 'error', (error) =>
-          @log.error? "", {error:error, trace:error.stack, tags:['Pipe',@item.id()]}
+          @log.error? "", {error:error, trace:error.stack, tags:['Pipe'], item:@item}
           @item.error(error)
         .on 'end', =>
-          @log.debug? "Finished streaming", tags:['Pipe',@item.id()]
+          @log.debug? "Finished streaming", {tags:['Pipe'],item:@item}
           @item.fetched() unless @item.isError()
       # Start streaming
       incomingMessage.pipe @incoming
@@ -84,10 +84,7 @@ module.exports = {
   ContentType: (types) ->
     (message) ->
       for type in types
-        console.log "Checking #{message.headers['content-type']} with #{type}: #{message.url}"
         if type.test message.headers['content-type']
-          console.log "#{message.url} accepted by guard"
           return true;
-      console.log "#{message.url} not accepted by guard"
       false
 }

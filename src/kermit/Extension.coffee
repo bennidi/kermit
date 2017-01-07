@@ -29,6 +29,8 @@ _ = require 'lodash'
   @see RequestItem
   @see ProcessingPhase
 
+  @todo Add example code
+
 
 ###
 class Extension extends Mixin
@@ -56,7 +58,6 @@ class Extension extends Mixin
   # @param [CrawlerContext] context The context provided by the crawler
   # @throw Error if it does not find the context to be providing what it expects.
   initialize: (context) ->
-    @name = @constructor.name
     throw new Error "Initialization of an extension requires a context object" unless context
     # Reexpose most common objects
     @importContext context
@@ -67,9 +68,7 @@ class Extension extends Mixin
 
   # Merge two objects recursively.
   # This is used to combine user specified options with default options
-  merge : (a,b) ->
-    {obj} = require './util/tools'
-    obj.overlay a,b
+  merge : (a,b) -> obj.overlay a,b
 
   # Get all {ProcessingPhase} values handled by this extension
   targets: ->

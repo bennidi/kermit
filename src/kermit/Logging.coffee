@@ -12,7 +12,9 @@ class LogEntry
 
   constructor: (@msg, @data) ->
     @tags = @data?.tags
+    @item = @data?.item
     delete @data.tags
+    delete @data.item
 
 # Format log messages (from string or entry)
 # @abstract
@@ -35,14 +37,15 @@ class DefaultFormatter extends Formatter
   # Format a string
   fromString : (lvl, msg) ->
     time = dateFormat new Date(), "d/mm HH:MM:ss.l"
-    entry = "[#{time}] #{lvl.toUpperCase()} - #{msg}\n"
+    "[#{time}] #{lvl.toUpperCase()} - #{msg}\n"
 
   # Format a log entry
   fromEntry : (lvl, entry) ->
     tags = extractTags entry.tags
+    itemId = if entry.item then " [#{entry.item.id()}]" else ""
     data = if _.isEmpty entry.data then "" else "(#{obj.print entry.data, 3})"
     time = dateFormat new Date(), "d/mm HH:MM:ss.l"
-    entry = "[#{time}] #{lvl.toUpperCase()}#{tags} - #{entry.msg} #{data}\n"
+    "[#{time}] #{lvl.toUpperCase()}#{tags}#{itemId} - #{entry.msg} #{data}\n"
 
 ###
   Public registry for different log formats

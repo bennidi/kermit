@@ -27,7 +27,9 @@ class CrawlerLifecycle extends Lifecycle
     @onStart (done) ->
       @log.info? "Starting", tags: ['Crawler']
       @context.emit 'crawler:start', {}
-      extension.start() for extension in @extensions
+      for extension in @extensions
+        @log.info? "Starting", tags: [extension.name]
+        extension.start()
       @commandQueueWorker = =>
         if _.isEmpty @commandQueue or not @isRunning() then return
         queuedCommands = @commandQueue
@@ -50,6 +52,7 @@ class CrawlerLifecycle extends Lifecycle
           clearInterval @wdog
           @qs.save()
           clearInterval @commandQueueWorker
+          @log.info? "Stopped", tags: ['Crawler']
           @context.emit 'crawler:stopped'
           done?()
       # Make sure that items in processing are COMPLETED before stopping
@@ -138,7 +141,7 @@ class Crawler extends Mixin
 
     initializeExtensions = =>
       for extension in @extensions
-        @log.info? "Initializing extension #{extension}"
+        @log.info? "Initializing #{extension}"
         extension.initialize(@context.fork())
         extension.verify()
 
@@ -173,13 +176,15 @@ class Crawler extends Mixin
         @log.debug? "Executing queued command <crawl #{url}>"
         @crawl url,meta
     else
-      @log.trace? "Executing #{url}"
-      @scheduleExecution Phase.INITIAL, new RequestItem url, meta, @log
+      item = new RequestItem url, meta, @log
+      @log.trace? "Executing #{url}", { tags:['Crawler'], item}
+      @scheduleExecution Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
   schedule: (url, meta) ->
     @scheduler.schedule url, meta
 
+  hasWork:-> @qs.urls().count 'scheduled'
 
   execute:(command)->
     # A command is either executed on the crawler itself or it targets a specific extension

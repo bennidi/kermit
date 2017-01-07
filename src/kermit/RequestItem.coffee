@@ -165,10 +165,11 @@ class RequestItem
   listeners = (item, property) -> item.changeListeners[property] ?= []
   # @nodoc
   @stampsToString : (stamps) ->
-    _.mapValues stamps, (stamps) ->
-      first = "(#{stamps[0]})"
-      rest = _.map _.tail(stamps), (value, index) -> (value - stamps[index]) + "ms"
-      "#{first}#{rest}"
+    pretty = {}
+    for phase, stamp of stamps
+      follower = stamps[ProcessingPhase.follower(phase)]
+      pretty[phase] = "#{stamps[ProcessingPhase.follower(phase)] - stamp} ms" if follower
+    pretty
 
   # Create a new item for the given url and
   # with the given metadata attached
@@ -201,8 +202,7 @@ class RequestItem
   id: -> @state.id
 
   # Check whether https should be used to fetch this item  
-  useSSL: ->
-    @url().startsWith 'https'
+  useSSL: -> @url().startsWith 'https'
 
   # Change the phase and notify subscribed listeners
   # or retrieve the current phase value
@@ -219,18 +219,18 @@ class RequestItem
   # Add a new timestamp to the collection of timestamps
   # for the given tag. Timestamps are useful to keep track of processing durations.
   stamp: (tag) ->
-    @stamps(tag).push new Date().getTime();this
+    @state.stamps[tag] = new Date().getTime()
+    @
 
-  # Get all timestamps stored for the given tag  
-  stamps : (tag) ->
-    @state.stamps[tag] ?= []
+  # Get the last timestamp stored for the given tag
+  stamps : (tag) -> @state.stamps[tag]
 
   # Compute the duration of a phase
   # @return [Number] The duration of the respective phase in ms or -1 if phase not completed
   durationOf : (phase) ->
     follower = ProcessingPhase.follower phase
     try
-      @stamps(follower)[0] - @stamps(phase)[0]
+      @stamps(follower) - @stamps(phase)
     catch error
       # This error occurs if a stamp did not exist
       -1
@@ -239,7 +239,7 @@ class RequestItem
   timeToComplete : ->
     return -1 if not @isComplete()
     try
-      @stamps(ProcessingPhase.COMPLETE)[0] - @stamps(ProcessingPhase.INITIAL)[0]
+      @stamps(ProcessingPhase.COMPLETE) - @stamps(ProcessingPhase.INITIAL)
     catch error
       # This error occurs if a stamp did not exist
       -1
@@ -290,11 +290,11 @@ class RequestItem
 
   # Change the items phase to ERROR
   # @return {RequestItem} This item
-  error: (error) ->
+  error: (error = "") ->
     try
       throw new Error
     catch err
-      @log.debug? err.stack
+    @log.error? "#{error?.toString()}", item:@
     @errors ?= []
     @errors.push error
     @phase(ProcessingPhase.ERROR);this
@@ -341,13 +341,11 @@ class RequestItem
   # A item might have been created by another item (its parent).
   # That parent might in turn have been created by another item and so on.
   # @return {Number} The number of parents of this item
-  parents: ->
-    @state.parents
+  parents: -> @state.parents
 
 
   set:(key, value)->@_context[key] = value
   get:(key) -> @_context[key] or @state[key]
-
 
   # Generate a human readable representation of this item
   toString: ->
