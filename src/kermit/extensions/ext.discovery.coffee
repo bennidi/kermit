@@ -12,7 +12,7 @@ _ = require 'lodash'
 class ResourceDiscovery extends Extension
   @with InMemoryContentHolder(ContentType( [/.*html.*/] ))
 
-  @defaultOpts: ->
+  @defaults: ->
     links : true
     anchors: true
     scripts: true # TODO: implement discovery
@@ -20,7 +20,7 @@ class ResourceDiscovery extends Extension
 
   # Create a new resource discovery extension
   constructor: (options) ->
-    super()
+    super options
     @processor = new HtmlToJson [
       new HtmlExtractor
         name : 'all'
