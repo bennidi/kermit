@@ -57,10 +57,16 @@ class OfflineServer extends Extension
 
   @defaults : ->
     port : 3000
+    cancelation:off
 
-  constructor: (opts = {}) ->
-    super opts
+  constructor: (options = {}) ->
+    super options
     throw new Error OfflineServer.errors.OSNODIR if _.isEmpty @options.basedir
+    if @options.cancelation
+      @on SPOOLED: (item) =>
+        localFilePath = uri.toLocalPath @options.basedir, item.url()
+        if files.exists localFilePath then item.cancel "Content already available offline"
+
 
   initialize: (context) ->
     super context

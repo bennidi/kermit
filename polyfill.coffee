@@ -16,10 +16,16 @@ extendArray = ->
 
 
 ### EXTEND String with string.js ###
-#extendString = ->
+extendString = ->
   #stringjs = require 'string'
   #stringjs.extendPrototype()
+  String.prototype.hashCode = ->
+    hashcode = 0
+    for i in [0..@length]
+      hashcode = (31 * hashcode + this.charCodeAt(i)) << 0;
+    hashcode
+
 
 
 extendArray()
-#extendString()
+extendString()

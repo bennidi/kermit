@@ -4,6 +4,7 @@
 {CrawlerContext, ContextAware} = require './Crawler.Context'
 {ExtensionPointConnector, RequestItemMapper,
 Spooler, Completer, Cleanup, UserAgentProvider} = require './extensions/core'
+{UserAgentProvider} = require './extensions/core.users'
 {QueueConnector, QueueWorker} = require './extensions/core.queues'
 {RequestStreamer} = require './extensions/core.streaming'
 {QueueSystem} = require './QueueSystem'
@@ -178,7 +179,7 @@ class Crawler extends Mixin
         @crawl url,meta
     else
       item = new RequestItem url, meta, @log
-      @log.trace? "Executing #{url}", { tags:['Crawler'], item}
+      @log.trace? "Crawl #{url}", { tags:['Crawler'], item}
       @scheduleExecution Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
@@ -220,7 +221,7 @@ class CrawlerConfig
   constructor: (config = {}) ->
     @name      = "kermit"
     @basedir   = "/tmp/sloth"
-    @autostart = true
+    @autostart = false
     @extensions = [] # Clients can add extensions
     @options   = # Options of each core extension can be customized here
       Logging   : LogConfig.detailed
@@ -292,7 +293,7 @@ class Scheduler extends Mixin
             # TODO: pop() has performance implications, migrate to fix size array with updating pointer
             # see https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
             next = @nextUrls.pop()
-            @crawler.crawl next.url, next.meta unless next is undefined
+            @crawler.crawl next.url, next.meta unless next is undefined or not @urlFilter.isAllowed next.url, next.meta
     @scheduler = setInterval pushUrls,  @options.interval # run regularly to feed new URLs
 
 

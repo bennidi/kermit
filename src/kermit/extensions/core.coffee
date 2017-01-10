@@ -59,13 +59,6 @@ class RequestItemMapper extends Extension
   @todo Persistence
 
 ###
-class UserAgentProvider extends Extension
-
-  # @nodoc
-  constructor: ->
-    super()
-    @defaultUser = new UserAgent()
-    @on INITIAL : (item) => item.set 'user-agent', @defaultUser
 
 
 # Run cleanup on all terminal phases
@@ -103,5 +96,4 @@ module.exports = {
   Spooler
   Completer
   Cleanup
-  UserAgentProvider
 }

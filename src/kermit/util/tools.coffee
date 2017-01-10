@@ -49,9 +49,9 @@ class URIHelper
 
   @normalize: (url) -> URI(url).normalize().toString()
 
-  #
-  # TODO: Use hash for queries that exceed max length of file names in ext4
-  @toLocalPath : (basedir = "", url) ->
+  # Translate an http URL to a filesystem URL
+  # @todo Use hash for queries that exceed max length of file names in ext4
+  @toLocalPath : (root = "", url) ->
     url = url.replace 'www', '' # 'www' is considered superfluous
     url = URIHelper.replaceHtmlEntities url
     uri = URI url
@@ -62,7 +62,7 @@ class URIHelper
     uri.segment("index.html") if (!uri.suffix() or not MimebyFileExtension[uri.suffix()])
     lastDot = uri.path().lastIndexOf '.'
     augmentedPath = [uri.path().slice(0, lastDot), query, uri.path().slice(lastDot)].join('');
-    fullpath = "#{basedir}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
+    fullpath = "#{root}/#{uri.tld()}/#{domainWithoutTld}#{subdomain}#{augmentedPath}"
     URI(fullpath).readable()
 
 
@@ -91,6 +91,8 @@ class ObjectHelper
       when _.isArray b then b
   @overlay : (a,b) ->
     _.merge a , b , (a,b) -> if _.isArray a then b
+  @randomIndex : (upperBound) ->
+    (Math.random() * upperBound) % upperBound
   @randomId : (length=8) ->
     # Taken from: https://coffeescript-cookbook.github.io/chapters/strings/generating-a-unique-id
     id = ""

@@ -1,3 +1,7 @@
+- Use multiple user agents
+- Extend OfflineServer such that it cancels requests to URLs that exist locally
+
+
 AVOIDING DETECTION
 + Scheduler accepts "users". A user encapsulates the behaviour of how links are traversed.
 This implies a redesign of the scheduler to accept batches of urls. Metadata can be used to set an "owner"

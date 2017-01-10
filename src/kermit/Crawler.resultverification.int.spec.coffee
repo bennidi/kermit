@@ -1,6 +1,7 @@
 {Crawler, ext} = require './kermit.modules.coffee'
 {ResourceDiscovery,OfflineServer,
-ResultVerification, NotificationCenter, Monitoring, OfflineStorage} = ext
+ResultVerification, NotificationCenter,
+FullRequestTrace, Monitoring, OfflineStorage} = ext
 dircompare = require 'dir-compare'
 {obj} = require './util/tools'
 
@@ -14,9 +15,10 @@ describe 'Result verification stops the crawler', ->
     Kermit = new Crawler
       name: "resultcheck#{dir}"
       basedir : './target/testing/integration'
-      autostart: true
+      autostart: yes
       extensions : [
-        new Monitoring interval:50
+        new FullRequestTrace
+        new Monitoring interval:500
         new NotificationCenter
         new ResourceDiscovery
         new OfflineStorage

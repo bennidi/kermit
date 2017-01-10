@@ -1,6 +1,5 @@
 {Crawler, ext} = require './kermit.modules.coffee'
-{ResourceDiscovery, Monitoring, OfflineStorage, OfflineServer, AutoShutdown, Histogrammer, ResultVerification} = ext
-{RemoteControl} = ext
+{ResourceDiscovery, FullRequestTrace, OfflineStorage, OfflineServer, AutoShutdown, ResultVerification} = ext
 dircompare = require 'dir-compare'
 {obj} = require './util/tools'
 
@@ -14,6 +13,7 @@ describe  'Crawler',  ->
         basedir : './target/testing/integration'
         autostart: true
         extensions : [
+          new FullRequestTrace
           new ResourceDiscovery
           new AutoShutdown mode:'stop'
           new OfflineStorage

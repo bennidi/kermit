@@ -8,7 +8,9 @@ _ = require 'lodash'
   A {RequestItem} is always in one of the following processing phases.
   Each item starts with phase {ProcessingPhase.INITIAL}
   From phase {INITIAL} it transitions forward while being processed by the {Extension}s
-  that handle items of that particular phase. The following diagram illustrate the possible
+  that handle items in that particular phase.
+
+  The following diagram illustrate the possible
   phase transitions with the ordinary flow {INITIAL} -> {SPOOLED} -> {READY} -> {FETCHING} -> {FETCHED} -> {COMPLETE}.
   Any item may also end in phases {CANCELED} or {ERROR} depending on the logic of the {Extension}s
 
@@ -43,7 +45,7 @@ _ = require 'lodash'
 ```
 
 @see Crawler for a list of core extensions applied at each phase
-@see ProcessingPhase and its subclasses for descriptions of
+
 @abstract
 ###
 class ProcessingPhase
@@ -290,18 +292,16 @@ class RequestItem
 
   # Change the items phase to ERROR
   # @return {RequestItem} This item
-  error: (error = "") ->
-    try
-      throw new Error
-    catch err
-    @log.error? "#{error?.toString()}", item:@
+  error: (reason = "") ->
+    @log.trace? "ERROR:#{reason}", item:@
     @errors ?= []
-    @errors.push error
+    @errors.push reason
     @phase(ProcessingPhase.ERROR);this
 
   # Change the items phase to CANCELED
   # @return {RequestItem} This item
-  cancel: ->
+  cancel: (reason = "") ->
+    @log.trace? "CANCELED:#{reason}", item:@
     @phase(ProcessingPhase.CANCELED);this
 
   # Check whether this item has phase INITIAL

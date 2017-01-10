@@ -15,6 +15,7 @@ kermit.ext = obj.merge kermit.ext, require './extensions/ext.RandomizedDelay'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.RemoteControl'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.resultverifyer'
 kermit.ext = obj.merge kermit.ext, require './extensions/ext.notifications.coffee'
+kermit.ext = obj.merge kermit.ext, require './extensions/ext.debug.coffee'
 kermit.logconf = require './Logging.conf'
 
 module.exports = kermit
