@@ -131,7 +131,7 @@ class Crawler extends Mixin
       new UserAgentProvider
       ]
     # Add client extensions
-    # TODO: Do not allow extensions on phase COMPLETE
+    # TODO:30 Do not allow extensions on phase COMPLETE
     @log.debug? "Installing user extensions #{(ext.name for ext in @config.extensions)}", tags:['Crawler']
     @addExtensions @config.extensions
     # Core extensions that need to run AFTER client extensions
@@ -148,7 +148,7 @@ class Crawler extends Mixin
         extension.verify()
 
     @qs.initialize =>
-      # TODO: Move all commands on queue for execution as soon as crawler is initialized
+      # TODO:40 Move all commands on queue for execution as soon as crawler is initialized
       initializeExtensions()
       @start() if @config.autostart
     @log.info? @toString(), tags:['Crawler']
@@ -173,13 +173,13 @@ class Crawler extends Mixin
   # @return [RequestItem] The created item
   crawl: (url, meta) ->
     if not @isRunning()
-      @log.debug? "Queued execution of #{url}. The queued command is transient and executed when start() is called"
+      @log.debug? "Queued GET #{url}. The queued command is transient and executed when start() is called"
       @commandQueue.push =>
-        @log.debug? "Executing queued command <crawl #{url}>"
+        @log.debug? "Executing queued command <GET #{url}>"
         @crawl url,meta
     else
       item = new RequestItem url, meta, @log
-      @log.trace? "Crawl #{url}", { tags:['Crawler'], item}
+      @log.trace? "GET #{url}", { tags:['Crawler'], item}
       @scheduleExecution Phase.INITIAL, item
 
   # Add the url to the {Scheduler}
@@ -290,7 +290,7 @@ class Scheduler extends Mixin
             @nextUrls = @nextUrls.concat @qs.urls().scheduled 500
           available = Math.min @nextUrls.length, missing
           for i in [1..available]
-            # TODO: pop() has performance implications, migrate to fix size array with updating pointer
+            # TODO:80 pop() has performance implications, migrate to fix size array with updating pointer
             # see https://gamealchemist.wordpress.com/2013/05/01/lets-get-those-javascript-arrays-to-work-fast/
             next = @nextUrls.pop()
             @crawler.crawl next.url, next.meta unless next is undefined or not @urlFilter.isAllowed next.url, next.meta

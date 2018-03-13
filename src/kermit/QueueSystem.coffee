@@ -136,7 +136,7 @@ class RequestItemStore
   # @private
   # Save the current state to file
   save: ->
-    @store.saveDatabase()
+    #@store.saveDatabase()
 
 ###
   Manage the collection of URLs that are
@@ -211,8 +211,9 @@ class UrlStore extends Mixin
   # Retrieve the next batch of scheduled URLs
   # @note Needs to run in a fiber
   # @see Synchronizer
-  scheduled: (size = 100) ->
-    @await @urls.find(phase:'scheduled').limit(size).exec @defer()
+  scheduled: (size = 100, query = {}) ->
+    query.phase = 'scheduled'
+    @await @urls.find(query).limit(size).exec @defer()
 
   # Save datastore to disk
   save: -> @urls.persistence.compactDatafile()

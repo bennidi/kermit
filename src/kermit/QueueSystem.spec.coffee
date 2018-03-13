@@ -37,13 +37,13 @@ describe  'QueueSystem',  ->
         expect(QS.items().inPhases(['INITIAL']).length).to.equal(100)
         expect(QS.urls().count 'scheduled').to.equal(100)
         QS.save()
-        # TODO: assert files
+        # TODO:50 assert files
         done()
       setTimeout check, 400
 
 
     it '# can be initialized with snapshots', (done) ->
-      # NOTE: Can't load same file twice, see https://github.com/louischatriot/nedb/issues/320
+      # NOTE:0 Can't load same file twice, see https://github.com/louischatriot/nedb/issues/320
       RestoredQS = new QueueSystem
         filename: './fixtures/queuesys/b5hg6ued'
         log: context.log

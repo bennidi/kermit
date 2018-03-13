@@ -21,15 +21,19 @@ class ResultVerification extends Extension
     @on FETCHED : (item) ->
         content = item.pipeline().data()
         if _.isEmpty content then return @log.debug? "#{item.id()}", tags: ['ResultVerification', 'EMPTY']
-        for handler in @options.good
-          if handler item, content
+        for isGood in @options.good
+          if isGood item, content
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'GOOD']
             return
-        for handler in @options.bad
-          if handler item, content
+        for isBad in @options.bad
+          if isBad item, content
+            @context.notify "Result verification failed"
             @log.debug? "#{item.id()}", tags: ['ResultVerification', 'BAD']
             item.error "Result verification failed"
             @qs.urls().reschedule item.url()
             @crawler.stop()
+            @options.onFail?.call @
+
+
 
 module.exports = {ResultVerification}

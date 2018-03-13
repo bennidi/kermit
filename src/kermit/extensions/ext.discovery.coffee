@@ -15,8 +15,8 @@ class ResourceDiscovery extends Extension
   @defaults: ->
     links : true
     anchors: true
-    scripts: true # TODO: implement discovery
-    images : true # TODO: implement discovery
+    scripts: true # TODO:60 implement discovery
+    images : true # TODO:70 implement discovery
 
   # Create a new resource discovery extension
   constructor: (options) ->
