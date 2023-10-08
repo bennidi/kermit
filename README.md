@@ -14,8 +14,7 @@ It was built to lower the barrier of web-scraping complexity by providing clean 
 
 Kermit can handle URL backlogs with millions of entries. Just give it enough memory (~ 1.3 Gb per Million entries). 
 
-![Kermit architectural diagram](/doc/assets/architecture.png?raw=true , "Kermit architecture")
-
+![Kermit architectural diagram](doc/assets/architecture.png)
 
 > Kermit especially loves to free data from the web. If Kermit wasn't a sloth, she would be a pirate...yargh!
 
